@@ -1,0 +1,64 @@
+REGION_NAME,GCAM_ID
+,0.0
+USA,1.0
+Africa_Eastern,2.0
+Africa_Northern,3.0
+Africa_Southern,4.0
+Africa_Western,5.0
+Australia_NZ,6.0
+Brazil,7.0
+Canada,8.0
+Central America and Caribbean,9.0
+Central Asia,10.0
+EU-12,12.0
+EU-15,13.0
+European_Eastern,14.0
+European_Non_EU,15.0
+European Free Trade Association,16.0
+India,17.0
+Indonesia,18.0
+Japan,19.0
+Mexico,20.0
+Middle East,21.0
+Pakistan,22.0
+Russia,23.0
+South Africa,24.0
+South America_Northern,25.0
+South America_Southern,26.0
+South Asia,27.0
+South Korea,28.0
+Southeast Asia,29.0
+Taiwan,30.0
+Argentina,31.0
+Colombia,32.0
+Anhui,44
+Beijing  Shi,33
+Fujian,45
+Gansu,60
+Guangdong,51
+Guangxi Zizhiqu,52
+Guizhou,56
+Hainan,53
+Hebei,35
+Heilongjiang,40
+Henan,48
+Hubei,49
+Hunan,50
+Jiangsu,42
+Jiangxi,46
+Jilin,39
+Liaoning,38
+Nei Mongol Zizhiqu,37
+Ningxia  Zizhiqu,62
+Qinghai,61
+Shaanxi,59
+Shandong,47
+Shanghai Shi,41
+Shanxi,36
+Sichuan,55
+Tianjin Shi,34
+Xinjiang  Zizhiqu,63
+Xizang  Zizhiqu,58
+Yunnan,57
+Zhejiang,43
+Sichuan,55
