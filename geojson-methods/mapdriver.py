@@ -1,16 +1,17 @@
 import string
 import json
-import waterdisag
 import csv
 from Map import Map
 
 
 #Map 3: GCAM_14.geojson
 
-file2 = open('./GCAM_Dynamic_Visualization/input-data/rgn32/GCAM_32_wo_Taiwan.geojson', 'r')
+file2 = open('../input-data/rgn32/GCAM_32_wo_Taiwan.geojson', 'r')
 map2 = Map('GCAM_32_wo_Taiwan', file2, './GCAM_32_wo_Taiwan.geojson', "GCAM_ID", "REGION_NAME")
 
-map2.getLookupTable(export=1)
+d=map2.getDataFromCSV('../input-data/dummy.csv', skip=1)
+
+print d
 
 
 ##print l

@@ -7,7 +7,6 @@ maps for use in subsequent visualization tasks."""
 
 import string
 import json
-import waterdisag
 import csv
 from collections import defaultdict
 import sys
@@ -109,7 +108,7 @@ class Map:
             for feature in path:
                 vals.append(feature["properties"][attrname])
                 val_id.append(feature["properties"][attrid])
-            nvals = zip(vals, val_id)
+            nvals = zip(val_id, vals)
 
             return(nvals)
             
@@ -146,14 +145,18 @@ class Map:
         return(lookup)
         
 
-    def appendNewAttr(self, attrname, data=None, uniform=1):
+    def appendNewAttr(self, attrname, data=None, uniform=False, append=False):
         """Append new attribute(s) to the geoJSON dictionary along with associated data.
             Inputs:
-                attrname - Name of the attribute you want to append to (key). Does not have to exist.
+                attrname - Name of the attribute you want to append to (key). Does not have to exist in map already.
 
-                data - The values you want to include with your attribute key. Assumes data is ordered.
+                data - The values you want to include with your attribute key. If nonuniform, in form of tuple (id, data);
+                    if uniform in form of string, int, bool, etc. 
                 
                 uniform - A boolean denoting whether data is constant across regions or varies by region.
+
+                append - boolean denoting whether you are appending data to an existing attribute. If false, data attached
+                    to existing attributes will be overwritten with new data.                
             Outputs:
                 self.mapdict will be modified to incorporate the new attribute. 
         """
@@ -162,15 +165,35 @@ class Map:
         dta = data
         
         #If data is uniform, append attribute(s),data to path
-        if uniform==1:
+        if uniform==True:
             for feature in path:
                 feature["properties"][attrname] = dta
 
         else:
-            i = 0
             for feature in path:
-                feature["properties"][attrname] = dta[i]
-                i+=1
+                #Match data id/region name to feature id/region name
+                for tup in dta: 
+                    if (tup[0] == feature["properties"][self.idName]) or (tup[0]==feature["properties"][self.regionName)):
+                        if append==True:
+                            #Convert to list;
+                            #TODO generalize to exceptions
+                            try:
+                                feature['properties'][attrname]= list(feature['properties'][attrname])
+                            except TypeError:
+                                if feature['properties'][attrname]==None:
+                                    feature['properties'][attrname]=[]                   
+                            #Append data to end of list
+                            for i in range(1,len(tup)):
+                                feature["properties"][attrname].append(tup[i])
+                        else: 
+                            #Keep single data values as non-lists for now (?). 
+                            if len(tup)==2: 
+                                feature["properties"][attrname] = tup[1]
+                            #Only multiple data values in list form
+                            elif len(tup)>2:
+                                feature["properties"][attrname]=[]
+                                for i in range(1,len(tup)):
+                                    feature["properties"][attrname].append(tup[i])
 
 
     def renameAttr(self, oldname, newname):
@@ -188,7 +211,9 @@ class Map:
 
         
     def exportMapAsJSON(self, filename = None):
-        """Write map dictionary to geoJSON outfile."""
+        """Write map dictionary to geoJSON outfile.
+            filename - string
+        """
         if filename==None:
             filename = str(self.name) + '.geojson'
         with open(filename, 'w') as outfile:
@@ -196,42 +221,38 @@ class Map:
 
         outfile.close()
 
-#    def orderData(self, dataid, mapid, data)
+    def getDataFromCSV(self, filename, skip=0):
+        """Converts CSV data to list of (region/id, data) tuples. 
+            filename - string
+        """
+        with open(filename, 'r') as infile:
+            data = []
+            reader = csv.reader(infile)
+            for sk in range(skip):
+                reader.next()
 
-    def matchData(self, data, mapid):
-        newdata = []
-        i = 0
-        for d in mapid:
-            for pair in data:
-                if pair[0]==str(int(d)):
-                    newdata.append(pair[1])
-                    break
-                
-        return(newdata)
-        
+            for line in reader:
+                #Format items in each line
+                ln=[]
+                for item in line:
+                    item = item.strip()
+                    try:
+                        item=float(item)
+                    except ValueError:
+                        pass
+                    ln.append(item)
+                #Append to data list
+                data.append(tuple(ln))
 
-        
-
-
-
-
+        infile.close()                                                                     
+        return data
 
 
-            
-##            if idname==None:
-##                idcat = self.selectAttr()
-##                rgnids = self.queryAttr(idname)
-##            else:
-##                idcat = idname[0]
-##                rgnids = idname[1]
-##
-##            i = 0
-##            for feature in path:
-##                for rgn in rgnids:
-##                    if feature["properties"][idcat]==rgn:
-##                        feature["properties"][attrname] = data[i]
-##                        i+=1
-                    
+
+
+
+
+
                 
 
 ##        #Append non-uniform data to corresponding map region      
