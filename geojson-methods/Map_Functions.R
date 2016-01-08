@@ -1,11 +1,16 @@
 ##MAP FUNCTIONS 
 
+setwd('C:/Users/ledn787/Desktop/Visualization_Work/gcam-viz/')
+
 #Required libraries
 #------------------
 library("rgdal")
 library("ggplot2")
+library("ggalt")
 library("grid")
 library("RColorBrewer")
+library("rgeos")
+library("maptools")
 
 #-----------------
 #Graphics Specifications (for exporting finished maps)
@@ -36,7 +41,7 @@ Y.MIN<--90
 #Background
 PANEL_BORDER<-element_blank()
 PANEL_BACKGROUND<-element_blank()
-PANEL_GRID<-element_blank()
+PANEL_GRID<-element_line(colour = 'black')
 AXIS_TICKS<-element_blank()
 AXIS_TEXT<-element_blank()
 XLAB<-NULL
@@ -125,8 +130,7 @@ basemap<-function(map, save=0, mapname='map1', title=NULL){
   
   #Plot basic map features
   mp<-ggplot()+
-    geom_polygon(data=map, aes(x=long, y=lat, group=group), fill=RGN_FILL, color=LINE_COLOR,
-                 environment=environment())+
+    geom_polygon(data=map, aes(x=long, y=lat, group=group), fill=RGN_FILL, color=LINE_COLOR)+
     coord_equal(xlim=c(x1,x2), ylim=c(y1,y2))
 
   #Add thematic specifications
@@ -235,18 +239,29 @@ choropleth<-function(datatable, colname, save=0, mapname = 'map1', title='Map1',
 
 #-----------------------
 #Test Code
-#GCAM 32-region map w/o Taiwan - Choropleth 
-
-#Read in map
-gcam_map1<-readOGR(dsn = 'GCAM_32_wo_Taiwan.geojson', layer="OGRGeoJSON")
-
-#Convert to data frame
-gcam_map1_2<-fortify(gcam_map1, region = "GCAM_ID")
-
-#Load data file and match region name to gcam id
-df1<-addRegionID(datafile = '#INSERT DATA FILE HERE', lookupfile = 'GCAM_32_wo_TaiwanLookupTable.csv')
-
-#Merge the dataframes and plot as choropleth
-mp<-merge(x=gcam_map1_2, y=df1, by='id')
-mp1<-choropleth(mp, '#Name of data column in frame')
-
+# #GCAM 32-region map w/o Taiwan - Choropleth 
+# 
+# #Read in map
+# gcam_map1<-readOGR(dsn = 'input-data/rgn32/GCAM_32_wo_Taiwan_clean.geojson', layer="OGRGeoJSON")
+# 
+# gc1<-fortify(gcam_map1, region="GCAM_ID")
+# 
+# mp<-basemap(gc1)
+# mp<-mp+coord_proj("+proj=eck3")
+# 
+# mp
+# 
+# #Transform to Eckert III Projection
+# gcam_map1Eck3<-spTransform(gcam_map1,CRS("+proj=eck3 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
+# 
+#                            
+# #Convert to data frame
+# gcam_map1_2<-fortify(gcam_map1, region = "GCAM_ID")
+# 
+# #Load data file and match region name to gcam id
+# df1<-addRegionID(datafile = '#INSERT DATA FILE HERE', lookupfile = 'GCAM_32_wo_TaiwanLookupTable.csv')
+# 
+# #Merge the dataframes and plot as choropleth
+# mp<-merge(x=gcam_map1_2, y=df1, by='id')
+# mp1<-choropleth(mp, '#Name of data column in frame')
+# 

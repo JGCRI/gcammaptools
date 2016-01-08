@@ -13,7 +13,7 @@ import sys
 
 class Map:
 
-    def __init__(self, name, mapfile, rgnconfig, idName = "GCAM_ID", regionName ="REGION_NAME"):
+    def __init__(self, name, mapfile, idName = "GCAM_ID", regionName ="REGION_NAME"):
         """Initialize a geoJSON dictionary object of type 'Map' from geoJSON data.
             Inputs:
                 name - String giving map name. For use in saving files.
@@ -23,6 +23,7 @@ class Map:
                 idName - string denoting map's default region ID category.
                 regionName - string denoting map's default region name category
         """
+        #TODO file opening/closing, rgn config
         
         #Basic map features:
         self.name = name
@@ -39,7 +40,7 @@ class Map:
         mapfile.close()
 
 
-    def getAttrs(self):
+    def listAttrs(self):
         """Queries the map's geoJSON dictionary and returns a list of attributes.
         Assumes geoJSON path of ["features"][i]["properties"]. 
 
@@ -84,7 +85,7 @@ class Map:
         return attr
 
 
-    def queryAttr(self, attrname, attrid=None):
+    def queryAttr(self, attrname, l1name= 'properties', attrid=None):
         """Gets list of values associated with key attrname for each feature in map.
             Inputs:
                 attrname - key you want to query; string
@@ -99,15 +100,15 @@ class Map:
         if attrid==None:
             vals = []
             for feature in path:
-                vals.append(feature["properties"][attrname])
+                vals.append(feature[l1name][attrname])
 
             return(vals)
         else:
             vals = []
             val_id = []
             for feature in path:
-                vals.append(feature["properties"][attrname])
-                val_id.append(feature["properties"][attrid])
+                vals.append(feature[l1name][attrname])
+                val_id.append(feature[l1name][attrid])
             nvals = zip(val_id, vals)
 
             return(nvals)
@@ -173,7 +174,7 @@ class Map:
             for feature in path:
                 #Match data id/region name to feature id/region name
                 for tup in dta: 
-                    if (tup[0] == feature["properties"][self.idName]) or (tup[0]==feature["properties"][self.regionName)):
+                    if (tup[0] == feature["properties"][self.idName]) or (tup[0]==feature["properties"][self.regionName]):
                         if append==True:
                             #Convert to list;
                             #TODO generalize to exceptions
@@ -247,7 +248,16 @@ class Map:
         infile.close()                                                                     
         return data
 
+    def deleteAttr(self, attr):
+        """Deletes an attribute and associated data from the geoJSON dictionary.
+            attr - name of the attribute you want to delete (string)
+        """
 
+        path = self.mapdict["features"]
+
+        for feature in path:
+            del feature["properties"][attr]
+        
 
 
 
