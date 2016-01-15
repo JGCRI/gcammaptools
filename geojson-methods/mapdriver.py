@@ -9,9 +9,15 @@ from Map import Map
 file2 = open('../input-data/rgn32/GCAM_32_wo_Taiwan.geojson', 'r')
 map2 = Map('GCAM_32_wo_Taiwan', file2, './GCAM_32_wo_Taiwan.geojson', "GCAM_ID", "REGION_NAME")
 
-d=map2.getDataFromCSV('../input-data/dummy.csv', skip=1)
+map2.appendNewAttr("dummy", uniform=True)
+l = map2.listAttrs()
+print l
+l = map2.queryAttr("dummy")
+print l
+map2.deleteAttr("dummy")
+l = map2.listAttrs()
+print l
 
-print d
 
 
 ##print l
