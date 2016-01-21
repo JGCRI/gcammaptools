@@ -31,29 +31,89 @@ class Map:
         self.regionName = regionName
     
         #Load map as dictionary
-        self.mapdict = json.load(mapfile) 
-        
-        #Region configuration file path - path to outputs
+        self.mapdict = json.load(mapfile)
+
+        #Create GeoJSON Schema
+        #TODO: nlevels max level
+        #TODO: move to function; recursive? Automatically create nlevels?
+        #Do here or in init?
+        #Avoid L1,L2,L3 and have one nested dict?
+        self.level0_names = self.mapdict.keys()
+        self.level1_names = {}
+        for nm in self.level0_names:
+            try:         
+                self.level1_names[nm]=self.mapdict[nm].keys()
+            except AttributeError:
+                if type(self.mapdict[nm])==unicode:
+                    pass
+                elif type(self.mapdict[nm])==list:
+                    self.level1_names[nm] = self.mapdict[nm][0].keys()
+        self.level2_names = {}
+        for l1 in self.level1_names:
+            for l2 in self.level1_names[l1]:
+                try:
+                    self.level2_names[l2]= self.mapdict[l1][l2].keys()
+                except TypeError:
+                    if type(self.mapdict[l1])==list:
+                        try: 
+                            self.level2_names[l2]= self.mapdict[l1][0][l2].keys()
+                        except AttributeError:
+                            pass
+
+                        
+               #Region configuration file path - path to outputs
         ###To do - load up lookup and ordering info
         #sys.path.append(rgnconfig)
 
         mapfile.close()
 
 
-    def listAttrs(self):
+    def listAttrs(self, level):
         """Queries the map's geoJSON dictionary and returns a list of attributes.
         Assumes geoJSON path of ["features"][i]["properties"]. 
 
         Return value: attrs - list of attributes
         """
-         
-        path = self.mapdict["features"][0]["properties"]       
-        attrs = path.keys()
+        #Create GeoJSON Schema
+        #TODO: nlevels max level
+        #TODO: move to function; recursive? Automatically create nlevels?
+        #Do here or in init?
+        #Avoid L1,L2,L3 and have one nested dict?
+        
+        if level==0:
+           self.level0_names = self.mapdict.keys()
+           return self.level0_names
 
-        return attrs
+        elif level==1:
+            self.level1_names = {}
+            for nm in self.level0_names:
+                try:         
+                    self.level1_names[nm]=self.mapdict[nm].keys()
+                except AttributeError:
+                    if type(self.mapdict[nm])==unicode:
+                        pass
+                    elif type(self.mapdict[nm])==list:
+                        self.level1_names[nm] = self.mapdict[nm][0].keys()
+            return self.level1_names
+
+        elif level==2:
+            self.level2_names = {}
+            for l1 in self.level1_names:
+                for l2 in self.level1_names[l1]:
+                    try:
+                        self.level2_names[l2]= self.mapdict[l1][l2].keys()
+                    except TypeError:
+                        if type(self.mapdict[l1])==list:
+                            try: 
+                                self.level2_names[l2]= self.mapdict[l1][0][l2].keys()
+                            except AttributeError:
+                                pass
+            return(self.level2_names)
+
+        return(0)
 
     
-    def selectAttr(self, attrname=None):
+    def selectAttr(self, attrname=None,level=2):
         """Returns an attribute key either through querying attribute list and
             prompting user input or by direct assignment.
             
@@ -63,8 +123,9 @@ class Map:
                 value of attr will be None. 
             
         """
+        #IN PROGRESS
         #Get list of available attributes (default - properties)
-        attrlist = self.getAttrs()
+        attrlist = self.listAttrs(level)
         attr = None
 
         #Prompt for user input
@@ -144,9 +205,21 @@ class Map:
                     csv_out.writerow(row)
 
         return(lookup)
-        
 
-    def appendNewAttr(self, attrname, data=None, uniform=False, append=False):
+    def matchData(self, data):
+        ndata = []
+        for tup in data:
+            i = 0
+            for feature in self.mapdict["features"]:
+                i +=1
+                if feature["properties"][self.idName]==tup[0] or feature["properties"][self.regionName]==tup[0]:
+                    tup = tup + (i,)
+                    ndata.append(tup)
+        return(ndata)
+
+
+
+    def appendNewAttr(self, attrname, data=None, uniform=False, append=False, level=2, levelnames=['features','properties']):
         """Append new attribute(s) to the geoJSON dictionary along with associated data.
             Inputs:
                 attrname - Name of the attribute you want to append to (key). Does not have to exist in map already.
@@ -161,41 +234,85 @@ class Map:
             Outputs:
                 self.mapdict will be modified to incorporate the new attribute. 
         """
-
-        path = self.mapdict['features']
         dta = data
-        
-        #If data is uniform, append attribute(s),data to path
-        if uniform==True:
-            for feature in path:
-                feature["properties"][attrname] = dta
 
-        else:
-            for feature in path:
-                #Match data id/region name to feature id/region name
-                for tup in dta: 
-                    if (tup[0] == feature["properties"][self.idName]) or (tup[0]==feature["properties"][self.regionName]):
-                        if append==True:
-                            #Convert to list;
-                            #TODO generalize to exceptions
+        if level==0:
+            self.mapdict[attrname]=dta
+            
+        elif level==1:
+            try:
+                self.mapdict[levelnames[0]][attrname]==dta
+            except TypeError:
+                if type(self.mapdict[levelnames[0]])==list:
+                    if uniform==True:
+                        for feature in self.mapdict[levelnames[0]]:
+                            feature[attrname]=dta
+                    else:
+                        ndta = self.matchData(dta)
+
+                        for tup in ndta: 
+                            if append==True:
+                                try:
+                                    self.mapdict[levelnames[0]][tup[-1]][attrname]= list(self.mapdict[levelnames[0]][tup[-1]][attrname])
+                                except TypeError:
+                                    if self.mapdict[levelnames[0]][tup[-1]][attrname]==None:
+                                        self.mapdict[levelnames[0]][tup[-1]][attrname]=[]
+
+                                for i in range(1,len(tup)-1):
+                                    self.mapdict[levelnames[0]][tup[-1]][attrname].append(tup[i])
+
+                            else: 
+                                #Keep single data values as non-lists for now (?). 
+                                if len(tup)==3: 
+                                    self.mapdict[levelnames[0]][tup[-1]][attrname]==tup[1]
+
+                                #Only multiple data values in list form
+                                elif len(tup)>3:
+                                    self.mapdict[levelnames[0]][tup[-1]][attrname]=[]
+                                    for i in range(1,len(tup)-1):
+                                        self.mapdict[levelnames[0]][tup[-1]][attrname].append(tup[i])
+                            
+        elif level==2:
+            try:
+                self.mapdict[levelnames[0]][levelnames[1]][attrname]==dta
+            except TypeError:
+                if type(self.mapdict[levelnames[0]])==list:
+                    if uniform==True:
+                        for feature in self.mapdict[levelnames[0]]:
+                            feature[levelnames[1]][attrname]=dta
+                    else:
+                        j = 0
+                        for feat in self.mapdict["features"]: 
+                            if j>3:
+                                break
+                            
+                            featname = feat["properties"][self.regionName]
+                            print "Featname:",featname
+                            ndata = dta #Make a copy of data
+                            print len(ndata)
+                            
+                            #Remove all data not in region
+                            i = 0
+                            rgn = [x for x in ndata if x[0]==featname]
+                            print len(rgn)
+                        
+                            
+                            #Append data to feature
                             try:
-                                feature['properties'][attrname]= list(feature['properties'][attrname])
+                                feat[levelnames[1]][attrname]= list(feat[levelnames[1]][attrname])
                             except TypeError:
-                                if feature['properties'][attrname]==None:
-                                    feature['properties'][attrname]=[]                   
-                            #Append data to end of list
-                            for i in range(1,len(tup)):
-                                feature["properties"][attrname].append(tup[i])
-                        else: 
-                            #Keep single data values as non-lists for now (?). 
-                            if len(tup)==2: 
-                                feature["properties"][attrname] = tup[1]
-                            #Only multiple data values in list form
-                            elif len(tup)>2:
-                                feature["properties"][attrname]=[]
-                                for i in range(1,len(tup)):
-                                    feature["properties"][attrname].append(tup[i])
+                                if feat[levelnames[1]][attrname]==None:
+                                    feat[levelnames[1]][attrname]=[]
+                            except KeyError:
+                                feat[levelnames[1]][attrname] = []
 
+
+                            feat[levelnames[1]][attrname].extend(rgn)
+
+                            print len(feat[levelnames[1]][attrname])
+                            j+=1                         
+                            
+             
 
     def renameAttr(self, oldname, newname):
         """Renames an existing attribute. Assumes attribute is appended to
@@ -248,21 +365,38 @@ class Map:
         infile.close()                                                                     
         return data
 
-    def deleteAttr(self, attr):
+    def deleteAttr(self, level, attr):
         """Deletes an attribute and associated data from the geoJSON dictionary.
             attr - name of the attribute you want to delete (string)
         """
+        #TODO - Streamline and test
+        if level==0:
+            del self.mapdict[attr]
+        elif level==1:
+            for l0 in self.level1_names:
+                if attr in self.level1_names[l0]:
+                    try:
+                        del self.mapdict[l0][attr]
+                    except AttributeError:
+                        if type(self.mapdict[l0])==list:
+                            for i in self.mapdict[l0]:
+                                del i[attr]
+        elif level==2:
+            for l1 in self.level2_names:
+                if attr in self.level2_names[l1]:
+                    level1 = l1
+            for l0 in self.level1_names:
+                if level1 in self.level1_names[l0]:
+                    level0 = l0
 
-        path = self.mapdict["features"]
-
-        for feature in path:
-            del feature["properties"][attr]
-        
-
-
-
-
-
+            try:
+                del self.mapdict[level0][level1][attr]
+            except TypeError:
+                if type(self.mapdict[level0])==list:
+                    for i in self.mapdict[level0]:
+                        del i[level1][attr]
+        else:
+            return(0)
                 
 
 ##        #Append non-uniform data to corresponding map region      
@@ -500,6 +634,3 @@ class Map:
 ##file2.close()
 ##file3.close()
 ##file4.close()
-
-    
-        
