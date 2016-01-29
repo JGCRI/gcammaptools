@@ -2,110 +2,128 @@ import string
 import json
 import csv
 from Map import Map
-import numpy as np
-from parsebatch import parseBatchFile #Todo: relocate this
+from parsebatch import * #Todo: relocate this
 
 
-
-#Task: Add GCAM scenario data table to geoJSON file
-#Step 1: Format Map
+###Task: Add GCAM scenario data table to geoJSON file
+##Step 1: Format Map
 file1 = open('../input-data/rgn32/GCAM_32_wo_Taiwan_clean.geojson', 'r')
 map1 = Map('GCAM_32_wo_Taiwan', file1)
+file1.close()
 
-#Step 1a: Delete Coordinates
-map1.deleteAttr(level=2, attr="coordinates")
-#print map1.listAttrs(level=2)
+##Step 1a: Delete Coordinates
+    #map1.deleteAttr(level=2, attr="coordinates")
+    #print map1.listAttrs(level=2)
 
-#Step 1b: Add new level0 attributes
-yrs = [1990]
-yrs.extend(list(np.arange(2005,2105,5)))
-
-map1.appendNewAttr("years", yrs, level=0, levelnames=[])
-#print map1.listAttrs(level=0)
-#print map1.mapdict["years"]
-
-#Add scenario from data
-file2 = open("../input-data/sample_batch.csv", 'r')
-
-#New Function: Parse Batch output into tables.
-#Aggregate Batch Dictionary
+##Step 2: Add scenario from data
 batch = parseBatchFile("../input-data/sample_batch_2.csv")
 
-#Only want primary energy for reference scenario for now
-c = batch["primary_energy"]
-d = c.keys() #Scenario names list
-e = batch["primary_energy"][d[1]]
+#Pull out primary energy from default scenario
+quer = "primary_energy"
+data = extractQuery(batch, quer)
+ndata = data[0]
 
-#Add scenario name to map
-map1.appendNewAttr("scenario", d[1], level=0, levelnames=[])
-#print map1.listAttrs(level=0)
-#print map1.mapdict["scenario"]
+#Add scenario name, years to map
+map1.appendNewAttr("scenario", data[1], level=0, levelnames=[])
+map1.appendNewAttr("years", data[2], level=0, levelnames=[])
 
 #Create "primary_energy" tag for each region
-map1.appendNewAttr("primary_energy", {}, level=1, uniform=True,levelnames=["features"])
-print map1.listAttrs(level=1)
+map1.appendNewAttr(quer, {}, level=1,levelnames=["features"])
 
-#Clean primary energy function data
-for key in e.keys():
-    if key=="":
-        del e[key]
+#Order and append ndata
+order = [i["properties"]["REGION_NAME"] for i in map1.mapdict["features"]]
 
-regions = e["region"]
+###Uncleaned work below
+#Sort ndata by order
+def sort_tups(master, tuplist, id1):
+    norder = []
+    
+    for m in master:
+        j = 0
+        for tup in tuplist:
+            #print len(tuplist)
+            if tup[id1] not in master:
+                pass
+            
+            if tup[id1] == m:
+                norder.append(tup)
+                break
 
-#Reformat output because parse function not right yet. 
-ndict = {}
-for region in regions:
-    ndict[region]={}
-    for key in e.keys():
-        try: 
-            if int(key) in yrs:
-                dta = zip(e["region"], e["fuel"], e[key])
-                for tup in dta:
-                    if tup[0]==region and tup[1] not in ndict[region].keys():
-                        ndict[region][tup[1]] = tup
-                    elif tup[0]==region and tup[1] in ndict[region].keys():
-                        ndict[region][tup[1]] = ndict[region][tup[1]] + (tup[2],)
-        except ValueError:
-            pass
+            else:
+                j +=1
+            if j==len(tuplist):
+                norder.append(tuple(["#N/A"]))
 
-#Now extract all the tuples
-ndata = []
-for region in ndict.keys():
-    for fuel in ndict[region].keys(): 
-        ndata.append(ndict[region][fuel])
-  
-#map1.appendNewAttr("fuel", [], level=2, uniform=True, levelnames=["features", "primary_energy"])
+    return norder
 
-map1.appendNewAttr("fuel", ndata, level=2, uniform=False, levelnames=["features", "primary_energy"])
+b = [d[1] for d in ndata]
+b = list(set(b))
+
+dat = [tup for tup in ndata if tup[1]=="Oil"]
+a = sort_tups(order,dat,0)
+
+##e = set(i[0] for i in a)
+##f = set(order)
+###print e.difference(f)
+###print f.difference(e)
+##
+##for fuel in b:
+##    map1.appendNewAttr(fuel, None, level=2, levelnames=["features", "primary_energy"])
+##
+##mp = map1.mod_dict(obj=map1.mapdict, target_path = ["features", [], "primary_energy", "Oil"], data=a)
+##
+##for fuel in b[1:]:
+##    dat = [tup for tup in ndata if tup[1]==fuel]
+##    a = sort_tups(order, dat, 0)
+##    mp = map1.mod_dict(obj=mp, target_path = ["features", [], "primary_energy", fuel], data=a)
+##
+##map1.mapdict = mp
+##map1.exportMapAsJSON("GCAM_32_primary_energy_2.geojson")
+
+#TEST code:
+##
+##def compare_features(obj, l):
+##    for feature in obj:
+##        for b in obj:
+##            if feature["properties"]["REGION_NAME"] == b["properties"]["REGION_NAME"]:
+##                for fuel in l:
+##                    try:
+##                        assert(feature["primary_energy"][fuel]==b["primary_energy"][fuel])
+##                    except AssertionError:
+##                        print feature["properties"]["REGION_NAME"], b["properties"]["REGION_NAME"], feature["primary_energy"][fuel], b["primary_energy"][fuel]
+##            else:
+##                for fuel in l:
+##                    try: 
+##                        assert(feature["primary_energy"][fuel]!=b["primary_energy"][fuel])
+##                    except AssertionError:
+##                        if fuel=="Other":#some fuels have value 0; ignore
+##                            pass
+##                        else:
+##                            print feature["properties"]["REGION_NAME"], b["properties"]["REGION_NAME"], feature["primary_energy"][fuel], b["primary_energy"][fuel]
+##
+##
+##compare_features(mp["features"], b)
+##
+##def check_names(obj):
+##    i = 0
+##    for feature in obj:
+##        for tup in feature["primary_energy"]["fuel"]:
+##            if feature["properties"]["REGION_NAME"] != tup[0]:
+##                print i, feature["properties"]["REGION_NAME"], tup[0]
+##                
+##        i +=1
+##
+##
+###check_names(mp["features"])
+##        
+###print a                 
+###b = [t[0] for t in a]
+##
+##
+###b = map1.mod_dict(obj=map1.mapdict, target_path=["features", [], "primary_energy", "fuel"], data=a)
 
 
-
-
-#print x1990
-#print e.keys()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##map2.appendNewAttr(map2.idName, m, uniform=0)
+#map2.appendNewAttr(map2.idName, m, uniform=0)
 ##
 ##with open('./input-data/rgn14/RgnNamesGCAM14.txt', 'r') as file3:
 ##    csv_reader = csv.DictReader(file3)
@@ -229,6 +247,6 @@ map1.appendNewAttr("fuel", ndata, level=2, uniform=False, levelnames=["features"
 
 
 
-file1.close()
+
 #file3.close()
 

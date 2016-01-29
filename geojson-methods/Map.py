@@ -67,13 +67,137 @@ class Map:
 
         mapfile.close()
 
+    def traverse(self, obj, path=None, func=None, data=None):
+        """Generalized function to recursively loop through and replicate geoJSON dictionary. Helper function for
+            mod_dict. 
+                obj - geoJSON dictionary
+                path - recursively builds a path through dictionary. Should initially be set to None.
+                    Note that path changes throughout recursive function; this is intentional.
+                func - A function to modify values in the dictionary. Can be targeted to path in
+                    mod_dict.
+                    
+            Returns geoJSON dictionary (with modified values specified by func).
 
-    def listAttrs(self, level):
+            Credit for code: http://nvie.com/posts/modifying-deeply-nested-structures/
+                Note: do we need to ask for permission?
+        """
+        
+        #Initialize path. Path should be set to None when calling the function for the first time.clock
+        if path is None:
+            path = []
+        
+        #If obj is dictionary, recursively loop through k,v, adding to path until terminal value is reached
+        if isinstance(obj, dict):
+            value = {k: self.traverse(v, path + [k], func, data)
+                     for k,v in obj.items()}
+
+        #If object is list, recursively loop through items in list, adding to path until 
+        elif isinstance(obj, list):
+            value = [self.traverse(elem, path + [[]], func, data)
+                     for elem in obj]
+
+
+        #Terminal value for recursion: if obj is not a dict or list
+        else:
+             value = obj
+
+        if func == None:
+            return value
+        else:
+            return func(path, value, data)
+
+
+    def get_path(self, obj, tup, index):
+        """Finds a path to a unique value in a dictionary. Value cannot be a key. 
+        """
+
+        target_value = tup[index]
+        
+        def find_path(path, value): 
+            if value == target_value:
+                found = 1
+                return path, found
+            else:
+                found = 0
+##
+##        while found = 0:
+##
+##            if type(obj) == dict:
+##                
+##    
+##            
+##
+##
+##        return self.traverse(obj, func = find_path)
+
+
+
+    def mod_dict(self, obj, target_path, data):
+        """Utilizes traverse function to build copy of obj (geoJSON dictionary),
+            modified at certain values.
+
+            obj - geoJSON dictionary
+            target_path - path to items you want to modify. List form. If path leads to a list,
+                use [] to denote stepping into list elements.
+
+            mod - function used to modify items in target path. 
+
+            Credit again to: http://nvie.com/posts/modifying-deeply-nested-structures/
+        """
+
+        #match_path function is called for every path/value in geoJSON object
+        #mod is applied only to values that are in target path
+        #Works only for terminal strings or ints/floats
+        self.data= data
+        self.region_names = list(set([feature["properties"]["REGION_NAME"] for feature in self.mapdict["features"]
+                                 if feature["properties"]["REGION_NAME"]!= "#N/A"]))        
+        def match_val(path, value, data):
+
+            if path == target_path:
+                if value==None:
+                    try:
+                        value = self.data[0][2:]
+                    except IndexError:
+                        value = [self.data[0]]
+                                    
+                else:
+                    value.extend(self.data[0][2:])
+                    
+                self.data = self.data[1:]
+                return value
+            else:
+                return value
+
+        return self.traverse(obj, func=match_val, data=self.data)
+
+
+    def mod(self, value):
+        
+        value.append(8)
+        return value
+
+
+
+
+    def listAttrs(self, obj, target_path):
         """Queries the map's geoJSON dictionary and returns a list of attributes.
         Assumes geoJSON path of ["features"][i]["properties"]. 
 
         Return value: attrs - list of attributes
         """
+##
+##        #Add values in target path to list
+##        def match_path(path, value,l=[]):
+##            if path == target_path:
+##                l.append(value)
+##            return l
+##            
+##            
+##        return self.traverse(obj, func=match_path)
+##
+##
+
+
         #Create GeoJSON Schema
         #TODO: nlevels max level
         #TODO: move to function; recursive? Automatically create nlevels?
@@ -219,7 +343,7 @@ class Map:
 
 
 
-    def appendNewAttr(self, attrname, data=None, uniform=False, append=False, level=2, levelnames=['features','properties']):
+    def appendNewAttr(self, attrname, data=None, level=2, levelnames=None):
         """Append new attribute(s) to the geoJSON dictionary along with associated data.
             Inputs:
                 attrname - Name of the attribute you want to append to (key). Does not have to exist in map already.
@@ -235,6 +359,8 @@ class Map:
                 self.mapdict will be modified to incorporate the new attribute. 
         """
         dta = data
+        if levelnames == None:
+            levelnames = ["features", "properties"]
 
         if level==0:
             self.mapdict[attrname]=dta
@@ -244,73 +370,74 @@ class Map:
                 self.mapdict[levelnames[0]][attrname]==dta
             except TypeError:
                 if type(self.mapdict[levelnames[0]])==list:
-                    if uniform==True:
-                        for feature in self.mapdict[levelnames[0]]:
-                            feature[attrname]=dta
-                    else:
-                        ndta = self.matchData(dta)
-
-                        for tup in ndta: 
-                            if append==True:
-                                try:
-                                    self.mapdict[levelnames[0]][tup[-1]][attrname]= list(self.mapdict[levelnames[0]][tup[-1]][attrname])
-                                except TypeError:
-                                    if self.mapdict[levelnames[0]][tup[-1]][attrname]==None:
-                                        self.mapdict[levelnames[0]][tup[-1]][attrname]=[]
-
-                                for i in range(1,len(tup)-1):
-                                    self.mapdict[levelnames[0]][tup[-1]][attrname].append(tup[i])
-
-                            else: 
-                                #Keep single data values as non-lists for now (?). 
-                                if len(tup)==3: 
-                                    self.mapdict[levelnames[0]][tup[-1]][attrname]==tup[1]
-
-                                #Only multiple data values in list form
-                                elif len(tup)>3:
-                                    self.mapdict[levelnames[0]][tup[-1]][attrname]=[]
-                                    for i in range(1,len(tup)-1):
-                                        self.mapdict[levelnames[0]][tup[-1]][attrname].append(tup[i])
+             #       if uniform==True:
+                    for feature in self.mapdict[levelnames[0]]:
+                        feature[attrname]=dta
+##                    else:
+##                        ndta = self.matchData(dta)
+##
+##                        for tup in ndta: 
+##                            if append==True:
+##                                try:
+##                                    self.mapdict[levelnames[0]][tup[-1]][attrname]= list(self.mapdict[levelnames[0]][tup[-1]][attrname])
+##                                except TypeError:
+##                                    if self.mapdict[levelnames[0]][tup[-1]][attrname]==None:
+##                                        self.mapdict[levelnames[0]][tup[-1]][attrname]=[]
+##
+##                                for i in range(1,len(tup)-1):
+##                                    self.mapdict[levelnames[0]][tup[-1]][attrname].append(tup[i])
+##
+##                            else: 
+##                                #Keep single data values as non-lists for now (?). 
+##                                if len(tup)==3: 
+##                                    self.mapdict[levelnames[0]][tup[-1]][attrname]==tup[1]
+##
+##                                #Only multiple data values in list form
+##                                elif len(tup)>3:
+##                                    self.mapdict[levelnames[0]][tup[-1]][attrname]=[]
+##                                    for i in range(1,len(tup)-1):
+##                                        self.mapdict[levelnames[0]][tup[-1]][attrname].append(tup[i])
                             
         elif level==2:
             try:
                 self.mapdict[levelnames[0]][levelnames[1]][attrname]==dta
             except TypeError:
                 if type(self.mapdict[levelnames[0]])==list:
-                    if uniform==True:
-                        for feature in self.mapdict[levelnames[0]]:
-                            feature[levelnames[1]][attrname]=dta
-                    else:
-                        j = 0
-                        for feat in self.mapdict["features"]: 
-                            if j>3:
-                                break
-                            
-                            featname = feat["properties"][self.regionName]
-                            print "Featname:",featname
-                            ndata = dta #Make a copy of data
-                            print len(ndata)
-                            
-                            #Remove all data not in region
-                            i = 0
-                            rgn = [x for x in ndata if x[0]==featname]
-                            print len(rgn)
-                        
-                            
-                            #Append data to feature
-                            try:
-                                feat[levelnames[1]][attrname]= list(feat[levelnames[1]][attrname])
-                            except TypeError:
-                                if feat[levelnames[1]][attrname]==None:
-                                    feat[levelnames[1]][attrname]=[]
-                            except KeyError:
-                                feat[levelnames[1]][attrname] = []
-
-
-                            feat[levelnames[1]][attrname].extend(rgn)
-
-                            print len(feat[levelnames[1]][attrname])
-                            j+=1                         
+          #          if uniform==True:
+                    for feature in self.mapdict[levelnames[0]]:
+                        feature[levelnames[1]][attrname]=dta
+##                    else:
+##                        j = 0
+##                        for feat in self.mapdict["features"]: 
+##                            if j>3:
+##                                break
+##                            
+##                            featname = feat["properties"][self.regionName]
+##                            print "Featname:",featname
+##                            ndata = dta #Make a copy of data
+##                            print len(ndata)
+##                            
+##                            #Remove all data not in region
+##                            i = 0
+##                            rgn = [x for x in ndata if x[0]==featname]
+##                            print len(rgn)
+##                            print rgn[0][0]
+##                            
+##                            #Append data to feature
+##                            try:
+##                                feat[levelnames[1]][attrname]= list(feat[levelnames[1]][attrname])
+##                                
+##                            except TypeError:
+##                                if feat[levelnames[1]][attrname]==None:
+##                                    feat[levelnames[1]][attrname]=[]
+##
+##                            except KeyError:
+##                                feat[levelnames[1]][attrname] = []
+##
+##                            feat[levelnames[1]][attrname].extend(rgn)
+##
+##                            print len(feat[levelnames[1]][attrname]["data"])
+##                            j+=1                         
                             
              
 
