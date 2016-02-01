@@ -38,6 +38,10 @@ mp1
 mp2<-basemap_world(gc1, save=1, prj=robin, title="Robinson World", fn="Robin")
 mp2
 
+#Robin Qualitative
+mp2<-qualMap(gc1, "world", prj=robin, title= "Robinson World", fn="Robin_col")
+mp2
+
 #Map 1C: Winkel-Tripel
 mp3<-basemap_world(gc1, save=1, prj=wintri, title="Winkel-Tripel World", fn="WinTri")
 mp3
@@ -57,6 +61,14 @@ mp5
 
 
 #MAPSET 3: Latin America, Africa Superregions (Ortho)
+mp6<-basemap_regional(gc1, extent=EXTENT_AFRICA, lims=LIMS_AFRICA, orientation=ORIENTATION_AFRICA, prj="orthographic", save=1, title= "Africa Orthographic", fn="Africa_ortho")
+mp6
+
+mp7<-basemap_regional(gc1, extent=EXTENT_LA, orientation= ORIENTATION_LA, prj="orthographic", save=1, title="Latin America Orthographic", fn="LA_ortho2")
+mp7
+  
+
+
 #MAPSET 4: Polar (??)
 
 
