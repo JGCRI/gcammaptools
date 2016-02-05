@@ -34,7 +34,9 @@ map1.appendNewAttr(quer, {}, level=1,levelnames=["features"])
 order = [i["properties"]["REGION_NAME"] for i in map1.mapdict["features"]]
 
 ###Uncleaned work below
-#Sort ndata by order
+#Sort ndata by order of features in map
+#Q: dictionaries don't preserve order, right?
+
 def sort_tups(master, tuplist, id1):
     norder = []
     
@@ -123,6 +125,10 @@ a = sort_tups(order,dat,0)
 ###b = map1.mod_dict(obj=map1.mapdict, target_path=["features", [], "primary_energy", "fuel"], data=a)
 
 
+
+#-------------------------------------------------------------
+###Old, extraneous code
+###TODO : figure out where this should go
 #map2.appendNewAttr(map2.idName, m, uniform=0)
 ##
 ##with open('./input-data/rgn14/RgnNamesGCAM14.txt', 'r') as file3:

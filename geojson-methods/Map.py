@@ -67,7 +67,7 @@ class Map:
 
         mapfile.close()
 
-    def traverse(self, obj, path=None, func=None, data=None):
+    def traverse(self, obj, path=None, func=None):
         """Generalized function to recursively loop through and replicate geoJSON dictionary. Helper function for
             mod_dict. 
                 obj - geoJSON dictionary
@@ -82,18 +82,19 @@ class Map:
                 Note: do we need to ask for permission?
         """
         
-        #Initialize path. Path should be set to None when calling the function for the first time.clock
+        #Initialize path. Path should be set to None when calling the function; will change in recursive calls 
         if path is None:
             path = []
         
         #If obj is dictionary, recursively loop through k,v, adding to path until terminal value is reached
         if isinstance(obj, dict):
-            value = {k: self.traverse(v, path + [k], func, data)
+            value = {k: self.traverse(v, path + [k], func)
                      for k,v in obj.items()}
 
-        #If object is list, recursively loop through items in list, adding to path until 
+        #If object is list, recursively loop through items in list, adding to path until
+        #terminal value is reached
         elif isinstance(obj, list):
-            value = [self.traverse(elem, path + [[]], func, data)
+            value = [self.traverse(elem, path + [[]], func)
                      for elem in obj]
 
 
@@ -101,10 +102,11 @@ class Map:
         else:
              value = obj
 
+        #Apply function to terminal value or return as-is
         if func == None:
             return value
         else:
-            return func(path, value, data)
+            return func(path, value)
 
 
     def get_path(self, obj, tup, index):
@@ -145,13 +147,13 @@ class Map:
             Credit again to: http://nvie.com/posts/modifying-deeply-nested-structures/
         """
 
-        #match_path function is called for every path/value in geoJSON object
-        #mod is applied only to values that are in target path
+        #match_val function is called for every path/value in geoJSON object
         #Works only for terminal strings or ints/floats
         self.data= data
-        self.region_names = list(set([feature["properties"]["REGION_NAME"] for feature in self.mapdict["features"]
-                                 if feature["properties"]["REGION_NAME"]!= "#N/A"]))        
-        def match_val(path, value, data):
+        #self.region_names = list(set([feature["properties"]["REGION_NAME"] for feature in self.mapdict["features"]
+        #                         if feature["properties"]["REGION_NAME"]!= "#N/A"]))        
+
+        def match_val(path, value):
 
             if path == target_path:
                 if value==None:
@@ -168,15 +170,7 @@ class Map:
             else:
                 return value
 
-        return self.traverse(obj, func=match_val, data=self.data)
-
-
-    def mod(self, value):
-        
-        value.append(8)
-        return value
-
-
+        return self.traverse(obj, func=match_val)
 
 
     def listAttrs(self, obj, target_path):

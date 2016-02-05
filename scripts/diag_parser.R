@@ -96,7 +96,7 @@ parse_mi_output <- function( fn ) {
       printlog( "Table", i, "name is", table_name )
       
       #Get rid of "X" in year names
-      names(tempdata)<-ifelse(grepl("X2"|"X1", names(tempdata)), sub("X","",names(tempdata)), names(tempdata))
+      #names(tempdata)<-ifelse(grepl("(X2)|(X1)", names(tempdata)), sub("X","",names(tempdata)), names(tempdata))
       
       
       tables[[ table_name ]] <- tempdata
