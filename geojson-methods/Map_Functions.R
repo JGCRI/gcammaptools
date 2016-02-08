@@ -19,13 +19,76 @@ library("RColorBrewer")
 library("maptools")
 
 #---------------------------------------------------------------------------
-#DATA PROCESSING FUNCTIONS
+# DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
 
-addRegionID<-function(datatable, lookupfile='RgnNames.txt', provincefile='none', drops='none') {
-  #Add region ID to data table using lookup file
-  #TODO: Generalize this to multiple types of data file returned; have result be 
-  #standardized output table. 
+process_batch_q<-function(batchq, query, scen, filters, func=sum){
+  ### Extract a query from a list of queries and filter to desired output.
+  ### Allows for simple transformations on data (sum, mean, stdev, etc)
+  ### Inputs: 
+  ###   batchq - the output from parse_mi_output; a list of tables of queries.
+  ###   query - the name of the table you would like to select from batchq
+  ###   scen - the name of the scenario; can be partial
+  ###   filters - a named vector of filtering criteria, in the form: 
+  ###           "c(header1 = value1, header2 = value2, ...), where headers
+  ###           are the names of columns in the data frame. If aggregating data,
+  ###           use the value "Aggregate". 
+  ###   func - optional; specify the operation you would like to perform on the
+  ###           aggregated data (e.g. mean, sum, etc.)
+  ### Outputs: 
+  ###   qdata - a data frame of filtered query data. 
+  
+  qdata<-as.data.frame(batchq[[query]])
+  
+  #Filter for scenario; allow partial lookup
+  #Bug: if partial has multiple matches, will return multiple scenarios
+  qdata<-qdata[grepl(scen, qdata$scenario),]
+  
+  #Fix units -- some have zero value; get rid of that. 
+  unit<-as.character(unique(qdata$Units[qdata$Units!=0]))
+  qdata$Units=unit
+  
+  #Get years and aggregate value if applicable
+  years<-grep("(X1)|(X2)", names(qdata), value=T)
+  ag<-names(filters[filters[names(filters)]=="Aggregate"]) #Super clunky
+  
+  nms<-!(names(qdata) %in% years| names(qdata) %in% ag) 
+  
+  #Filter to query of interest using filters 
+  for (name in names(filters)){
+    if (filters[[name]]=="Aggregate"){
+      qdata<-aggregate(qdata[years], by=qdata[nms], FUN=func)
+      qdata[[ag]]<-"All"
+    }
+    else{
+      qdata<-qdata[qdata[[name]]==filters[[name]],]
+    }
+  }
+  
+  return(qdata)
+  
+}
+
+#Examples
+#t<-process_batch_q(tables, "electricity", "Reference", c(region="Africa_Eastern", technology="Aggregate"))
+#u<-process_batch_q(tables, "electricity", "Reference", c(technology="Hydro"))
+#v<-process_batch_q(tables, "electricity", "Reference", c(technology="Aggregate"))
+#w<-process_batch_q(tables, "electricity", "Reference", c(technology="Aggregate"), func=mean)
+
+
+#TODO - modify to search for appropriate lookup, province, drop files in directory. 
+addRegionID<-function(datatable, lookupfile, provincefile='none', drops='none') {
+  ### Match GCAM ID to region using lookup file. Last data processing step 
+  ###   before joining GCAM scenario data to geoJSON map.
+  ###   Could just join by region, but prefer to avoid possible spelling 
+  ###   issues. 
+  ### Inputs: 
+  ###   datatable - a query data frame processed with process_batch_q
+  ###   lookupfile - path to the lookup file for the geoJSON map
+  ###   provincefile - path to the province translation file, if applicable
+  ###   drops - path to the drop regions file, if applicable
+  ### Outputs: 
+  ###   finaltable - a data frame with GCAM ID attached to each region. 
   
   if (provincefile != 'none'){
     datatable<-translateProvince(datatable, provincefile)
@@ -60,26 +123,41 @@ addRegionID<-function(datatable, lookupfile='RgnNames.txt', provincefile='none',
 }
 #---------------------------------------------------------------------------
 
-translateProvince<-function(datafile, provincefile){
-  #Replace province abbreviations with full province names
-  datatable<-read.csv(datafile, strip.white=T)
+translateProvince<-function(datatable, provincefile){
+  ### Replace province abbreviations with full province names
+  ### to ensure matching with GCAM map names. 
+  ### Inputs: 
+  ###   datatable - data frame of query from batch query CSV. 
+  ###   provincefile - file with abbreviations and full names of regions. 
+  ### Outputs: 
+  ###   datatable - datatable modified so that abbreviations are now full names. 
+
   provincetable<-read.csv(provincefile, strip.white=T)
   
-  datatable$region<-as.character(datatable$region)
+  #Differentiate region-Region issue
+  if ("Region" %in% names(datatable)){
+    rgn<-"Region"
+  } else{
+    rgn<-"region"
+  }
+  
+  datatable$rgn<-as.character(datatable$rgn)
   provincetable$province<-as.character(provincetable$province)
   provincetable$province.name<-as.character(provincetable$province.name)
   
-  datatable$region<-ifelse(is.na(provincetable$province.name[match(datatable$region, provincetable$province)]), 
-                           datatable$region, 
-                           provincetable$province.name[match(datatable$region, provincetable$province)])
+  datatable$rgn<-ifelse(is.na(provincetable$province.name[match(datatable$rgn, provincetable$province)]), 
+                           datatable$rgn, 
+                           provincetable$province.name[match(datatable$rgn, provincetable$province)])
   
   return(datatable)
 } 
 
 #---------------------------------------------------------------------------
 
+#TODO - docstring
 dropRegions<-function(datatable, drops){
-  #Drop regions listed in drops file from data frame
+  ### Drop regions listed in drops file from data frame
+  
   dr<-read.csv(drops, strip.white=T, header=F)
   dr<-as.character(dr$V1)
 
@@ -96,6 +174,7 @@ dropRegions<-function(datatable, drops){
 # MAPPING UTILS
 #---------------------------------------------------------------------------
 # ##TODO - create border around ellipses
+
 # get_bbox_polys - Returns a list of polygons that intersect bounding box
 # params: dataset - dataframe of map geometry created with fortify function
 #        bbox - numeric vector (long_min, long_max, lat_min, lat_max)
@@ -148,6 +227,10 @@ gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
 
 #------------------------------------------------------------------
 # calc_breaks - Calculate legend breaks
+# params: mapdata - data frame of geometric + 
+#         colname - 
+#         nbreaks - 
+# return value - 
 calc_breaks<-function(mapdata, colname, nbreaks=4){
   #Convert data of interest to numeric
   mapdata[, colname]<-as.numeric(mapdata[,colname])
@@ -248,6 +331,7 @@ data_trans<-function(dataset, colname, fcn){
 
 plot_basic<-function(dta,extent=EXTENT_WORLD){
   #Generate graticule
+  
   grat<-gen_grat()
   
   #Get polygons that fall within bounding box
@@ -263,7 +347,7 @@ plot_basic<-function(dta,extent=EXTENT_WORLD){
 
 #-----------------------------------------------------------------
 
-project_map<-function(mp, prj, extent){
+project_map<-function(mp, prj, extent, orientation=NULL){
   if (grepl("ortho",prj)){
     mp<-mp+
       coord_map(proj="orthographic", orientation=orientation, xlim=c(extent[1], extent[2]), 
@@ -321,79 +405,49 @@ basemap<-function(dta, prj=robin, extent=EXTENT_WORLD, title=NULL, orientation=N
 #    Colored by region   
 #
 
-qualMap<-function(dta, prj, palette, extent=EXTENT_WORLD, orientation= NULL, title=NULL){
+qualMap<-function(dta, prj, colors, colname="id", extent=EXTENT_WORLD, orientation= NULL, title=NULL){
+  #Get polygons that fall within bounding box
+  mappolys<-get_bbox_polys(dataset = mapdata, bbox = extent)
   
-  mp<-plot_basic(dta, extent)
+  mp<-plot_basic(mappolys, extent)
 
   mp<-mp+
-    geom_polygon(data=dta, aes(x=long,y=lat,group=group, factor(id), fill=factor(id)), color=LINE_COLOR)+
-    scale_fill_manual(values=palette)
+    geom_polygon(data=mappolys, aes_string(x='long',y='lat',group='group', factor(colname), fill=factor(colname)), 
+                 color=LINE_COLOR)+
+    scale_fill_manual(values=colors)
   
   mp<-project_map(mp, prj, extent)
-  
   mp<-add_theme(mp, title)
     
   return(mp)
 }
 
 #-----------------------------------------------------------------
-# map_sequential - Visualize sequential data 
+# map_query
 
-map_sequential<-function(mapdata, colname, prj=robin, extent=EXTENT_WORLD, orientation=NULL, title=NULL, qtitle=NULL){
+map_query<-function(mapdata, colname, colors, xform= identity, values=NULL, prj=robin, 
+                    extent=EXTENT_WORLD, orientation=NULL, title=NULL, qtitle=NULL){
   #Convert data of interest to numeric
   mapdata[, colname]<-as.numeric(mapdata[,colname])
   
   #Get polygons that fall within bounding box
   mappolys<-get_bbox_polys(dataset = mapdata, bbox = extent)
   
-  mp<-plot_basic(mapdata, extent)
+  mp<-plot_basic(mappolys, extent) #Mapdata or mappolys? 
   
-  #Plot grat and polgyons
+  mappolys[[colname]]<-xform(mappolys[[colname]])
+  
+  #Plot data
   mp<-mp+
       geom_polygon(data = mappolys,aes_string("long", "lat", group="group", fill=colname), 
                  color=LINE_COLOR)+
-    
-    #Would really like to make this modular (i.e. can figure out in fcn whether continuous,diverging)
-    scale_fill_gradient(name=qtitle, low=LOW_COLOR, high=HIGH_COLOR, guide = 'colourbar', 
+    scale_fill_gradientn(name=qtitle, colors=colors, values=values, guide = GUIDE, space=SPACE,
                       na.value = NA_VAL, breaks=calc_breaks(mappolys,colname),
-                      labels=c(calc_breaks(mappolys,colname))) #Need fcn for factor to divide by
+                      labels=c(calc_breaks(mappolys,colname)))  #Need fcn for factor to divide by
                       
-  
   #Reproject map
-  mp<-project_map(mp, prj, extent)
+  mp<-project_map(mp, prj, extent, orientation)
   mp<-add_theme(mp, title)
-  
-  return(mp)
-  
-}
-#-----------------------------------------------------------------
-# map_diverging - Visualize diverging data
-
-map_diverging<-function(mapdata, colname, prj=robin, extent=EXTENT_WORLD, orientation=NULL, title=NULL, qtitle=NULL){
-  #Convert data of interest to numeric
-  mapdata[, colname]<-as.numeric(mapdata[,colname])
-  
-  #Get polygons that fall within bounding box
-  mappolys<-get_bbox_polys(dataset = mapdata, bbox = extent)
-  
-  mp<-plot_basic(mapdata, extent)
-  
-  #Plot
-  mp<-mp+
-      geom_polygon(data = mappolys,aes_string("long", "lat", group="group", fill=colname), #Add calculation function for fill
-                 color=LINE_COLOR)+
-    
-    #Would really like to make this modular (i.e. can figure out in fcn whether continuous,diverging)
-    scale_fill_gradient2(name=qtitle, low="blue", mid="white", high="purple", guide = 'colourbar',
-                         midpoint=calc_fcn(mappolys, colname, mean),
-                        na.value = NA_VAL, breaks=calc_breaks(mappolys,colname),
-                        labels=c(calc_breaks(mappolys,colname)))#Need fcn for factor to divide by
-  
-  mp<-project_map(mp, prj, extent)
-
-  # Thematic details
-  mp<-add_theme(mp, title)
-  
   
   return(mp)
   

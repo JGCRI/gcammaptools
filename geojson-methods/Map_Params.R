@@ -60,6 +60,8 @@ EXTENT_LA<-c(-120,-30,-60,40)
 LINE_COLOR<-"black"
 RGN_FILL<-"grey"
 LINE_GRAT<-"grey50"
+GUIDE="colourbar"
+SPACE="Lab"
 
 #TODO - ALTER to inc. colorschemes
 #Choropleth Colors - 
