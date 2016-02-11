@@ -69,13 +69,6 @@ process_batch_q<-function(batchq, query, scen, filters, func=sum){
   
 }
 
-#Examples
-#t<-process_batch_q(tables, "electricity", "Reference", c(region="Africa_Eastern", technology="Aggregate"))
-#u<-process_batch_q(tables, "electricity", "Reference", c(technology="Hydro"))
-#v<-process_batch_q(tables, "electricity", "Reference", c(technology="Aggregate"))
-#w<-process_batch_q(tables, "electricity", "Reference", c(technology="Aggregate"), func=mean)
-
-
 #TODO - modify to search for appropriate lookup, province, drop files in directory. 
 addRegionID<-function(datatable, lookupfile, provincefile='none', drops='none') {
   ### Match GCAM ID to region using lookup file. Last data processing step 
@@ -84,9 +77,9 @@ addRegionID<-function(datatable, lookupfile, provincefile='none', drops='none') 
   ###   issues. 
   ### Inputs: 
   ###   datatable - a query data frame processed with process_batch_q
-  ###   lookupfile - path to the lookup file for the geoJSON map
-  ###   provincefile - path to the province translation file, if applicable
-  ###   drops - path to the drop regions file, if applicable
+  ###   lookupfile - string; path to the lookup file for the geoJSON map
+  ###   provincefile - string; path to the province translation file, if applicable
+  ###   drops - string; path to the drop regions file, if applicable
   ### Outputs: 
   ###   finaltable - a data frame with GCAM ID attached to each region. 
   
@@ -121,14 +114,13 @@ addRegionID<-function(datatable, lookupfile, provincefile='none', drops='none') 
   
   return(finaltable)
 }
-#---------------------------------------------------------------------------
 
 translateProvince<-function(datatable, provincefile){
   ### Replace province abbreviations with full province names
   ### to ensure matching with GCAM map names. 
   ### Inputs: 
   ###   datatable - data frame of query from batch query CSV. 
-  ###   provincefile - file with abbreviations and full names of regions. 
+  ###   provincefile - string; path to file with abbreviations and full names of regions. 
   ### Outputs: 
   ###   datatable - datatable modified so that abbreviations are now full names. 
 
@@ -152,11 +144,13 @@ translateProvince<-function(datatable, provincefile){
   return(datatable)
 } 
 
-#---------------------------------------------------------------------------
-
-#TODO - docstring
 dropRegions<-function(datatable, drops){
-  ### Drop regions listed in drops file from data frame
+  ### Drop regions listed in drops file from data frame. 
+  ### Inputs: 
+  ###   datatable - a data frame of query from batch query CSV
+  ###   drops - string; path to file containing regions to be dropped
+  ### Outputs:
+  ###   datatable - updated data frame with regions dropped. 
   
   dr<-read.csv(drops, strip.white=T, header=F)
   dr<-as.character(dr$V1)
@@ -173,19 +167,21 @@ dropRegions<-function(datatable, drops){
 #---------------------------------------------------------------------------
 # MAPPING UTILS
 #---------------------------------------------------------------------------
-# ##TODO - create border around ellipses
-
-# get_bbox_polys - Returns a list of polygons that intersect bounding box
-# params: dataset - dataframe of map geometry created with fortify function
-#        bbox - numeric vector (long_min, long_max, lat_min, lat_max)
-# Issue: results change depending on bbox set. Need to fix. 
-
 get_bbox_polys<-function(dataset, bbox){
+  ### Modifies map data to include only polygons that lie partially within 
+  ### bounding box. 
+  ### Inputs: 
+  ###   dataset - data frame of map geometry
+  ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
+  ### Outputs: 
+  ###   newdata - data with only polygons that are at least partially in 
+  ###           bounding box
+  
   #Parse bbox and define functions
   fxlons<-in_range(bbox[1],bbox[2])
   fxlats<-in_range(bbox[3],bbox[4])
   
-  #Find longitudes in long range
+  #Find longs and lats in range
   lons<-sapply(dataset$long, function(x) fxlons(x))
   lats<-sapply(dataset$lat, function(x) fxlats(x))
   
@@ -195,21 +191,22 @@ get_bbox_polys<-function(dataset, bbox){
   return(newdata)
 }
 
-#--------------------------------------------------------------------------
 #in_range - Returns function to determine whether x is in range a,b
 #params: a,b - can be int or numeric; a<=b
-
 in_range<-function(a,b){
   function(x) x>=a && x<=b
 }
 
-#------------------------------------------------------------------
-#gen_grat - generate graticule (long/lat lines) given bbox
-#params: bbox - numeric vector (long_min, long_max, lat_min, lat_max)
-#       longint - interval between longitude lines
-#       latint - interval between latitude lines
-
 gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
+  ### Generate graticule (long/lat lines) given bbox
+  ### Inputs: 
+  ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
+  ###   longint - interval between longitude lines
+  ###   latint - interval between latitude lines
+  ### Outputs: 
+  ###   grat - dataframe describing of latitude and longitude lines 
+  ###         spaced at specified intervals
+  
   require(graticule)
   
   #Generate graticule as sp matrix object 
@@ -225,13 +222,15 @@ gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
   
 }
 
-#------------------------------------------------------------------
-# calc_breaks - Calculate legend breaks
-# params: mapdata - data frame of geometric + 
-#         colname - 
-#         nbreaks - 
-# return value - 
 calc_breaks<-function(mapdata, colname, nbreaks=4){
+  ### Calculate legend breaks (intervals to put labels on legend scale)
+  ### Inputs: 
+  ###   mapdata - data frame of geometry and scenario data
+  ###   colname - column name of interest from which to calculate legend intervals
+  ###   nbreaks - number of intervals
+  ### Outputs: 
+  ###   breaks - vector of values at which to include legend label
+  
   #Convert data of interest to numeric
   mapdata[, colname]<-as.numeric(mapdata[,colname])
   ndat<-na.omit(mapdata)
@@ -242,20 +241,22 @@ calc_breaks<-function(mapdata, colname, nbreaks=4){
   break_int<-(max_dat/(nbreaks-1))
   breaks<-seq(0,max_dat,by=break_int)
   breaks<-signif(breaks,digits=2)
-
+  
   
   return(breaks)
 }
-
-#------------------------------------------------------------------
-# calc_fcn - Generic calculation function for values in a column of a data frame. Returns 
-#           a single value (i.e. sum, mean, median)
-#
-# Arguments - dataset- a data frame
-#             colname - the name of a column in the data frame (string)
-#             fcn - an operation that returns a single value
+#---------------------------------------------------------------------------
+# DATA TRANSFORMATION FUNCTIONS
+#---------------------------------------------------------------------------
 
 calc_fcn<-function(dataset, colname, fcn){
+  ### Generic calculation function for values in a column of a data frame.
+  ### Returns a single value (i.e. sum, mean, median)
+  ### Inputs: 
+  ###   dataset - a data frame
+  ###   colname - the name of a column in the data frame (string)
+  ###   fcn - handle of function that returns a single value (ex: sum)
+  
   dataset[,colname]<-as.numeric(dataset[,colname])
   dataset<-na.omit(dataset)
   
@@ -264,73 +265,130 @@ calc_fcn<-function(dataset, colname, fcn){
   return(val)
 }
 
-#------------------------------------------------------------------
-# data_trans - Generic calculation function applied to each value in a column
-#
+###IN PROGRESS
 data_trans<-function(dataset, colname, fcn){
+  ### Generic calculation function applied to each value in a column
+  ### Inputs: 
+  ###   dataset - a data frame
+  ###   colname - the name of a column in a data frame (string)
+  ###   fcn - handle of a function to be applied to each value in data frame
+  
   dataset[,colname]<-as.numeric(dataset[,colname])
   dataset<-na.omit(dataset)
   
-  dataset[,colname]<-lapply()
+  func<-
   
+  dataset[,colname]<-sapply(dataset[[colname]], function(x) fcn(x)) #Issue: is removing the NA
+  
+  return(dataset)
 }
 
-#------------------------------------------------------------------
-#parse_proj_string - parse projection information string and pass 
-# to appropriate function (coord_map or coord_proj). 
-# Done because coord_map is preferable to coord_proj (coord_proj cannot set limits)
-# projection is not included. 
-# Deprecated for now bc coord_proj is updated; however, they have not pushed to CRAN yet; 
-# have to download from github repository using install_github from devtools package. 
+###The following functions are from solver-diagnostics.R in solver-diagnostics GCAM branch
 
-#Todo: process variable number of parameters (lat_0, lat_1, lon_0, etc)
-# a<-parse_proj_string(aea)
-# 
-# parse_proj_string<-function(proj4){
-#   params<-strsplit(proj4, split=" ")
-#   params<-params[[1]]
-#   params<-strsplit(params, "=")
-#   
-#   err<-"subscript out of bounds"
-#   
-#   proj<-params[grepl("+proj", params)][[1]][2]
-#   lat_0<-tryCatch(params[grepl("+lat_0", params)][[1]][2], error=function(err){NULL})
-#   lat_1<-tryCatch(params[grepl("+lat_1", params)][[1]][2], error=function(err){NULL})
-#   lon_0<-tryCatch(params[grepl("+lon_0", params)][[1]][2], error=function(err){NULL})
-#   
-#   if ((is.null(lat_0))|(is.null(lon_0))){
-#     orientation<-NULL
-#   }else{
-#     orientation<-c(lat_0,lon_0,0)
-#   }
-#   
-#   num<-ifelse(proj %in% coord_map_projs, 1, ifelse(proj %in% names(coord_map_projs), 1, 2))
-#   proj<-ifelse(proj %in% names(coord_map_projs), coord_map_projs[proj][1], proj)
-#   
-#   vals<-c(num, proj, lat_0, lat_1, lon_0, orientation)
-#   vals<-addNames("type", "proj", "lat_0", "lat_1", "lon_0", "orientation_1", "orientation_2", "orientation_3")
-#   
-#   if (proj %in% coord_map_projs){
-#     return(c(1, proj))
-#   }
-#   else if (proj %in% names(coord_map_projs)){ #Return correct name for coord_map fcn
-#     return(c(1,coord_map_projs[proj][[1]], lat_0, lat_1, lon_0, orientation)) 
-#   }
-#   else{
-#     return(2) #Use coord_proj fcn and unaltered proj4 string
-#   }
-# }
+fxtransform <- function(x) {
+  ### Transform F(x) values for better visualization
+  ###
+  ### This transformation is a log scale for small values that switches to a linear 
+  ###  scale for larger values.  Magnitudes less than
+  ###  the solution tolerance are flushed to zero.  Magnitudes greater than
+  ###  that but < 1 are divided by the tolerance, have the base-10 log taken, and
+  ###  have their sign preserved.  Magnitudes > 1 are presented linearly (shifted
+  ###  to be continuous with the small scale), and magnitudes >10 are clamped.
+  ftol  <- 1.0e-3                     # threshold for considering a market "solved"
+  signx <- sign(x)
+  magx  <- abs(x)
+  xx    <- ifelse(magx < ftol, 0,
+                  ifelse(magx < 1, log10(magx)-log10(ftol),
+                         ifelse(magx < 10, (magx-1)-log10(ftol), 9-log10(ftol))))
+  signx*xx                            # return value
+}
+
+### Return a transform function that takes the magnitude and clips it to a maximum value
+clipped.mag.transform <- function(maxmag=10) {
+  function(x) {
+    magx <- abs(x)
+    ifelse(magx>maxmag, maxmag, magx)
+  }
+}
+
+### Return a transform that clamps the values to two bounds
+clamp.transform <- function(xmin=-100, xmax=100) {
+  function(x) {
+    pmax(xmin, pmin(x, xmax))
+  }
+}
+
+### Return a transform function that gives sign(x)*log(x/xmin).
+### x-values less than xmin are flushed to zero, and x-values greater
+### than xmax are clipped to xmax
+signed.log.transform <- function(xmin=1e-4, xmax=100) {
+  function(x) {
+    signx <- sign(x)
+    absx  <- pmax( pmin(abs(x), xmax), xmin)
+    signx * log10(absx/xmin)
+  }
+}
+
+### Transform deltax and deltafx values for better visualization
+deltatransform <- function(x, maxmag=10) {
+  magx <- abs(x)
+  pmin(magx, maxmag)
+}
 
 #-----------------------------------------------------------------
-# MAPPING FUNCTIONS
+# COLOR PALETTE FUNCTIONS
 #-----------------------------------------------------------------
-# plot_basic - Basic wrapper for ggplot2 map. Plots lat/long lines (graticule)
-#             and polygons. Returns a map object for further modification. 
-# params: dta - Data, fortified geoJSON object
-#         extent - long/lat boundaries of map (long1, long2, lat1, lat2)
+
+fxcolormap <- function(n=51, controlpts=c(-10,-3,0,3,10)) {
+  ### Create colormap for visualizing f(x) values.
+  ###
+  ### The hue will be piecewise over the four intervals defined by the
+  ###  five control points (they need not be equally spaced).  The saturation
+  ###  will ramp down from 1 to 0 on the interval from the first to the third 
+  ###  control points, then back up to 1 on the rest of the interval.  If 
+  ###  centered on 0 (like the default) this will result in a colormap where
+  ###  the magnitude of f(x) is represented by the saturation and the hue localizes  
+  ###  the value to one of four intervals.
+  ###
+  ### Inputs:
+  ###   n - number of steps in the colormap
+  ### controlpts - intervals over which the hue and saturation change.
+  ###
+  ### Return value:  Vector of colors
+  xlo <- controlpts[1]
+  x1  <- controlpts[2]
+  xm  <- controlpts[3]
+  x2  <- controlpts[4]
+  xhi <- controlpts[5]
+  
+  x = seq(0,n-1) * (xhi-xlo)/(n-1) + xlo
+  ## Hue is piecewise constant on four intervals
+  h1 <- ifelse(x<x1, 0, 90/360)
+  h2 <- ifelse(x>x2, 240/360, 180/360)
+  H <- ifelse(x<xm, h1, h2)
+  
+  ## Use "option 2 for the saturation"
+  eps <- 1.0e-8        # protect against roundoff giving vaues slightly larger than 1
+  S <- ifelse(x<xm, 1-(x-xlo)/(xm-xlo), (x-xm)/(xhi-xm+eps))
+  
+  ## Constant 1 for value
+  hsv(H, S, 1)
+}
+
+
+
+#-----------------------------------------------------------------
+# MAPPING WRAPPER FUNCTIONS
+#-----------------------------------------------------------------
 
 plot_basic<-function(dta,extent=EXTENT_WORLD){
-  #Generate graticule
+  ### Wrapper for basic mapping functions: plotting lat/lon lines (graticule)
+  ### and polygons
+  ### Inputs: 
+  ###   dta - dataframe of geometric data (created w/ fortify function from geoJSON)
+  ###   extent - bounding box
+  ### Output: 
+  ###   mp - ggplot2 map object
   
   grat<-gen_grat()
   
@@ -345,9 +403,17 @@ plot_basic<-function(dta,extent=EXTENT_WORLD){
   return(mp)
 }
 
-#-----------------------------------------------------------------
 
 project_map<-function(mp, prj, extent, orientation=NULL){
+  ### Transform map coordinates to specified projection
+  ### Inputs: 
+  ###   mp - ggplot2 map object
+  ###   prj - A proj4 string or, if orthographic, the string "orthographic"
+  ###   extent - bounding box of map
+  ###   orientation - if using orthographic projection, orientation c(lat0,lon0,radius)
+  ### Outputs: 
+  ###   mp - transformed ggplot2 map object
+  
   if (grepl("ortho",prj)){
     mp<-mp+
       coord_map(proj="orthographic", orientation=orientation, xlim=c(extent[1], extent[2]), 
@@ -358,9 +424,16 @@ project_map<-function(mp, prj, extent, orientation=NULL){
   }
   return(mp)
 }
-#-----------------------------------------------------------------
 
 add_theme<-function(mp, title){
+  ### Wrapper for ggplot2's theme specifications
+  ### Hard-coded for now; possibly can make this customizable
+  ### Inputs: 
+  ###   mp - ggplot2 map object
+  ###   title - string; title of map
+  ### Outputs:  
+  ###   mp - ggplot2 map object with theme attributes specified
+  
   mp<-mp+
     theme(panel.border=element_rect(color=LINE_COLOR, fill=NA), 
           panel.background=PANEL_BACKGROUND,
@@ -377,22 +450,25 @@ add_theme<-function(mp, title){
   return(mp)
 }
 
-
 #-----------------------------------------------------------------
-# basemap - default map
-# params: dta - Data; fortified geoJSON object
-#         prj - projection; from list defined in Map_Params; or custom PROJ4 string
-#         extent - extent of map in long/lat; numeric vector of length 4
-#         title - title of map; optional
-#         orientation - for orthographic maps only
-# TODO - 3 dots abbreviation for extra args?
+# MAPS
+#-----------------------------------------------------------------
 
 basemap<-function(dta, prj=robin, extent=EXTENT_WORLD, title=NULL, orientation=NULL){
+  ### Wrapper for mapping functions to produce default map
+  ### Inputs: 
+  ###   dta - geometric dataframe (fortified geoJSON object)
+  ###   prj - proj4 string (except for orthographic)
+  ###   extent - bounding box
+  ###   title - title of map (string)
+  ###   orientation - c(lat0,lon0, radius); for orthographic projections only
+  ### Outputs: 
+  ###   mp - ggplot2 map object
   
   mp<-plot_basic(dta, extent)
   
   #Reproject map
-  mp<-project_map(mp, prj, extent)
+  mp<-project_map(mp, prj, extent, orientation)
   
   # Thematic details
   mp<-add_theme(mp, title)
@@ -400,12 +476,18 @@ basemap<-function(dta, prj=robin, extent=EXTENT_WORLD, title=NULL, orientation=N
   return(mp)
 }
 
-#-----------------------------------------------------------------
-#TODO - Qualitative map (palette)--make palette better looking
-#    Colored by region   
-#
-
-qualMap<-function(dta, prj, colors, colname="id", extent=EXTENT_WORLD, orientation= NULL, title=NULL){
+map_category<-function(dta, prj, colors, colname="id", extent=EXTENT_WORLD, orientation= NULL, title=NULL, qtitle=NULL){
+  ### Produces map colored by categorical data
+  ### Inputs: 
+  ###   dta - geometric dataframe (fortified geoJSON object)
+  ###   prj - proj4 string (special case: orthographic)
+  ###   colors - color palette
+  ###   colname - category column
+  ###   extent - bounding box
+  ###   orientation - orientation - c(lat0,lon0, radius); for orthographic projections only
+  ###   title - map title
+  ###   qtitle - optional title for map legend
+  
   #Get polygons that fall within bounding box
   mappolys<-get_bbox_polys(dataset = mapdata, bbox = extent)
   
@@ -414,7 +496,7 @@ qualMap<-function(dta, prj, colors, colname="id", extent=EXTENT_WORLD, orientati
   mp<-mp+
     geom_polygon(data=mappolys, aes_string(x='long',y='lat',group='group', factor(colname), fill=factor(colname)), 
                  color=LINE_COLOR)+
-    scale_fill_manual(values=colors)
+    scale_fill_manual(values=colors, name=qtitle)
   
   mp<-project_map(mp, prj, extent)
   mp<-add_theme(mp, title)
@@ -422,11 +504,19 @@ qualMap<-function(dta, prj, colors, colname="id", extent=EXTENT_WORLD, orientati
   return(mp)
 }
 
-#-----------------------------------------------------------------
-# map_query
-
 map_query<-function(mapdata, colname, colors, xform= identity, values=NULL, prj=robin, 
                     extent=EXTENT_WORLD, orientation=NULL, title=NULL, qtitle=NULL){
+  ### Produces map colored based on numeric data (sequential, diverging data)
+  ### Inputs: 
+  ###   mapdata - geometric data frame (fortified geoJSON object); typically w/ GCAM scenario data attached
+  ###   colname - string; name of column of interest
+  ###   colors - vector of colors to use
+  ###   xform - transformation to perform on column of interest
+  ###   values - 
+  ###   prj, extent, orientation, title, qtitle -- defined in map_category function
+  ### Outputs: 
+  ###   mp - ggplot2 map object
+  
   #Convert data of interest to numeric
   mapdata[, colname]<-as.numeric(mapdata[,colname])
   
