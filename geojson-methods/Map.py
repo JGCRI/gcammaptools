@@ -126,9 +126,7 @@ class Map:
 ##
 ##            if type(obj) == dict:
 ##                
-##    
-##            
-##
+
 ##
 ##        return self.traverse(obj, func = find_path)
 
@@ -150,8 +148,6 @@ class Map:
         #match_val function is called for every path/value in geoJSON object
         #Works only for terminal strings or ints/floats
         self.data= data
-        #self.region_names = list(set([feature["properties"]["REGION_NAME"] for feature in self.mapdict["features"]
-        #                         if feature["properties"]["REGION_NAME"]!= "#N/A"]))        
 
         def match_val(path, value):
 
@@ -173,12 +169,17 @@ class Map:
         return self.traverse(obj, func=match_val)
 
 
-    def listAttrs(self, obj, target_path):
+    def listAttrs(self, level=0):
         """Queries the map's geoJSON dictionary and returns a list of attributes.
         Assumes geoJSON path of ["features"][i]["properties"]. 
 
         Return value: attrs - list of attributes
         """
+   #     self.keys = []
+
+    #    def match_path(path):
+    #        if path==target_path:
+    #            self.keys.append(
 ##
 ##        #Add values in target path to list
 ##        def match_path(path, value,l=[]):
@@ -506,6 +507,7 @@ class Map:
             for l1 in self.level2_names:
                 if attr in self.level2_names[l1]:
                     level1 = l1
+                    break
             for l0 in self.level1_names:
                 if level1 in self.level1_names[l0]:
                     level0 = l0

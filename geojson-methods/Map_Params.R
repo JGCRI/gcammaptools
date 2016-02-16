@@ -82,7 +82,6 @@ YLAB<-NULL
 #Legend
 LEGEND_POSITION='bottom'
 
-
 #------------------------------------------
 # Color Palettes
 # World Palettes
@@ -104,8 +103,10 @@ gcam14_colors<- c("Africa" = "navajowhite3",
                    "Middle East" = "indianred",
                    "Former Soviet Union" = "plum2")
 
+# In progress - do we want to make a custom palette?
 
 gcam32_colors<-c("Africa_Eastern" = "navajowhite3",
+                 "Africa_Northern" = "lightgreen",
                  "Australia_NZ" = "lightpink",
                  "India" = "lightslateblue",
                  "USA" = "sandybrown",

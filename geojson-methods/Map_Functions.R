@@ -375,6 +375,13 @@ fxcolormap <- function(n=51, controlpts=c(-10,-3,0,3,10)) {
   hsv(H, S, 1)
 }
 
+qualPalette<- function(n = 31, pal = 'Set3', na.val = 'grey50'){
+  colors<-colorRampPalette(brewer.pal(8, pal))(n)
+  colors<-setNames(colors, as.character(1:n))
+  colors["0"]<-na.val
+  
+  return(colors)
+}
 
 
 #-----------------------------------------------------------------
@@ -425,7 +432,7 @@ project_map<-function(mp, prj, extent, orientation=NULL){
   return(mp)
 }
 
-add_theme<-function(mp, title){
+add_theme<-function(mp, title, legend=TRUE){
   ### Wrapper for ggplot2's theme specifications
   ### Hard-coded for now; possibly can make this customizable
   ### Inputs: 
@@ -438,15 +445,20 @@ add_theme<-function(mp, title){
     theme(panel.border=element_rect(color=LINE_COLOR, fill=NA), 
           panel.background=PANEL_BACKGROUND,
           panel.grid=PANEL_GRID,
-          axis.ticks=AXIS_TICKS, axis.text=AXIS_TEXT, 
-          legend.key.size = unit(1.5, "cm"),
-          legend.text = element_text(size = 14),
-          legend.title = element_text(size=14, face="bold"),
-          legend.position = LEGEND_POSITION, 
-          legend.key=element_rect(color='black')
-    )+
+          axis.ticks=AXIS_TICKS, axis.text=AXIS_TEXT,
+          legend.position= 'none')+
     labs(title=title, x=XLAB, y=YLAB)
   
+  if (legend==T){
+    mp<-mp+
+      theme( legend.key.size = unit(1.5, "cm"),
+             legend.text = element_text(size = 14),
+             legend.title = element_text(size=14, face="bold"),
+             legend.position = LEGEND_POSITION, 
+             legend.key=element_rect(color='black'))
+  }
+         
+   
   return(mp)
 }
 
@@ -476,30 +488,36 @@ basemap<-function(dta, prj=robin, extent=EXTENT_WORLD, title=NULL, orientation=N
   return(mp)
 }
 
-map_category<-function(dta, prj, colors, colname="id", extent=EXTENT_WORLD, orientation= NULL, title=NULL, qtitle=NULL){
+map_category<-function(dta, prj, colors='none', colorfcn=NULL, colname="id", extent=EXTENT_WORLD, orientation= NULL, title=NULL, qtitle=NULL, ...){
   ### Produces map colored by categorical data
   ### Inputs: 
   ###   dta - geometric dataframe (fortified geoJSON object)
   ###   prj - proj4 string (special case: orthographic)
-  ###   colors - color palette
+  ###   colors - color palette; if none will select automatically using colorfcn
+  ###   colorfcn - a function to select colors
   ###   colname - category column
   ###   extent - bounding box
   ###   orientation - orientation - c(lat0,lon0, radius); for orthographic projections only
   ###   title - map title
   ###   qtitle - optional title for map legend
+  ###   ... - extra arguments passed to colorfcn
   
   #Get polygons that fall within bounding box
-  mappolys<-get_bbox_polys(dataset = mapdata, bbox = extent)
+  mappolys<-get_bbox_polys(dataset = dta, bbox = extent)
   
   mp<-plot_basic(mappolys, extent)
-
+  
+  if (colors=='none'){
+    colors<-colorfcn(n = length(unique(mappolys[[colname]])), ...)
+  }
+  
   mp<-mp+
-    geom_polygon(data=mappolys, aes_string(x='long',y='lat',group='group', factor(colname), fill=factor(colname)), 
+    geom_polygon(data=mappolys, aes_string(x='long',y='lat',group='group', fill=colname), 
                  color=LINE_COLOR)+
     scale_fill_manual(values=colors, name=qtitle)
   
   mp<-project_map(mp, prj, extent)
-  mp<-add_theme(mp, title)
+  mp<-add_theme(mp, title, legend=F)
     
   return(mp)
 }

@@ -1,6 +1,5 @@
 ###Generate Maps for GCAM Map Document
-###TODO: Update Map_Functions with graticule - fix gen_grat function to be consistent
-    #Organize existing code here into functions
+###TODO: 
     #Add paths for saving files
 
 
@@ -17,6 +16,8 @@ source("geojson-methods/Map_Functions.R")
 #-----------------------------------------------------------------
 #To geojson: writeOGR(d, layer="",dsn="China_map.geojson",driver="GeoJSON")
 
+###Driver for Data-Processing Functions
+#-----------------------------------------------------------------
 #Prepare Data
 #Scenario Data
 tables<-parse_mi_output(fn = "input-data/sample_batch.csv")
@@ -25,57 +26,56 @@ tables<-parse_mi_output(fn = "input-data/sample_batch.csv")
 dat1<-readOGR("input-data/rgn32/GCAM_32_wo_Taiwan_clean.geojson", "OGRGeoJSON")
 gc1<-fortify(dat1, region="GCAM_ID")
 
-### TODO create function
-#Sample scenario - Population
-pop<-as.data.frame(tables$population)
-pop<-pop[grepl("Reference", pop$scenario),]
-pop<-dropRegions(pop, "input-data/rgn32/drop_regions.txt") #Remove data for dropped regions
-pop<-addRegionID(pop, "input-data/rgn32/gcam_32_wo_TaiwanLookupTable_clean.csv")
+#Break out sample scenario
+prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="Oil"))
+prim_en<-addRegionID(prim_en, "input-data/rgn32/gcam_32_wo_TaiwanLookupTable_clean.csv", drops="input-data/rgn32/drop_regions.txt")
 
-#Prepare data for choropleth
-map_pop<-merge(gc1, pop, by="id")
+#Merge dataset with map data
+map_primen<-merge(gc1, prim_en, by="id")
 
+#-----------------------------------------------------------------
 
-#Dataset2: Primary Energy
-prim_en<-as.data.frame(tables$primary_energy)
-
-#Filter by scenario and query
-prim_en.oil<-prim_en[grepl("Reference", prim_en$scenario),] 
-prim_en.oil<-prim_en.oil[(prim_en.oil$fuel=="Oil"),]
-
-#Have to add rgn id last. 
-prim_en.oil<-addRegionID(prim_en.oil, "input-data/rgn32/gcam_32_wo_TaiwanLookupTable_clean.csv", drops = "input-data/rgn32/drop_regions.txt")
-
-map_primen<-merge(gc1, prim_en.oil, by="id")
-
-
-
-
-#MAPSET 1: Basemaps - World Maps, various projections, basemap
-#Map 1A: Eckert III World
-mp1<-basemap_world(gc1, save = 1, prj = eck3, title="Eckert III World", fn="Eck3")
+#MAPSET 1: Basemaps - World Maps, various projections, various types
+#Map 1A: Eckert III World, Colored by Region
+mp1<-map_category(gc1, prj = eck3, colorfcn=qualPalette)
 mp1
 
-
-#Map 1B: Robinson World
-mp2<-basemap_world(gc1, save=1, prj=robin, title="Robinson World", fn="Robin")
+#Map 1B: Robinson World, Colored by Oil Consumption
+mp2<-map_query(map_primen, "X2050", c("white", "red"), prj=robin, title="Robinson World", qtitle="Oil Consumption, 2050")
 mp2
 
-#Robin Qualitative
-p<-colorRampPalette(brewer.pal(8,"Set2"))
-q<-p(31)
-
-mp2<-qualMap(gc1, "world", prj=robin, q, title= "Robinson World", fn="Robin_col")
-mp2
 
 #Map 1C: Winkel-Tripel
-mp3<-basemap_world(gc1, save=1, prj=wintri, title="Winkel-Tripel World", fn="WinTri")
+mp3<-basemap(gc1, prj=wintri, title="Winkel-Tripel World")
 mp3
 
 
-#MAPSET 2: USA, India, China (Conic)
+#MAPSET 2: USA, China (Conic)
 #Map 2A USA Albers Equal Area
-# TODO - Graticule issues
+dat2<-readOGR("input-data/rgnusa/gcam_usa.geojson", layer="OGRGeoJSON")
+d<-dat2@data
+states<-d[d$GCAM_30_re==1,]
+state_nm<-states$NAME
+state_abbrev<-states$STUSPS
+state_id<-states$GEOID
+
+statesdf<-data.frame(state_id, state_abbrev, state_nm)
+statesdf<-na.omit(statesdf)
+statesdf<-statesdf[1:2]
+statesdf<-statesdf[c(2,1)]
+statesdf$state_abbrev<-as.character(statesdf$state_abbrev)
+statesdf$state_id<-as.numeric(statesdf$state_id)
+statesdf$state_id<-sapply(statesdf$state_id, FUN = function(x) x = x+100)
+
+
+lookup<-read.csv("input-data/rgn32/gcam_32_wo_TaiwanLookupTable_clean.csv")
+lookup<-rbind(lookup, data.frame("REGION_NAME"="Taiwan", "GCAM_ID"=30))
+
+#Modify DF
+dat2@data<-merge(x = dat2@data, y = statesdf, by.x='STUSPS', by.y='state_abbrev', all.x = T, all.y=T)
+d<-dat2@data
+
+
 
 mp4<-basemap_regional(gc1, extent=EXTENT_USA, save=1, title="USA Albers Equal-Area", fn="USA_AEA")
 mp4
