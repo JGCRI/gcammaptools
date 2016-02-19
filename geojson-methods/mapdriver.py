@@ -1,19 +1,18 @@
+"""Scratch script to test out functionality of Gcam_map and parsebatch."""
+
 import string
 import json
 import csv
-from Map import Map
-from parsebatch import * #Todo: relocate this
-
+from parsebatch import * #Todo: relocate this/consolidate with Gcam_map?
+from Gcam_map import Gcam_map
 
 ###Task: Add GCAM scenario data table to geoJSON file
 ##Step 1: Format Map
-file1 = open('../input-data/rgn32/GCAM_32_wo_Taiwan_clean.geojson', 'r')
-map1 = Map('GCAM_32_wo_Taiwan', file1)
-file1.close()
+map2 = Gcam_map('../input-data/rgn32/GCAM_32_wo_Taiwan_clean.geojson')
 
-##Step 1a: Delete Coordinates
-    #map1.deleteAttr(level=2, attr="coordinates")
-    #print map1.listAttrs(level=2)
+##Step 1a: Delete Coordinates (test delete function)
+map2.delete(map2.map, ["features",[], "geometry"], "coordinates")
+print map2.map["features"][0]["geometry"].keys()
 
 ##Step 2: Add scenario from data
 batch = parseBatchFile("../input-data/sample_batch_2.csv")
@@ -23,63 +22,17 @@ quer = "primary_energy"
 data = extractQuery(batch, quer)
 ndata = data[0]
 
-#Add scenario name, years to map
-map1.appendNewAttr("scenario", data[1], level=0, levelnames=[])
-map1.appendNewAttr("years", data[2], level=0, levelnames=[])
+#Step 3: Append Query, scenario, years
+map2.appendNew(['features',[]], nkey='primary_energy', nvals = ndata)
+map2.appendNew([], nkey='scenario', nvals=data[1])
+map2.appendNew([], nkey = 'years', nvals=data[2])
 
-#Create "primary_energy" tag for each region
-map1.appendNewAttr(quer, {}, level=1,levelnames=["features"])
+#Step 4: Rename a query (Test)
+#map2.rename(map2.map,[], oldname="scenario", newname = "foo")
+#map2.rename(map2.map, ["features",[],"geometry"], "type", "foo")
 
-#Order and append ndata
-order = [i["properties"]["REGION_NAME"] for i in map1.mapdict["features"]]
 
-###Uncleaned work below
-#Sort ndata by order of features in map
-#Q: dictionaries don't preserve order, right?
 
-def sort_tups(master, tuplist, id1):
-    norder = []
-    
-    for m in master:
-        j = 0
-        for tup in tuplist:
-            #print len(tuplist)
-            if tup[id1] not in master:
-                pass
-            
-            if tup[id1] == m:
-                norder.append(tup)
-                break
-
-            else:
-                j +=1
-            if j==len(tuplist):
-                norder.append(tuple(["#N/A"]))
-
-    return norder
-
-b = [d[1] for d in ndata]
-b = list(set(b))
-
-dat = [tup for tup in ndata if tup[1]=="Oil"]
-a = sort_tups(order,dat,0)
-
-##e = set(i[0] for i in a)
-##f = set(order)
-###print e.difference(f)
-###print f.difference(e)
-##
-##for fuel in b:
-##    map1.appendNewAttr(fuel, None, level=2, levelnames=["features", "primary_energy"])
-##
-##mp = map1.mod_dict(obj=map1.mapdict, target_path = ["features", [], "primary_energy", "Oil"], data=a)
-##
-##for fuel in b[1:]:
-##    dat = [tup for tup in ndata if tup[1]==fuel]
-##    a = sort_tups(order, dat, 0)
-##    mp = map1.mod_dict(obj=mp, target_path = ["features", [], "primary_energy", fuel], data=a)
-##
-##map1.mapdict = mp
 ##map1.exportMapAsJSON("GCAM_32_primary_energy_2.geojson")
 
 #TEST code:
@@ -127,7 +80,7 @@ a = sort_tups(order,dat,0)
 
 
 #-------------------------------------------------------------
-###Old, extraneous code
+###Old, extraneous code from previous iterations of Gcam_map
 ###TODO : figure out where this should go
 #map2.appendNewAttr(map2.idName, m, uniform=0)
 ##

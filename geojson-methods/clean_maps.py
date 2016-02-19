@@ -1,21 +1,23 @@
+"""Scratch script to clean up GCAM_USA map; in progress. Looking to eventually
+systematize this."""
+
 import json
 import csv
-from Map import Map
+from Map_redo import Gcam_map 
 
 
-file1 = open('../input-data/rgnusa/gcam_usa.geojson')
-map1 = Map('GCAM_USA', file1)
-file1.close()
+map1 = Gcam_map('../input-data/rgnusa/gcam_usa.geojson')
 
-l = map1.listAttrs(level=2)
+map1.appendNew(["features", [], "properties"], nkey='foo', nvals='bar')
 
-m = map1.mapdict["features"][300]["properties"]
+#l = map1.listAttrs(level=2)
 
-delAttrs = ["FUNCSTAT", "AWATER", "ISO_3DIGIT", "GUF", "MTFCC", "INTPTLAT",
-            "FID_t1_201", "INTPTLON", "LSAD", "ISO_NUM", "STATENS", "DIVISION",
-            "FIPS_CNTRY"]
+#m = map1.mapdict["features"][300]["properties"]
 
-for attr in delAttrs:
-    map1.deleteAttr(level=2, attr=attr)
-
-m = map1.mapdict["features"][300]["properties"]
+#delAttrs = ["FUNCSTAT", "AWATER", "ISO_3DIGIT", "GUF", "MTFCC", "INTPTLAT",
+ #           "FID_t1_201", "INTPTLON", "LSAD", "ISO_NUM", "STATENS", "DIVISION",
+  #
+#for attr in delAttrs:
+   # map1.deleteAttr(level=2, attr=attr)
+#
+#m = map1.mapdict["features"][300]["properties"]
