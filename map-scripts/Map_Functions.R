@@ -1,13 +1,5 @@
 ##MAP FUNCTIONS 
 
-setwd('C:/Users/ledn787/Desktop/Visualization_Work/gcam-viz/')
-
-#Source Scripts functions
-for (fn in list.files("scripts", full.names = T)){
-  source(fn)
-}
-
-source("geojson-methods/Map_Params.R")
 #---------------------------------------------------------------------------
 # Required libraries
 #---------------------------------------------------------------------------
