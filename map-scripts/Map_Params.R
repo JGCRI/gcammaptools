@@ -1,6 +1,6 @@
 #Parameters for mapping functions
 
-require(rgdal)
+library(rgdal)
 
 #-----------------------------------------------
 # Graphics Specifications (for exporting finished maps)

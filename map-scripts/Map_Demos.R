@@ -3,18 +3,25 @@
     #Add paths for saving files
 
 
-#setwd('C:/Users/ledn787/Desktop/dev-maps/gcam-viz/')
+basedir.viz <- dirname(sys.frame(1)$ofile)
 
-require(rgdal)
-require(ggplot2)
-require(ggalt)
-require(graticule)
+library(rgdal)
+library(ggplot2)
+library(ggalt)  # must install the github version:  install_github('hrbrmstr/ggalt')
+library(graticule)
+library(rgeos)
+library(maptools)
+library(gpclib)
+library(sp)
+library(mapproj)
 
 #Core map functions
-source("map-scripts/Map_Params.R")
-source("map-scripts/diag_header.R")
-source("map-scripts/Map_Parser.R")
-source("map-scripts/Map_Functions.R")
+source(file.path(basedir.viz, "Map_Params.R"))
+source(file.path(basedir.viz, "diag_header.R"))
+source(file.path(basedir.viz, "Map_Parser.R"))
+source(file.path(basedir.viz, "Map_Functions.R"))
+
+gpclibPermit()
 
 #-----------------------------------------------------------------
 #To geojson: writeOGR(d, layer="",dsn="China_map.geojson",driver="GeoJSON")
@@ -23,15 +30,15 @@ source("map-scripts/Map_Functions.R")
 #-----------------------------------------------------------------
 #Prepare Data
 #Scenario Data
-tables<-parse_mi_output(fn = "input-data/sample-batch.csv")
+tables<-parse_mi_output(fn = file.path(basedir.viz, "../input-data/sample-batch.csv"))
 
 #Map Data
-map_32_wo_Taiwan<-readOGR("input-data/rgn32/GCAM_32_wo_Taiwan_clean.geojson", "OGRGeoJSON")
+map_32_wo_Taiwan<-readOGR(file.path(basedir.viz, "../input-data/rgn32/GCAM_32_wo_Taiwan_clean.geojson"), "OGRGeoJSON")
 map_32_wo_Taiwan.fort<-fortify(map_32_wo_Taiwan, region="GCAM_ID")
 
 #Break out sample scenario
 prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
-prim_en<-addRegionID(prim_en, "input-data/rgn32/lookup.txt", drops="input-data/rgn32/drop-regions.txt")
+prim_en<-addRegionID(prim_en, file.path(basedir.viz, "../input-data/rgn32/lookup.txt"), drops=file.path(basedir.viz, "../input-data/rgn32/drop-regions.txt"))
 
 #Merge dataset with map data
 map_primen<-merge(map_32_wo_Taiwan.fort, prim_en, by="id")
