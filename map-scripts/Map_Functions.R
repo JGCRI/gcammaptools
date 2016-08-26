@@ -9,6 +9,7 @@ library("ggalt") #Note: currently using version 01.2.900 from github. May have t
 library("graticule")  #See if you can avoid using this -- probably a workaround. 
 library("RColorBrewer")
 library("maptools")
+library('dplyr')
 
 #---------------------------------------------------------------------------
 # DATA PROCESSING FUNCTIONS
@@ -169,25 +170,15 @@ get_bbox_polys<-function(dataset, bbox){
   ### Outputs: 
   ###   newdata - data with only polygons that are at least partially in 
   ###           bounding box
-  
-  #Parse bbox and define functions
-  fxlons<-in_range(bbox[1],bbox[2])
-  fxlats<-in_range(bbox[3],bbox[4])
-  
-  #Find longs and lats in range
-  lons<-sapply(dataset$long, function(x) fxlons(x))
-  lats<-sapply(dataset$lat, function(x) fxlats(x))
-  
-  ids<-intersect(dataset$id[lons], dataset$id[lats])
-  newdata<-dataset[dataset$id %in% ids,]
-  
-  return(newdata)
+
+    filter(dataset, in_range(long, bbox[1], bbox[2]), in_range(lat, bbox[3], bbox[4]))
 }
 
-#in_range - Returns function to determine whether x is in range a,b
-#params: a,b - can be int or numeric; a<=b
-in_range<-function(a,b){
-  function(x) x>=a && x<=b
+## in_range - Test a vector to see which values are in the interval [a,b]
+## params: x:  vector to test
+##       a,b:  interval bounds. can be int or numeric; a<=b
+in_range<-function(x, a, b){
+    x>=a & x<=b
 }
 
 gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
@@ -199,7 +190,11 @@ gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
   ### Outputs: 
   ###   grat - dataframe describing of latitude and longitude lines 
   ###         spaced at specified intervals
-  
+
+### TODO: We could probably realize some savings here by
+### precalculating and caching graticules for some commonly-used
+### configurations.
+    
   require(graticule)
   
   #Generate graticule as sp matrix object 
@@ -224,12 +219,11 @@ calc_breaks<-function(mapdata, colname, nbreaks=4){
   ### Outputs: 
   ###   breaks - vector of values at which to include legend label
   
-  #Convert data of interest to numeric
-  mapdata[, colname]<-as.numeric(mapdata[,colname])
-  ndat<-na.omit(mapdata)
-  
-  max_dat<-signif(max(ndat[colname], na.rm = T),digits = 2)
-  min_dat<-signif(min(ndat[colname], na.rm= T),digits = 2)
+
+    vals <- as.numeric(mapdata[[colname]])
+
+  max_dat<-signif(max(vals, na.rm = T),digits = 2)
+  min_dat<-signif(min(vals, na.rm= T),digits = 2)
   
   break_int<-(max_dat/(nbreaks-1))
   breaks<-seq(0,max_dat,by=break_int)
@@ -386,19 +380,18 @@ plot_basic<-function(dta,extent=EXTENT_WORLD){
   ### and polygons
   ### Inputs: 
   ###   dta - dataframe of geometric data (created w/ fortify function from geoJSON)
+  ###         assumption:  dta has already been filtered to the bounding box for
+  ###         the extent being used.  
   ###   extent - bounding box
   ### Output: 
   ###   mp - ggplot2 map object
   
   grat<-gen_grat()
   
-  #Get polygons that fall within bounding box
-  dat<-get_bbox_polys(dataset = dta, bbox = extent)
-  
   #Plot graticule and polygons
   mp<-ggplot()+
     geom_path(data=grat,aes(long,lat,group=group,fill=NULL),color=LINE_GRAT)+
-    geom_polygon(data=dat, aes(long,lat,group=group),fill=RGN_FILL, color=LINE_COLOR)
+    geom_polygon(data=dta, aes(long,lat,group=group),fill=RGN_FILL, color=LINE_COLOR)
   
   return(mp)
 }
@@ -469,7 +462,8 @@ basemap<-function(dta, prj=robin, extent=EXTENT_WORLD, title=NULL, orientation=N
   ###   orientation - c(lat0,lon0, radius); for orthographic projections only
   ### Outputs: 
   ###   mp - ggplot2 map object
-  
+
+  map.polys <- get_bbox_polys(dataset=dta, bbox=extent)
   mp<-plot_basic(dta, extent)
   
   #Reproject map
