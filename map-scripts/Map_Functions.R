@@ -88,14 +88,19 @@ addRegionID<-function(datatable, lookupfile, provincefile='none', drops='none') 
     rgn<-"region"
   }
   
-  finaltable<-merge(datatable, lookuptable, by.x=rgn, by.y=colnames(lookuptable)[1] )
+  finaltable<-merge(datatable, lookuptable, by.x=rgn, by.y=colnames(lookuptable)[1], all.y=TRUE )
+  
+  ## Regions that weren't in the original table will show as NA.  Zero
+  ## them out and give them a sensible unit.
+  finaltable$Units[is.na(finaltable$Units)] <- finaltable$Units[1] # units will usually be all the same 
+  finaltable[is.na(finaltable)] <- 0                               # set all remaining NA values to zero.
   colnames(finaltable)[ncol(finaltable)]<-'id'
   finaltable$id<-as.character(finaltable$id)
   
   
   #Add null vector row to end to account for GCAM region 0 
   nullvec<-c('0', 2:ncol(finaltable))
-  nullvec[2:ncol(finaltable)]<-NA
+  nullvec[2:ncol(finaltable)]<-NA       # This one *should* be NA.
   
   finaltable<-rbind(finaltable, nullvec)
   finaltable$id[nrow(finaltable)]<-'0'
