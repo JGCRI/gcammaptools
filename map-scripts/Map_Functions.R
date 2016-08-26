@@ -36,10 +36,6 @@ process_batch_q<-function(batchq, query, scen, filters, func=sum){
   #Bug: if partial has multiple matches, will return multiple scenarios
   qdata<-qdata[grepl(scen, qdata$scenario),]
   
-  #Fix units -- some have zero value; get rid of that. 
-  unit<-as.character(unique(qdata$Units[qdata$Units!=0]))
-  qdata$Units=unit
-  
   #Get years and aggregate value if applicable
   years<-grep("(X1)|(X2)", names(qdata), value=T)
   ag<-names(filters[filters[names(filters)]=="Aggregate"]) #Super clunky
