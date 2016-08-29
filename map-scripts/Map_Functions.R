@@ -210,27 +210,31 @@ gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
   
 }
 
-calc_breaks<-function(mapdata, colname, nbreaks=4){
+calc.breaks <- function(maxval, minval=0, nbreak=5, nsig=3)
+{
+    step <- (maxval-minval)/(nbreak-1)
+    seq(0,maxval, by=step) %>% signif(nsig) 
+}
+calc.breaks.map<-function(mapdata, colname, nbreaks=4, zero.min=TRUE){
   ### Calculate legend breaks (intervals to put labels on legend scale)
   ### Inputs: 
   ###   mapdata - data frame of geometry and scenario data
   ###   colname - column name of interest from which to calculate legend intervals
   ###   nbreaks - number of intervals
+  ###   zero.min- force minimum value of scale to zero
   ### Outputs: 
   ###   breaks - vector of values at which to include legend label
   
 
     vals <- as.numeric(mapdata[[colname]])
 
-  max_dat<-signif(max(vals, na.rm = T),digits = 2)
-  min_dat<-signif(min(vals, na.rm= T),digits = 2)
+    max_dat <- max(vals, na.rm = T)
+    if(zero.min)
+        min_dat = 0
+    else
+        min_dat <- min(vals, na.rm= T)
   
-  break_int<-(max_dat/(nbreaks-1))
-  breaks<-seq(0,max_dat,by=break_int)
-  breaks<-signif(breaks,digits=2)
-  
-  
-  return(breaks)
+    calc.breaks(max_dat, min_dat, nbreaks) 
 }
 #---------------------------------------------------------------------------
 # DATA TRANSFORMATION FUNCTIONS
@@ -510,7 +514,7 @@ map_category<-function(dta, prj, colors='none', colorfcn=NULL, colname="id", ext
 }
 
 map_query<-function(mapdata, colname, colors, xform= identity, values=NULL, prj=robin, 
-                    extent=EXTENT_WORLD, orientation=NULL, title=NULL, qtitle=NULL){
+                    extent=EXTENT_WORLD, orientation=NULL, title=NULL, qtitle=NULL, limits=NULL){
   ### Produces map colored based on numeric data (sequential, diverging data)
   ### Inputs: 
   ###   mapdata - geometric data frame (fortified geoJSON object); typically w/ GCAM scenario data attached
@@ -531,14 +535,19 @@ map_query<-function(mapdata, colname, colors, xform= identity, values=NULL, prj=
   mp<-plot_basic(mappolys, extent) #Mapdata or mappolys? 
   
   mappolys[[colname]]<-xform(mappolys[[colname]])
+
+  if(is.null(limits)) 
+      breaks <- calc.breaks.map(mappolys, colname)
+  else
+      breaks <- calc.breaks(limits[2])
   
   #Plot data
   mp<-mp+
       geom_polygon(data = mappolys,aes_string("long", "lat", group="group", fill=colname), 
                  color=LINE_COLOR)+
     scale_fill_gradientn(name=qtitle, colors=colors, values=values, guide = GUIDE, space=SPACE,
-                      na.value = NA_VAL, breaks=calc_breaks(mappolys,colname),
-                      labels=c(calc_breaks(mappolys,colname)))  #Need fcn for factor to divide by
+                      na.value = NA_VAL, breaks=breaks, limits=limits,
+                      labels=breaks)  #Need fcn for factor to divide by
                       
   #Reproject map
   mp<-project_map(mp, prj, extent, orientation)
