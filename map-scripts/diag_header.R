@@ -41,18 +41,31 @@
 # -----------------------------------------------------------------------------
 # Load required libraries
 # NB this diag has been tested with the following libraries:
-#   ggplot2     0.9.2-0.9.3
-#   reshape2    1.2.1
-#   stringr     0.6.1
-#   scales      0.2.3
-#   rgdal       0.7-24
-#   plyr        1.8
-#   maptools    0.8-22
-libs <- c( "ggplot2", "reshape2", "stringr", "scales", "rgdal", "plyr", "maptools", "grid" )
+#   rgdal 1.1-3
+#   ggplot2 2.1.0
+#   ggalt # must install the github version:  install_github('hrbrmstr/ggalt')
+#   graticule 0.1.0
+#   rgeos 0.3-15
+#   maptools 0.8-37 , "gpclib"
+#   gpclib [[???]]
+#   sp 1.2-1
+#   mapproj 1.2-4
+#   RColorBrewer 1.1-2
+#   dplyr 0.5.0
+
+
+libs <- c("rgdal", "ggplot2", "ggalt", "graticule", "rgeos", "maptools", "sp", "mapproj", "RColorBrewer", "dplyr")
+
+#libs <- c( "ggplot2", "reshape2", "stringr", "scales", "rgdal", "plyr", "maptools", "grid" )
 for( i in libs ) {
     if( !require( i, character.only=T ) ) {
         cat( "Couldn't load", i, "\n" )
-        stop( "Use install.packages() to download this library" )
+      if(i=='ggalt'){
+        stop( "Use install_github('hrbrmstr/ggalt') to download this library" )
+      }else {
+        stop( "Use install.packages() to download this library")
+      }
+        
     }
     library( i, character.only=T )
 }
@@ -70,6 +83,7 @@ if( !exists( "GCAM_SOURCE_FN" ) ) {     # i.e. #ifndef
 
 # -----------------------------------------------------------------------------
 # Behavioral settings
+# TODO figure out which of these to keep
 DISPLAY_EACH_GRAPH      <- FALSE
 SAVE_EACH_GRAPH         <- TRUE
 SAVE_EACH_DATA          <- TRUE
@@ -88,8 +102,6 @@ HTML_JS_TEMPLATE        <- "post_process/figures_filter_template.js"
 HTML_JS_FILE            <- "figures_filter.js"
 
 GIS_DIR <- "GIS/"
-#GIS_FILE <- "GCAM_4"       # This is the detailed shapefile - nice but slow to draw
-GIS_FILE <- "GCAM_4_simple" # This is the simple shapefile 
 
 GRAPH_METADATA <- list()    # Keep track of identifying features of each graph generated
 
@@ -109,6 +121,24 @@ TITLE_FIELD_NAME        <- "title"
 FILE_FIELD_NAME         <- "file"
 TABLE_FIELD_NAME        <- "TABLE"
 DATE_FIELD_NAME         <- "date"
+
+# -----------------------------------------------------------------------------
+# Name variables
+# Model base years
+model_base_years <- c( 1975, 1990, 2005, 2010 )
+X_model_base_years <- paste0( "X", model_base_years )
+
+# Model future years
+model_future_years <- seq( 2015, 2100, 5 )
+X_model_future_years <- paste0( "X", model_future_years )
+
+#All model years
+model_years <- c( model_base_years, model_future_years )
+X_model_years <- paste0( "X", model_years )
+
+
+# Column name variables
+lookup_region_column <- "REGION_NAME"
 
 # -----------------------------------------------------------------------------
 # printlog: time-stamped output
@@ -152,3 +182,122 @@ logstop <- function() {
         printlog( "WARNING: Attempt to close a non-open log file")
     }
 }
+
+# -----------------------------------------------------------------------------
+# Graphics Specifications (for exporting finished maps)
+WIDTH = 2560/300
+HEIGHT= 1440/300
+DPI = 300/2
+#TYPE= 'cairo-png'
+EXTENSION= '.png'
+
+# -----------------------------------------------------------------------------
+#Default Projections (as PROJ4 strings)
+
+eck3<-"+proj=eck3"  #Eckert III World projection
+wintri<-"+proj=wintri" #Winkel-Tripel World projection
+robin<-"+proj=robin"  #Robinson world projection
+na_aea<-"+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83"
+ch_aea<-"+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84"
+
+#Special cases
+ortho_africa<-"orthographic" 
+ortho_la<-"orthographic"
+ortho_polar<-"orthographic"
+
+#For orthographic projections
+ORIENTATION_AFRICA<-c(0,15,0)
+ORIENTATION_LA<-c(-10,-70,0)
+ORIENTATION_SPOLE<-c(-90,0,0)
+
+#Coord_map default projections
+coord_map_projs<-c("mercator", "sinusoidal", "cylequalarea",
+                   "cylindrical", "rectangular", "gall", 
+                   "mollweide", "gilbert", "azequidistant",
+                   "azequalarea", "gnomonic", "perspective",
+                   ortho="orthographic", "stereographic", "laue",
+                   "fisheye", "newyorker", "conic", "simpleconic",
+                   "lambert", aea="albers", "bonne", "polyconic", 
+                   "aitoff", "lagrange", "bicentric", "elliptic",
+                   "globular", "vandergrinten", "eisenlohr", "guyou",
+                   "square", "tetra", "hex", "harrison", "trapezoidal",
+                   "lune", "mecca", "homing", "sp\\_mercator", "sp\\_albers")
+
+# -----------------------------------------------------------------------------
+# EXTENT
+# (lon0,lon1,lat0,lat1)
+
+EXTENT_WORLD <- c(-180,180,-90,90)
+EXTENT_USA <- c(-120,-70,20,60)
+EXTENT_CHINA <- c(77,130,15,53)
+EXTENT_AFRICA<-c(-20,60,-40,40)
+EXTENT_LA<-c(-120,-30,-60,40)
+
+
+# -----------------------------------------------------------------------------
+# AESTHETICS 
+
+#Default Colors
+LINE_COLOR<-"black"
+RGN_FILL<-"grey"
+LINE_GRAT<-"grey50"
+GUIDE="colourbar"
+SPACE="Lab"
+
+#TODO - ALTER to inc. colorschemes
+DEFAULT_CHOROPLETH <- c('white', 'red')
+TRANSFORMATION = 'none' #Mathematical transformation (i.e. 'log', 'sqrt')
+NA_VAL<-"grey50"
+
+#Background
+PANEL_BORDER<-element_blank()
+PANEL_BACKGROUND<-element_blank()
+PANEL_GRID<-element_line(colour = 'black')
+AXIS_TICKS<-element_blank()
+AXIS_TEXT<-element_blank()
+XLAB<-""
+YLAB<-""
+
+#Legend
+LEGEND_POSITION='bottom'
+
+# -----------------------------------------------------------------------------
+# Color Palettes
+# World Palettes
+# 1. GCAM 32
+#pal_gcam32<-
+
+gcam14_colors<- c("Africa" = "navajowhite3",
+                  "Australia_NZ" = "lightpink",
+                  "India" = "lightslateblue",
+                  "USA" = "sandybrown",
+                  "Japan" = "rosybrown1",
+                  "Korea" = "brown",
+                  "Eastern Europe" = "orange" ,
+                  "Western Europe" = "greenyellow",
+                  "Canada" = "saddlebrown",
+                  "China" = "lightblue",
+                  "Southeast Asia" = "gold",
+                  "Latin America" = "seagreen2",
+                  "Middle East" = "indianred",
+                  "Former Soviet Union" = "plum2")
+
+# In progress - do we want to make a custom palette?
+
+gcam32_colors<-c("Africa_Eastern" = "navajowhite3",
+                 "Africa_Northern" = "lightgreen",
+                 "Australia_NZ" = "lightpink",
+                 "India" = "lightslateblue",
+                 "USA" = "sandybrown",
+                 "Japan" = "rosybrown1",
+                 "South Korea" = "brown",
+                 "Europe_Eastern" = "orange" ,
+                 "EU-12" = "greenyellow",
+                 "Canada" = "saddlebrown",
+                 "China" = "lightblue",
+                 "Southeast Asia" = "gold",
+                 "South America_Northern" = "seagreen2",
+                 "Middle East" = "indianred",
+                 "Russia" = "plum2")
+
+
