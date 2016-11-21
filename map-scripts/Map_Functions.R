@@ -1,16 +1,4 @@
 ##MAP FUNCTIONS 
-
-#---------------------------------------------------------------------------
-# Required libraries
-#---------------------------------------------------------------------------
-library("rgdal")
-library("ggplot2")  #Version 2.0.0
-library("ggalt") #Note: currently using version 01.2.900 from github. May have to modify fcns to be compatible w/ old version 
-library("graticule")  #See if you can avoid using this -- probably a workaround. 
-library("RColorBrewer")
-library("maptools")
-library('dplyr')
-
 #---------------------------------------------------------------------------
 # DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
@@ -236,135 +224,10 @@ calc.breaks.map<-function(mapdata, colname, nbreaks=4, zero.min=TRUE){
   
     calc.breaks(max_dat, min_dat, nbreaks) 
 }
-#---------------------------------------------------------------------------
-# DATA TRANSFORMATION FUNCTIONS
-#---------------------------------------------------------------------------
-
-calc_fcn<-function(dataset, colname, fcn){
-  ### Generic calculation function for values in a column of a data frame.
-  ### Returns a single value (i.e. sum, mean, median)
-  ### Inputs: 
-  ###   dataset - a data frame
-  ###   colname - the name of a column in the data frame (string)
-  ###   fcn - handle of function that returns a single value (ex: sum)
-  
-  dataset[,colname]<-as.numeric(dataset[,colname])
-  dataset<-na.omit(dataset)
-  
-  val<-fcn(dataset[[colname]])
-  
-  return(val)
-}
-
-###IN PROGRESS
-data_trans<-function(dataset, colname, fcn){
-  ### Generic calculation function applied to each value in a column
-  ### Inputs: 
-  ###   dataset - a data frame
-  ###   colname - the name of a column in a data frame (string)
-  ###   fcn - handle of a function to be applied to each value in data frame
-  
-  dataset[,colname]<-as.numeric(dataset[,colname])
-  dataset<-na.omit(dataset)
-  
-  func<-
-  
-  dataset[,colname]<-sapply(dataset[[colname]], function(x) fcn(x)) #Issue: is removing the NA
-  
-  return(dataset)
-}
-
-###The following functions are from solver-diagnostics.R in solver-diagnostics GCAM branch
-
-fxtransform <- function(x) {
-  ### Transform F(x) values for better visualization
-  ###
-  ### This transformation is a log scale for small values that switches to a linear 
-  ###  scale for larger values.  Magnitudes less than
-  ###  the solution tolerance are flushed to zero.  Magnitudes greater than
-  ###  that but < 1 are divided by the tolerance, have the base-10 log taken, and
-  ###  have their sign preserved.  Magnitudes > 1 are presented linearly (shifted
-  ###  to be continuous with the small scale), and magnitudes >10 are clamped.
-  ftol  <- 1.0e-3                     # threshold for considering a market "solved"
-  signx <- sign(x)
-  magx  <- abs(x)
-  xx    <- ifelse(magx < ftol, 0,
-                  ifelse(magx < 1, log10(magx)-log10(ftol),
-                         ifelse(magx < 10, (magx-1)-log10(ftol), 9-log10(ftol))))
-  signx*xx                            # return value
-}
-
-### Return a transform function that takes the magnitude and clips it to a maximum value
-clipped.mag.transform <- function(maxmag=10) {
-  function(x) {
-    magx <- abs(x)
-    ifelse(magx>maxmag, maxmag, magx)
-  }
-}
-
-### Return a transform that clamps the values to two bounds
-clamp.transform <- function(xmin=-100, xmax=100) {
-  function(x) {
-    pmax(xmin, pmin(x, xmax))
-  }
-}
-
-### Return a transform function that gives sign(x)*log(x/xmin).
-### x-values less than xmin are flushed to zero, and x-values greater
-### than xmax are clipped to xmax
-signed.log.transform <- function(xmin=1e-4, xmax=100) {
-  function(x) {
-    signx <- sign(x)
-    absx  <- pmax( pmin(abs(x), xmax), xmin)
-    signx * log10(absx/xmin)
-  }
-}
-
-### Transform deltax and deltafx values for better visualization
-deltatransform <- function(x, maxmag=10) {
-  magx <- abs(x)
-  pmin(magx, maxmag)
-}
 
 #-----------------------------------------------------------------
 # COLOR PALETTE FUNCTIONS
 #-----------------------------------------------------------------
-
-fxcolormap <- function(n=51, controlpts=c(-10,-3,0,3,10)) {
-  ### Create colormap for visualizing f(x) values.
-  ###
-  ### The hue will be piecewise over the four intervals defined by the
-  ###  five control points (they need not be equally spaced).  The saturation
-  ###  will ramp down from 1 to 0 on the interval from the first to the third 
-  ###  control points, then back up to 1 on the rest of the interval.  If 
-  ###  centered on 0 (like the default) this will result in a colormap where
-  ###  the magnitude of f(x) is represented by the saturation and the hue localizes  
-  ###  the value to one of four intervals.
-  ###
-  ### Inputs:
-  ###   n - number of steps in the colormap
-  ### controlpts - intervals over which the hue and saturation change.
-  ###
-  ### Return value:  Vector of colors
-  xlo <- controlpts[1]
-  x1  <- controlpts[2]
-  xm  <- controlpts[3]
-  x2  <- controlpts[4]
-  xhi <- controlpts[5]
-  
-  x = seq(0,n-1) * (xhi-xlo)/(n-1) + xlo
-  ## Hue is piecewise constant on four intervals
-  h1 <- ifelse(x<x1, 0, 90/360)
-  h2 <- ifelse(x>x2, 240/360, 180/360)
-  H <- ifelse(x<xm, h1, h2)
-  
-  ## Use "option 2 for the saturation"
-  eps <- 1.0e-8        # protect against roundoff giving vaues slightly larger than 1
-  S <- ifelse(x<xm, 1-(x-xlo)/(xm-xlo), (x-xm)/(xhi-xm+eps))
-  
-  ## Constant 1 for value
-  hsv(H, S, 1)
-}
 
 qualPalette<- function(n = 31, pal = 'Set3', na.val = 'grey50'){
   colors<-colorRampPalette(brewer.pal(8, pal))(n)
@@ -376,201 +239,206 @@ qualPalette<- function(n = 31, pal = 'Set3', na.val = 'grey50'){
 
 
 #-----------------------------------------------------------------
-# MAPPING WRAPPER FUNCTIONS
+# MAPPING FUNCTIONS
 #-----------------------------------------------------------------
+# coord_GCAM: This function unifies the ggplot2 and ggalt coordinate systems to make use 
+#   of both of them, depending on the projection needed. Can be used with any ggplot2 map object.
+#   If projection is orthographic, will use ggplot2 coord_map functionality. If projection is not 
+#   orthographic, will use ggalt coord_proj functionality. 
+#
+# Arguments
+#   proj - the projection. proj4 string or pre-defined variable in diag_header.R
+#   orientation - Use if using orthographic projection
+#   extent - Vector of lat/lon limits c(lat0,lat1,lon0,lon1)
+#   parameters - additional parameters corresponding to coord_map ggplot2 function
+#   inverse ?
+#   degrees - Units for lat/longitude ?
+#   ellps.default - default ellipse to use with projection ?
+#
+# Usage: as add-on function to a ggplot2 object. Example: 
+#  ggplot()+
+#   geom_polygon(data, aes(x,y,group))+
+#   coord_GCAM(proj)
 
-plot_basic<-function(dta,extent=EXTENT_WORLD){
-  ### Wrapper for basic mapping functions: plotting lat/lon lines (graticule)
-  ### and polygons
-  ### Inputs: 
-  ###   dta - dataframe of geometric data (created w/ fortify function from geoJSON)
-  ###         assumption:  dta has already been filtered to the bounding box for
-  ###         the extent being used.  
-  ###   extent - bounding box
-  ### Output: 
-  ###   mp - ggplot2 map object
+coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., parameters = NULL, inverse=FALSE,
+                       degrees=TRUE, ellps.default="sphere"){
   
-  grat<-gen_grat()
-  
-  #Plot graticule and polygons
-  mp<-ggplot()+
-    geom_path(data=grat,aes(long,lat,group=group,fill=NULL),color=LINE_GRAT)+
-    geom_polygon(data=dta, aes(long,lat,group=group),fill=RGN_FILL, color=LINE_COLOR)
-  
-  return(mp)
-}
-
-
-project_map<-function(mp, prj, extent, orientation=NULL){
-  ### Transform map coordinates to specified projection
-  ### Inputs: 
-  ###   mp - ggplot2 map object
-  ###   prj - A proj4 string or, if orthographic, the string "orthographic"
-  ###   extent - bounding box of map
-  ###   orientation - if using orthographic projection, orientation c(lat0,lon0,radius)
-  ### Outputs: 
-  ###   mp - transformed ggplot2 map object
-  
-  if (grepl("ortho",prj)){
-    mp<-mp+
-      coord_map(proj="orthographic", orientation=orientation, xlim=c(extent[1], extent[2]), 
-                ylim=c(extent[3], extent[4]))
-  }else{
-    mp<-mp+
-      coord_proj(proj=prj, xlim=c(extent[1], extent[2]), ylim=c(extent[3], extent[4]))
+  if (is.null(proj)){
+    # Default proj4 pstring for default GCAM projection (Robinson)
+    proj <- paste0(c("+proj=robin +lon_0=0 +x_0=0 +y_0=0", 
+                     "+ellps=WGS84 +datum=WGS84 +units=m +nodefs"), 
+                   collapse = " ")
   }
-  return(mp)
+  
+  if (is.null(parameters)){
+    params <- list(...)
+  } else {
+    params <- parameters
+  }
+  
+  # Default extent is EXTENT_WORLD (-180,180,-90,90)
+  if (is.null(extent)){
+    xlim <- c(-180,180)
+    ylim <- c(-90,90)
+  } else{
+    xlim <- c(extent[1], extent[2])
+    ylim <- c(extent[3], extent[4])
+  }
+  
+  # Use ggproto object defined in ggplot2 package if using orthographic map projection 
+  if(grepl("ortho", proj)){
+    ggproto(NULL, CoordMap,
+            projection = proj,
+            orientation = orientation,
+            limits = list(x = xlim, y = ylim),
+            params = params
+    )
+  } else{
+    # Otherwise use ggproto object defined in ggalt package for default GCAM projections
+    ggproto(NULL, CoordProj,
+            proj = proj,
+            inverse = inverse,
+            ellps.default = ellps.default,
+            degrees=degrees,
+            limits = list(x = xlim, y = ylim),
+            params = list()
+    )
+  }
+  
 }
 
-add_theme<-function(mp, title, legend=TRUE){
-  ### Wrapper for ggplot2's theme specifications
-  ### Hard-coded for now; possibly can make this customizable
-  ### Inputs: 
-  ###   mp - ggplot2 map object
-  ###   title - string; title of map
-  ### Outputs:  
-  ###   mp - ggplot2 map object with theme attributes specified
+
+# theme_GCAM: Default GCAM theme function. Can be used with any ggplot2 object. 
+#   Derives from ggplot2 black and white theme function (theme_bw)
+#
+# Arguments: 
+#   base_size: Base font size
+#   base_family: Base font type
+#   legend: T or F; whether to include a legend with default legend formatting. 
+#
+# Usage: As add-on function to any ggplot2 object. 
+theme_GCAM <- function(base_size = 11, base_family="", legend=F){
   
-  mp<-mp+
-    theme(panel.border=element_rect(color=LINE_COLOR, fill=NA), 
-          panel.background=PANEL_BACKGROUND,
-          panel.grid=PANEL_GRID,
-          axis.ticks=AXIS_TICKS, axis.text=AXIS_TEXT,
-          legend.position= 'none')+
-    labs(title=title, x=XLAB, y=YLAB)
-  
-  if (legend==T){
-    mp<-mp+
-      theme( legend.key.size = unit(1.5, "cm"),
-             legend.text = element_text(size = 14),
-             legend.title = element_text(size=14, face="bold"),
-             legend.position = LEGEND_POSITION, 
-             legend.key=element_rect(color='black'))
+  if (legend==F){
+    theme_bw(base_size = base_size, base_family= base_family) %+replace%
+      theme(
+        panel.border = element_rect(color = LINE_COLOR, fill = NA),
+        panel.background = PANEL_BACKGROUND,
+        panel.grid = PANEL_GRID,
+        axis.ticks = AXIS_TICKS,
+        axis.text = AXIS_TEXT,
+        legend.position='none'
+      ) 
   }
-         
-   
-  return(mp)
+  
+  else if (legend==T){
+    theme_bw(base_size = base_size, base_family= base_family) %+replace%
+      theme(
+        panel.border = element_rect(color = LINE_COLOR, fill = NA),
+        panel.background = PANEL_BACKGROUND,
+        panel.grid = PANEL_GRID,
+        axis.ticks = AXIS_TICKS,
+        axis.text = AXIS_TEXT,
+        legend.key.size = unit(1.5, "cm"),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size=14, face="bold"),
+        legend.position = LEGEND_POSITION, 
+        legend.key=element_rect(color='black')
+      )
+  }
+  
 }
+
+
+
 
 #-----------------------------------------------------------------
 # MAPS
 #-----------------------------------------------------------------
+# plot_GCAM: Primary GCAM mapping function. Can handle categorical or continuous data. 
+#   
+# Arguments: 
+#   mapdata - The data frame containing both geometric data (lat, long, id) and regional metadata.
+#     This is the only mandatory variable. If used alone, will produce the default map. 
+#   col - If plotting categorical/contiuous data, the name of the column to plot
+#     !Will automatically determine type of style of plot based on type of data (numeric or character)!
+#     !Don't plot numeric data stored as character or this will produce an error!
+#   proj, extent, orientation: arguments passed to coord_GCAM function
+#   title - Title of map
+#   Legend - T/F value - use legend or not. Argument to theme_GCAM function
+#   Colors - a vector of colors to use; otherwise will use defaults if necessary. 
+#   qtitle - The title of the legend
+#   limits - The range of the legend color bar; vector with 2 values: c(min, max)
+#   colorfcn - If plotting categorical data, the function used to generate a colorscheme when colors
+#         are not provided (usually qualPalette)
 
-basemap<-function(dta, prj=robin, extent=EXTENT_WORLD, title=NULL, orientation=NULL){
-  ### Wrapper for mapping functions to produce default map
-  ### Inputs: 
-  ###   dta - geometric dataframe (fortified geoJSON object)
-  ###   prj - proj4 string (except for orthographic)
-  ###   extent - bounding box
-  ###   title - title of map (string)
-  ###   orientation - c(lat0,lon0, radius); for orthographic projections only
-  ### Outputs: 
-  ###   mp - ggplot2 map object
-
-  map.polys <- get_bbox_polys(dataset=dta, bbox=extent)
-  mp<-plot_basic(dta, extent)
+plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orientation = NULL, 
+                      title = NULL, legend = F, colors = NULL, qtitle=NULL, limits=NULL, 
+                      colorfcn=NULL, ...){
   
-  #Reproject map
-  mp<-project_map(mp, prj, extent, orientation)
+  # Generate graticule (latitude/longitude lines) and clip map to extent specified.
+  grat<-gen_grat()
+  mappolys <- get_bbox_polys(dataset = mapdata)
   
-  # Thematic details
-  mp<-add_theme(mp, title)
   
-  return(mp)
-}
-
-map_category<-function(dta, prj, colors='none', colorfcn=NULL, colname="id", extent=EXTENT_WORLD, orientation= NULL, title=NULL, qtitle=NULL, ...){
-  ### Produces map colored by categorical data
-  ### Inputs: 
-  ###   dta - geometric dataframe (fortified geoJSON object)
-  ###   prj - proj4 string (special case: orthographic)
-  ###   colors - color palette; if none will select automatically using colorfcn
-  ###   colorfcn - a function to select colors
-  ###   colname - category column
-  ###   extent - bounding box
-  ###   orientation - orientation - c(lat0,lon0, radius); for orthographic projections only
-  ###   title - map title
-  ###   qtitle - optional title for map legend
-  ###   ... - extra arguments passed to colorfcn
+  #Plot graticule and polygons
+  mp<-ggplot()+
+    geom_path(data=grat,aes(long,lat,group=group,fill=NULL),color=LINE_GRAT)+
+    geom_polygon(data=mappolys, aes_string("long","lat",group="group",fill=col), color=LINE_COLOR)
   
-  #Get polygons that fall within bounding box
-  mappolys<-get_bbox_polys(dataset = dta, bbox = extent)
-  
-  mp<-plot_basic(mappolys, extent)
-  
-  if (colors=='none'){
-    colors<-colorfcn(n = length(unique(mappolys[[colname]])), ...)
+  # If a column name is specified, add a color gradient or categorical colors
+  if (!is.null(col)){
+    
+    if(typeof(mappolys[[col]])=='double'|typeof(mappolys[[col]])=='integer'){
+      # Instructions for color gradient
+      # Calculate legend label increments ('breaks')
+      if(is.null(limits)) 
+        breaks <- calc.breaks.map(mappolys, col)
+      else
+        breaks <- calc.breaks(limits[2])
+      
+      # Use default colors if none specified
+      if(is.null(colors))
+        colors <- DEFAULT_CHOROPLETH
+      
+      # Add color scale to map
+      mp <- mp+
+        scale_fill_gradientn(name=qtitle, colors=colors, values=NULL, guide=GUIDE, space=SPACE,
+                             na.value=NA_VAL, breaks=breaks,limits=limits, 
+                             labels=breaks)
+      
+    } else if(typeof(mappolys[[col]])=='character'){
+      # Instructions for categorical map
+      # Use default color scheme and color function if none specified
+      if (is.null(colors)){
+        if(is.null(colorfcn)){
+          colorfcn <- qualPalette
+        }
+        colors<-colorfcn(n = length(unique(mappolys[[col]])), ...)
+      }
+      
+      # Add color scale to map
+      mp <- mp+
+        scale_fill_manual(values=colors,name=qtitle)
+    }
+  } else{
+    # If no data is being plotted, use default color scale
+    mp <- mp + 
+      geom_polygon(data=mappolys, aes_string("long","lat",group="group",fill=col),fill=RGN_FILL, color=LINE_COLOR)
   }
   
-  mp<-mp+
-    geom_polygon(data=mappolys, aes_string(x='long',y='lat',group='group', fill=colname), 
-                 color=LINE_COLOR)+
-    scale_fill_manual(values=colors, name=qtitle)
+  # Project map and add theme and labels
+  mp <- mp + 
+    coord_GCAM(proj=proj,orientation=orientation,extent=extent)+
+    theme_GCAM(legend=legend)+
+    labs(title=title, x=XLAB, y=YLAB)
   
-  mp<-project_map(mp, prj, extent)
-  mp<-add_theme(mp, title, legend=F)
-    
   return(mp)
 }
 
-map_query<-function(mapdata, colname, colors, xform= identity, values=NULL, prj=robin, 
-                    extent=EXTENT_WORLD, orientation=NULL, title=NULL, qtitle=NULL, limits=NULL){
-  ### Produces map colored based on numeric data (sequential, diverging data)
-  ### Inputs: 
-  ###   mapdata - geometric data frame (fortified geoJSON object); typically w/ GCAM scenario data attached
-  ###   colname - string; name of column of interest
-  ###   colors - vector of colors to use
-  ###   xform - transformation to perform on column of interest
-  ###   values - 
-  ###   prj, extent, orientation, title, qtitle -- defined in map_category function
-  ### Outputs: 
-  ###   mp - ggplot2 map object
-  
-  #Convert data of interest to numeric
-  mapdata[, colname]<-as.numeric(mapdata[,colname])
-  
-  #Get polygons that fall within bounding box
-  mappolys<-get_bbox_polys(dataset = mapdata, bbox = extent)
-  
-  mp<-plot_basic(mappolys, extent) #Mapdata or mappolys? 
-  
-  mappolys[[colname]]<-xform(mappolys[[colname]])
 
-  if(is.null(limits)) 
-      breaks <- calc.breaks.map(mappolys, colname)
-  else
-      breaks <- calc.breaks(limits[2])
-  
-  #Plot data
-  mp<-mp+
-      geom_polygon(data = mappolys,aes_string("long", "lat", group="group", fill=colname), 
-                 color=LINE_COLOR)+
-    scale_fill_gradientn(name=qtitle, colors=colors, values=values, guide = GUIDE, space=SPACE,
-                      na.value = NA_VAL, breaks=breaks, limits=limits,
-                      labels=breaks)  #Need fcn for factor to divide by
-                      
-  #Reproject map
-  mp<-project_map(mp, prj, extent, orientation)
-  mp<-add_theme(mp, title)
-  
-  return(mp)
-  
-}
 
-#-----------------------------------------------------------------
-#Map #4: Display points
 
-# displayPoints<-function(datatable, map, colname, mapname='map'){
-#   #Basic function to overlay points on a map
-#   #Assumes data table is already formatted --i.e. if geoJSON point data, converted to data frame
-#   mp<-basemap(map=map)
-#   mp<-mp+
-#     geom_point(aes_string(x='coords.x1', y='coords.x2', size=colname, 
-#                           color=colname), data=datatable)+
-#     scale_size_discrete(range=c(4,7))
-#   return(mp)
-# }
-#
 #-----------------------------------------------------------------
 # MISC UTILS
 #-----------------------------------------------------------------
