@@ -2,26 +2,21 @@
 ###TODO: 
     #Add paths for saving files
 
-
-basedir.viz <- dirname(sys.frame(1)$ofile)
-
-library(rgdal)
-library(ggplot2)
-library(ggalt)  # must install the github version:  install_github('hrbrmstr/ggalt')
-library(graticule)
-library(rgeos)
-library(maptools)
-library(gpclib)
-library(sp)
-library(mapproj)
+tryCatch(
+  if(!exists('basedir.viz')){
+    basedir.viz <- dirname(sys.frame(1)$ofile)
+  },
+  error = function(e){
+    stop("Could not determine location of workspace. Please set the R variable 'basedir.viz' to the appropriate location.")
+  }
+)
 
 #Core map functions
-source(file.path(basedir.viz, "Map_Params.R"))
 source(file.path(basedir.viz, "diag_header.R"))
 source(file.path(basedir.viz, "Map_Parser.R"))
 source(file.path(basedir.viz, "Map_Functions.R"))
 
-gpclibPermit()
+gpclibPermit() 
 
 #-----------------------------------------------------------------
 #To geojson: writeOGR(d, layer="",dsn="China_map.geojson",driver="GeoJSON")
@@ -44,38 +39,38 @@ prim_en<-addRegionID(prim_en, file.path(basedir.viz, "../input-data/rgn32/lookup
 map_primen<-merge(map_32_wo_Taiwan.fort, prim_en, by="id")
 
 #-----------------------------------------------------------------
+# Sample Maps generated with plot_GCAM and GCAM32 shapefile
 
-#MAPSET 1: Basemaps - World Maps, various projections, various types
-#Map 1A: Eckert III World, Colored by Region
-mp1<-map_category(map_32_wo_Taiwan.fort, prj = eck3, colorfcn=qualPalette)
+#Example 1: Eckert III World Projection, Colored by Region
+mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
 mp1
 
-#Map 1B: Robinson World, Colored by Oil Consumption
-mp2<-map_query(map_primen, "X2050", c("white", "red"), prj=robin, title="Robinson World", qtitle="Oil Consumption, 2050")
+#Example 2: Robinson World Projection, Colored by Oil Consumption by Region
+mp2<-plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"), 
+               title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
 mp2
 
-
-#Map 1C: Winkel-Tripel
-mp3<-basemap(map_32_wo_Taiwan.fort, prj=wintri, title="Winkel-Tripel World")
+#Example 3: Winkel-Tripel Projection, Default Color and Style
+mp3<-plot_GCAM(map_32_wo_Taiwan.fort, proj=wintri, title="Winkel-Tripel World")
 mp3
 
-
-#Map 1D USA Albers Equal Area
-
-mp4<-basemap(map_32_wo_Taiwan.fort, extent=EXTENT_USA, title="USA Albers Equal-Area")
+#Example 4: U.S. Projection (Albers Equal-Area)
+mp4<-plot_GCAM(map_32_wo_Taiwan.fort, proj=na_aea,  extent=EXTENT_USA, title="USA Albers Equal-Area")
 mp4
 
-#Map 1E China 
-
-mp5<-basemap(map_32_wo_Taiwan.fort, extent=EXTENT_CHINA, title="China Albers Equal-Area")
+#Example 5: China Projection (Albers Equal-Area)
+mp5<-plot_GCAM(map_32_wo_Taiwan.fort, proj=ch_aea,extent=EXTENT_CHINA, title="China Albers Equal-Area")
 mp5
 
-
-# Map 1F Africa
-mp6<-basemap(map_32_wo_Taiwan.fort, extent=EXTENT_AFRICA, orientation=ORIENTATION_AFRICA, prj="orthographic",title= "Africa Orthographic")
+#Example 6: Africa Projection (Orthographic)
+mp6<-plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_AFRICA, 
+               orientation=ORIENTATION_AFRICA, proj="orthographic",title= "Africa Orthographic")
 mp6
 
-# Map 1G Latin America
-mp7<-basemap(map_32_wo_Taiwan.fort, extent=EXTENT_LA, orientation= ORIENTATION_LA, prj="orthographic", title="Latin America Orthographic")
+#Example 7: Latin America Projection (Orthographic)
+mp7<-plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_LA, 
+               orientation= ORIENTATION_LA, proj="orthographic", title="Latin America Orthographic")
 mp7
+
+
   

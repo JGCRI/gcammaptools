@@ -149,7 +149,7 @@ dropRegions<-function(datatable, drops){
 #---------------------------------------------------------------------------
 # MAPPING UTILS
 #---------------------------------------------------------------------------
-get_bbox_polys<-function(dataset, bbox){
+get_bbox_polys<-function(dataset, bbox=EXTENT_WORLD){
   ### Modifies map data to include only polygons that lie partially within 
   ### bounding box. 
   ### Inputs: 
