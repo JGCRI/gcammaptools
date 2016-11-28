@@ -2,14 +2,8 @@
 ###TODO: 
     #Add paths for saving files
 
-tryCatch(
-  if(!exists('basedir.viz')){
-    basedir.viz <- dirname(sys.frame(1)$ofile)
-  },
-  error = function(e){
-    stop("Could not determine location of workspace. Please set the R variable 'basedir.viz' to the appropriate location.")
-  }
-)
+map_demos.R <- function(){} 
+basedir.viz <- getSrcDirectory(map_demos.R) 
 
 #Core map functions
 source(file.path(basedir.viz, "diag_header.R"))
