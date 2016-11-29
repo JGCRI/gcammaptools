@@ -246,7 +246,6 @@ SPACE="Lab"
 
 #TODO - ALTER to inc. colorschemes
 DEFAULT_CHOROPLETH <- c('white', 'red')
-TRANSFORMATION = 'none' #Mathematical transformation (i.e. 'log', 'sqrt')
 NA_VAL<-"grey50"
 
 #Background
