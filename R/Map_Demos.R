@@ -19,15 +19,15 @@ gpclibPermit()
 #-----------------------------------------------------------------
 #Prepare Data
 #Scenario Data
-tables<-parse_mi_output(fn = file.path(basedir.viz, "../input-data/sample-batch.csv"))
+tables<-parse_mi_output(fn = file.path(basedir.viz, "../data/sample-batch.csv"))
 
 #Map Data
-map_32_wo_Taiwan<-readOGR(file.path(basedir.viz, "../input-data/rgn32/GCAM_32_wo_Taiwan_clean.geojson"), "OGRGeoJSON")
+map_32_wo_Taiwan<-readOGR(file.path(basedir.viz, "../data/rgn32/GCAM_32_wo_Taiwan_clean.geojson"), "OGRGeoJSON")
 map_32_wo_Taiwan.fort<-fortify(map_32_wo_Taiwan, region="GCAM_ID")
 
 #Break out sample scenario
 prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
-prim_en<-addRegionID(prim_en, file.path(basedir.viz, "../input-data/rgn32/lookup.txt"), drops=file.path(basedir.viz, "../input-data/rgn32/drop-regions.txt"))
+prim_en<-addRegionID(prim_en, file.path(basedir.viz, "../data/rgn32/lookup.txt"), drops=file.path(basedir.viz, "../data/rgn32/drop-regions.txt"))
 
 #Merge dataset with map data
 map_primen<-merge(map_32_wo_Taiwan.fort, prim_en, by="id")
