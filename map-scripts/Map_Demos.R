@@ -1,16 +1,16 @@
 ###Generate Maps for GCAM Map Document
-###TODO: 
+###TODO:
     #Add paths for saving files
 
-map_demos.R <- function(){} 
-basedir.viz <- getSrcDirectory(map_demos.R) 
+map_demos.R <- function(){}
+basedir.viz <- getSrcDirectory(map_demos.R)
 
 #Core map functions
 source(file.path(basedir.viz, "diag_header.R"))
 source(file.path(basedir.viz, "Map_Parser.R"))
 source(file.path(basedir.viz, "Map_Functions.R"))
 
-gpclibPermit() 
+gpclibPermit()
 
 #-----------------------------------------------------------------
 #To geojson: writeOGR(d, layer="",dsn="China_map.geojson",driver="GeoJSON")
@@ -37,34 +37,34 @@ map_primen<-merge(map_32_wo_Taiwan.fort, prim_en, by="id")
 
 #Example 1: Eckert III World Projection, Colored by Region
 mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
-mp1
+print(mp1)
 
 #Example 2: Robinson World Projection, Colored by Oil Consumption by Region
-mp2<-plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"), 
+mp2<-plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"),
                title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
-mp2
+print(mp2)
 
 #Example 3: Winkel-Tripel Projection, Default Color and Style
 mp3<-plot_GCAM(map_32_wo_Taiwan.fort, proj=wintri, title="Winkel-Tripel World")
-mp3
+print(mp3)
 
 #Example 4: U.S. Projection (Albers Equal-Area)
 mp4<-plot_GCAM(map_32_wo_Taiwan.fort, proj=na_aea,  extent=EXTENT_USA, title="USA Albers Equal-Area")
-mp4
+print(mp4)
 
 #Example 5: China Projection (Albers Equal-Area)
 mp5<-plot_GCAM(map_32_wo_Taiwan.fort, proj=ch_aea,extent=EXTENT_CHINA, title="China Albers Equal-Area")
-mp5
+print(mp5)
 
 #Example 6: Africa Projection (Orthographic)
-mp6<-plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_AFRICA, 
+mp6<-plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_AFRICA,
                orientation=ORIENTATION_AFRICA, proj="orthographic",title= "Africa Orthographic")
-mp6
+print(mp6)
 
 #Example 7: Latin America Projection (Orthographic)
-mp7<-plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_LA, 
+mp7<-plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_LA,
                orientation= ORIENTATION_LA, proj="orthographic", title="Latin America Orthographic")
-mp7
+print(mp7)
 
 
-  
+
