@@ -1,0 +1,102 @@
+--- 
+title: "GCAM Mapping Tools Examples"
+author: "Catherine Ledna and Robert Link"
+date: "`r Sys.Date()`"
+output:  rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{GCAM Mapping Tools Examples}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+--- 
+
+# GCAM Mapping Tools Examples
+
+## Introduction
+This vignette explains how to use the GCAM Mapping Tools package to display GCAM data in map form.  Using this package has a couple of advangages over rolling your own maps.  First, it's easy.  By the time you've worked through these examples, you will be able to make maps of GCAM data with just a few simple commands.  Second, we have defined some default projections and extents for common use cases.  This will ensure that the maps you make look professional and conform the the GCAM house style.
+
+## Setup
+To get started with the GCAM map tools, attach the `gcammaptools` package.  For now, you will also need to make the arcane-looking call to `gpclibPermit()` as shown below.
+```{r setup}
+library('gcammaptools')
+## The function call below shouldn't be necessary, provided that we attach rgeos
+## prior to attaching maptools.  We need to figure out how to make sure that
+## happens in the library version.
+maptools::gpclibPermit()                # TODO:  This function is deprecated.  Figure out how to replace.
+```
+
+## Loading GCAM data
+
+You will need to load two types of data:  the map data (analogous to shape files in GIS tools) and the GCAM data.  The map data can be either loaded from the package (coming soon), or you can load your own.  Here is an example of how to do the latter.  The first line reads the map data, and the second turns it into a data frame indexed by region identifier.  This "map data frame" is what you will pass to the plotting functions.
+```{r load.map}
+## This is gross.  We need to provide functions to load the data sets provided with the package.
+map_32_wo_Taiwan<-rgdal::readOGR("../data/rgn32/GCAM_32_wo_Taiwan_clean.geojson", "OGRGeoJSON")
+map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
+```
+
+The package also provides functions for loading GCAM results from the files produced by the GCAM ModelInterface.  The `parse_mi_output` function reads the file output by the ModelInterface.  The `process_batch_q` function extracts a single table from it, and the `addRegionID` function adds the region identifiers used in the map data.  Once you have done all three of these steps, you must merge the resulting data frame with the map data frame you created above.
+```{r load.data}
+### What is this writeOGR stuff?  Do we need it?
+#-----------------------------------------------------------------
+#To geojson: writeOGR(d, layer="",dsn="China_map.geojson",driver="GeoJSON")
+
+# Load scenario data
+tables<-parse_mi_output(fn = "../data/sample-batch.csv")
+
+#Break out sample scenario
+prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
+prim_en<-addRegionID(prim_en, "../data/rgn32/lookup.txt", drops="../data/rgn32/drop-regions.txt")
+#Merge dataset with map data
+map_primen<-merge(map_32_wo_Taiwan.fort, prim_en, by="id")
+```
+At the end of all this, `map_primen` is a map data frame that has primary energy consumption by region.  Each model year is a separate column.
+
+## Sample Maps generated with plot_GCAM and GCAM32 shapefile
+
+### Example 1: Eckert III World Projection, Colored by Region
+
+This example just plots the map data frame with the GCAM region id.  Thus, you get each region colored according to a discrete color palette.
+```{r mp1, fig.width=8}
+plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
+```
+
+### Example 2: Robinson World Projection, Colored by Oil Consumption by Region
+In this example we plot the map data frame of primary energy that we created above.  We select the column for model year 2050.  We also use a different projection than we used above.
+```{r mp2, fig.width=8}
+plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"),
+          title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
+```
+
+### Example 3: Winkel-Tripel Projection, Default Color and Style
+This is a plot of the region boundaries in the Winkel-Tripel projection.  Since we didn't specify a column to plot, all of the regions are filled in grey.
+```{r mp3, fig.width=8}
+plot_GCAM(map_32_wo_Taiwan.fort, proj=wintri, title="Winkel-Tripel World")
+```
+
+### Example 4: U.S. Projection (Albers Equal Area)
+This map is specialized to the continental USA.  The `na_aea` and `EXTENT_USA` symbols are defined for convenience, but you can use any valid proj4 string (see `proj4::project` for how these strings are constructed) for the projection.  The extent should be the bounding box of the plot area in the form `c(lon.min, lon.max, lat.min, lat.max)`.
+```{r mp4, fig.width=8}
+plot_GCAM(map_32_wo_Taiwan.fort, proj=na_aea,  extent=EXTENT_USA, title="USA Albers Equal-Area")
+```
+
+### Example 5: China Projection (Albers Equal Area)
+A map of China.  Although the projection is once again the Albers equal area projection, we have to have a different projection string because the string includes some information about the parallels the projection is based on.
+```{r mp5, fig.width=8}
+plot_GCAM(map_32_wo_Taiwan.fort, proj=ch_aea,extent=EXTENT_CHINA, title="China Albers Equal-Area")
+```
+
+### Example 6: Africa Projection (Orthographic)
+For superregions with a long north-south extent, the orthographic projection gives the best result.  We use a different back-end function to compute the projection for this case, so you should pass the symbol `ortho` to the `proj` argument.  You will also have to supply the `orientation` argument, for which we have defined several convenient values.  This one gives you a map of Africa.
+```{r mp6, fig.width=8}
+plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_AFRICA,
+          orientation=ORIENTATION_AFRICA, proj=ortho,title= "Africa Orthographic")
+```
+
+### Example 7: Latin America Projection (Orthographic)
+Orthographic projection of the Latin America superregion.
+```{r mp7, fig.width=8}
+plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_LA,
+        orientation= ORIENTATION_LA, proj=ortho, title="Latin America Orthographic")
+```
+
+
+

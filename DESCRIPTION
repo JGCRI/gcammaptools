@@ -1,6 +1,6 @@
 Package: gcammaptools
 Title: Plot GCAM Output on Maps
-Version: 0.0.2
+Version: 0.1.0
 Authors@R: c(
 	   person("Catherine", "Ledna", email = "catherine.ledna@pnnl.gov", role = c("aut", "cre")),
 	   person("Robert", "Link", email="robert.link@pnnl.gov", role="ctb")
@@ -18,6 +18,7 @@ Imports:
     ggplot2,
     ggalt (>= 0.3.1.9000),
     graticule,
+    magrittr (>= 1.5),
     mapproj,
     maptools,
     RColorBrewer,
@@ -25,3 +26,6 @@ Imports:
     rgeos,
     sp
 RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

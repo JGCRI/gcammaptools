@@ -3,33 +3,28 @@
 # DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
 
-#' Global imports
-#' @import ggplot2
-#' @import ggalt
-#' @import graticule
-#' @import rgeos
-#' @import maptools
-#' @import sp
-#' @import mapproj
-#' @import RColorBrewer
-#' @import dplyr
-NULL
-
+#' Extract a query from a list of queries and filter to desired output.
+#'
+#' Extract the desired table from the structure produced by
+#' \code{\link{parse_mi_output}}.  Optionally, perform some filtering
+#' and transformation on the data.  (XXX: We need _way_ more
+#' information here.  What gets filtered and transformed, and how does
+#' it work?)
+#'
+#' @param batchq The structure containing the GCAM results (produced
+#' by \code{\link{parse_mi_output}}).
+#' @param query The name of the table to extract; i.e., the name of
+#' one of the queries cointained in the GCAM output.
+#' @param scen The name of the scenario.  Partial matches are allowed.
+#' @param filters A named vector of filtering criteria in the form
+#' \code{c(header1=value1, header2=value2,...)}.  Headers are the
+#' names of columns in the data frame.  If aggregating data, use the
+#' value "Aggregate".  (XXX: Needs further explanation!)
+#' @param func Operation to apply to the aggregated data.  (XXX: Does
+#' this mean that this option is active only when using the
+#' "Aggregate" option above?)
+#' @export
 process_batch_q<-function(batchq, query, scen, filters, func=sum){
-  ### Extract a query from a list of queries and filter to desired output.
-  ### Allows for simple transformations on data (sum, mean, stdev, etc)
-  ### Inputs:
-  ###   batchq - the output from parse_mi_output; a list of tables of queries.
-  ###   query - the name of the table you would like to select from batchq
-  ###   scen - the name of the scenario; can be partial
-  ###   filters - a named vector of filtering criteria, in the form:
-  ###           "c(header1 = value1, header2 = value2, ...), where headers
-  ###           are the names of columns in the data frame. If aggregating data,
-  ###           use the value "Aggregate".
-  ###   func - optional; specify the operation you would like to perform on the
-  ###           aggregated data (e.g. mean, sum, etc.)
-  ### Outputs:
-  ###   qdata - a data frame of filtered query data.
 
   qdata<-as.data.frame(batchq[[query]])
 
@@ -58,20 +53,21 @@ process_batch_q<-function(batchq, query, scen, filters, func=sum){
 
 }
 
-#TODO - modify to search for appropriate lookup, province, drop files in directory.
+###TODO - modify to search for appropriate lookup, province, drop files in directory.
+#' Match GCAM ID to region using data from a lookup table.
+#'
+#' We match by ID number to avoid problems with variant spellings and the like.
+#' @param datatable A table of results produced by \code{\link{process_batch_q}}
+#' @param lookupfile File containing the region lookup table.  XXX: we
+#' need to provide a mechanism for users to use the data installed
+#' internally in the package.
+#' @param provincefile File containing the province lookup table, if
+#' applicable. XXX: Same comment as above
+#' @param drops File containing a list of regions to drop, if
+#' applicable.  XXX: Same comment as above.
+#' @return Input table modified to include a GCAM ID for reach region.
+#' @export
 addRegionID<-function(datatable, lookupfile, provincefile='none', drops='none') {
-  ### Match GCAM ID to region using lookup file. Last data processing step
-  ###   before joining GCAM scenario data to geoJSON map.
-  ###   Could just join by region, but prefer to avoid possible spelling
-  ###   issues.
-  ### Inputs:
-  ###   datatable - a query data frame processed with process_batch_q
-  ###   lookupfile - string; path to the lookup file for the geoJSON map
-  ###   provincefile - string; path to the province translation file, if applicable
-  ###   drops - string; path to the drop regions file, if applicable
-  ### Outputs:
-  ###   finaltable - a data frame with GCAM ID attached to each region.
-
   if (provincefile != 'none'){
     datatable<-translateProvince(datatable, provincefile)
   }
@@ -209,13 +205,23 @@ gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
 
 }
 
+#' Calculate legend breaks (intervals to put labels on legend scale)
+#'
+#' Given a minimum and maximum value, and number of breaks, calculate
+#' evenly-spaced break values.
+#'
+#' @param maxval Largest value in the scale
+#' @param minval Smallest value in the scale
+#' @param nbreak Number of break points
+#' @param nsig Number of significant digits to display in the legend.
+#' @importFrom magrittr %>%
 calc.breaks <- function(maxval, minval=0, nbreak=5, nsig=3)
 {
     step <- (maxval-minval)/(nbreak-1)
     seq(0,maxval, by=step) %>% signif(nsig)
 }
 calc.breaks.map<-function(mapdata, colname, nbreaks=4, zero.min=TRUE){
-  ### Calculate legend breaks (intervals to put labels on legend scale)
+  ### Calculate legend 
   ### Inputs:
   ###   mapdata - data frame of geometry and scenario data
   ###   colname - column name of interest from which to calculate legend intervals
@@ -240,6 +246,18 @@ calc.breaks.map<-function(mapdata, colname, nbreaks=4, zero.min=TRUE){
 # COLOR PALETTE FUNCTIONS
 #-----------------------------------------------------------------
 
+#' Generate a color palette for categorical data.
+#'
+#' Generate a palette with a specified number of entries.  This
+#' function uses a ramp function to extend the palettes from
+#' \code{\link{RColorBrewer}} so they can handle a larger number of
+#' entries.
+#'
+#' @param n Number of entries desired for the palette
+#' @param pal Name of the palette to base the new palette on. See
+#' \code{RColorBrewer} for the palettes available.
+#' @param na.val Color to use for the null region
+#' @export
 qualPalette<- function(n = 31, pal = 'Set3', na.val = 'grey50'){
   colors<-colorRampPalette(RColorBrewer::brewer.pal(8, pal))(n)
   colors<-setNames(colors, as.character(1:n))
@@ -371,8 +389,45 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #'
 #' This function produces a map visualization of a data set containing
 #' GCAM output data.  The required argument is a data frame of GCAM
-#' results by region.  The functions \code{parse_mi_output} and
-#' \code{process_batch_q} (q.v.) produce suitable data frames.
+#' results by region.  The functions \code{\link{parse_mi_output}} and
+#' \code{\link{process_batch_q}} produce suitable data frames.
+#'
+#' For specifying the projection you can use any Proj4 string.
+#' Projections specified this way are computed using
+#' \code{\link{ggalt::coord_proj}}.  For convenience, this package
+#' defines the following proj4 strings:
+#' \itemize{
+#'   \item \code{\link{eck3}} - Eckert III
+#'   \item \code{\link{wintri}} - Winkel-Tripel
+#'   \item \code{\link{robin}} - Robinson
+#'   \item \code{\link{na_aea}} - Albers equal area (North America)
+#'   \item \code{\link{ch_aea}} - Albers equal area (China)
+#' }
+#'
+#' For orthographic projections, we compute the projection using the
+#' \code{\link{mapproj::coord_map}} function.  To get this projection
+#' pass the \code{\link{ortho}} symbol as the \code{proj} argument.
+#' You will then need to pass a vector in the \code{orientation}
+#' argument.  We have defined the following fequently used orientation
+#' vectors:
+#' \itemize{
+#'   \item \code{\link{ORIENTATION_AFRICA}} - Africa
+#'   \item \code{\link{ORIENTATION_LA}} - Latin America
+#'   \item \code{\link{ORIENTATION_SPOLE}} - South Pole
+#'   \item \code{\link{ORIENTATION_NPOLE}} - North Pole
+#' }
+#'
+#' The \code{extent} argument gives the bounding box of the area to be
+#' plotted.  Its format is \code{c(lon.min, lon.max, lat.min,
+#' lat.max)}.  For convenience we have defined the following
+#' frequently used map extents:
+#' \itemize{
+#'    \item \code{\link{EXTENT_WORLD}} - Entire world
+#'    \item \code{\link{EXTENT_USA}} - Continental United States
+#'    \item \code{\link{EXTENT_CHINA}} - China
+#'    \item \code{\link{EXTENT_AFRICA}} - Africa
+#'    \item \code{\link{EXTENT_LA}} - Latin America
+#' }
 #' 
 #' @param mapdata The data frame containing both geometric data (lat,
 #'   long, id) and regional metadata.  This is the only mandatory
@@ -380,10 +435,14 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #' @param col If plotting categorical/contiuous data, the name of the
 #'   column to plot.  Will automatically determine type of style of plot
 #'   based on type of data (numeric or character).
-#' @param proj Map projection to use in the display map
+#' @param proj Map projection to use in the display map.  This should
+#' be a proj4 string, except for a few special cases.  There are also
+#' symbols defined for some frequently used projections
+#' (e.g. \code{\link{robin}} or \code{\link{na_aea}}).
 #' @param extent Bounding box for the display map
-#' @param orientation The orientation direction (used in projections
-#'   that allow you to specify which way is "up")
+#' @param orientation The orientation vector.  This is only needed for
+#' projections that don't use proj4.  Projections using proj4 encode
+#' this information in their proj4 string.
 #' @param title Text to be displayed as the plot title
 #' @param legend Boolean flag:  True = display map legend; False = do not display legend
 #' @param colors Vector of colors to use in the color scale.  If NULL,

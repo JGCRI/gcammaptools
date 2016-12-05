@@ -35,15 +35,16 @@
 #
 # Ben Bond-Lamberty, November 2012
 
-# UPDATE 1/19/2015
-# Catherine Ledna
-# This script has been modified to incorporate elements of L101_backend_parser.R 
-# (from ADVANCE diagnostics scripts) for use in parsing batch files to display 
-# in GCAM visualization work. 
 
-# -----------------------------------------------------------------------------
-# parse_mi_output: parse the ModelInterface output
-# It tries to be smart, only reading the tables that will actually be needed
+#' Parse the GCAM ModelInterface output
+#'
+#' Parse the raw output of a GCAM batch query into a set of tables.
+#' Normally you will pass the structure returned by this function to
+#' \code{process_batch_q} extract (and optionally do some filtering
+#' and processing on) the table you are looking for.
+#'
+#' @param fn Name of the file containing the output from the GCAM Model Interface.
+#' @export
 parse_mi_output <- function( fn ) {
 
     tables <- list()

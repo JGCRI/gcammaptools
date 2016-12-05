@@ -189,43 +189,113 @@ EXTENSION= '.png'
 # -----------------------------------------------------------------------------
 #Default Projections (as PROJ4 strings)
 
-eck3<-"+proj=eck3"  #Eckert III World projection
-wintri<-"+proj=wintri" #Winkel-Tripel World projection
-robin<-"+proj=robin"  #Robinson world projection
+### Predefined PROJ4 projection strings
+#' Proj4 string for the Eckert III World projection
+#'
+#' String for specifying the Eckert III projection in mapping
+#' functions.  Its value is \code{'+proj=eck3'}
+#' @export
+eck3<-"+proj=eck3"  
+#' Proj4 string for the Winkel-Tripel World projection
+#'
+#' String for specifying the Winkel-Tripel projection in mapping
+#' functions.  Its value is \code{'+proj=wintri'}
+#' @export
+wintri<-"+proj=wintri" 
+#' Proj4 string for the Robinson World projection
+#'
+#' String for specifying the Robinson projection in mapping functions.
+#' Its value is \code{'+proj=robin'}
+#' @export
+robin<-"+proj=robin"  
+#' Proj4 string for the Albers equal area projection over North America.
+#'
+#' String for specifying the Albers equal area projection over North
+#' America in mapping functions.  This is a conic projection situatied
+#' over the continental United States.  Its value is \code{'+proj=aea
+#' +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80
+#' +datum=NAD83'}
+#' @export
 na_aea<-"+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83"
+#' Proj4 string for the Albers equal area projection over China
+#'
+#' String for specifying the Albers equal area projection over China
+#' in mapping functions.  This is a conic projection situatied over
+#' China.  Its value is \code{'+proj=aea +lat_1=20 +lat_2=60 +lat_0=40
+#' +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83'}
+#' @export
 ch_aea<-"+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84"
 
-#Special cases
-ortho_africa<-"orthographic" 
-ortho_la<-"orthographic"
-ortho_polar<-"orthographic"
+### Special cases using coord_map
 
-#For orthographic projections
+#' Projection string for orthographic projections
+#'
+#' Unlike most projections, the orthographic does not use proj4; it
+#' uses the \code{\link{mapproj::coord_map}} function.  You can pass
+#' this value to the \code{proj} argument of \code{\link{plot_GCAM}}
+#' to get an orthographic projection.
+#' @export
+ortho<-"orthographic" 
+
+#' Orientation vector for orthographic projection of Africa
+#'
+#' This vector can be used as the \code{orientation} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
 ORIENTATION_AFRICA<-c(0,15,0)
+#' Orientation vector for orthographic projection of the Latin America superregion
+#'
+#' This vector can be used as the \code{orientation} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
 ORIENTATION_LA<-c(-10,-70,0)
+#' Orientation vector for orthographic projection of the south pole
+#'
+#' This vector can be used as the \code{orientation} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
 ORIENTATION_SPOLE<-c(-90,0,0)
+#' Orientation vector for orthographic projection of the north pole
+#'
+#' This vector can be used as the \code{orientation} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
+ORIENTATION_NPOLE <- c(90,0,0)
 
-#Coord_map default projections
-coord_map_projs<-c("mercator", "sinusoidal", "cylequalarea",
-                   "cylindrical", "rectangular", "gall", 
-                   "mollweide", "gilbert", "azequidistant",
-                   "azequalarea", "gnomonic", "perspective",
-                   ortho="orthographic", "stereographic", "laue",
-                   "fisheye", "newyorker", "conic", "simpleconic",
-                   "lambert", aea="albers", "bonne", "polyconic", 
-                   "aitoff", "lagrange", "bicentric", "elliptic",
-                   "globular", "vandergrinten", "eisenlohr", "guyou",
-                   "square", "tetra", "hex", "harrison", "trapezoidal",
-                   "lune", "mecca", "homing", "sp\\_mercator", "sp\\_albers")
 
 # -----------------------------------------------------------------------------
 # EXTENT
 # (lon0,lon1,lat0,lat1)
 
+#' Extent vector for the entire world
+#'
+#' This vector can be used as the \code{extent} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
 EXTENT_WORLD <- c(-180,180,-90,90)
+#' Extent vector for the continental United States
+#'
+#' This vector can be used as the \code{extent} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
 EXTENT_USA <- c(-120,-70,20,60)
+#' Extent vector for China
+#'
+#' This vector can be used as the \code{extent} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
 EXTENT_CHINA <- c(77,130,15,53)
+#' Extent vector for Africa
+#'
+#' This vector can be used as the \code{extent} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
 EXTENT_AFRICA<-c(-20,60,-40,40)
+#' Extent vector for Latin America
+#'
+#' This vector can be used as the \code{extent} argument to
+#' \code{\link{plot_GCAM}}.
+#' @export
 EXTENT_LA<-c(-120,-30,-60,40)
 
 
