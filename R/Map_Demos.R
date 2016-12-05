@@ -10,7 +10,7 @@ source(file.path(basedir.viz, "diag_header.R"))
 source(file.path(basedir.viz, "Map_Parser.R"))
 source(file.path(basedir.viz, "Map_Functions.R"))
 
-gpclibPermit()
+maptools::gpclibPermit()                # TODO:  This function is deprecated.  Figure out how to replace.
 
 #-----------------------------------------------------------------
 #To geojson: writeOGR(d, layer="",dsn="China_map.geojson",driver="GeoJSON")
@@ -22,8 +22,8 @@ gpclibPermit()
 tables<-parse_mi_output(fn = file.path(basedir.viz, "../data/sample-batch.csv"))
 
 #Map Data
-map_32_wo_Taiwan<-readOGR(file.path(basedir.viz, "../data/rgn32/GCAM_32_wo_Taiwan_clean.geojson"), "OGRGeoJSON")
-map_32_wo_Taiwan.fort<-fortify(map_32_wo_Taiwan, region="GCAM_ID")
+map_32_wo_Taiwan<-rgdal::readOGR(file.path(basedir.viz, "../data/rgn32/GCAM_32_wo_Taiwan_clean.geojson"), "OGRGeoJSON")
+map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
 
 #Break out sample scenario
 prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))

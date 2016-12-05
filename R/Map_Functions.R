@@ -3,6 +3,18 @@
 # DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
 
+#' Global imports
+#' @import ggplot2
+#' @import ggalt
+#' @import graticule
+#' @import rgeos
+#' @import maptools
+#' @import sp
+#' @import mapproj
+#' @import RColorBrewer
+#' @import dplyr
+NULL
+
 process_batch_q<-function(batchq, query, scen, filters, func=sum){
   ### Extract a query from a list of queries and filter to desired output.
   ### Allows for simple transformations on data (sum, mean, stdev, etc)
@@ -159,7 +171,7 @@ get_bbox_polys<-function(dataset, bbox=EXTENT_WORLD){
   ###   newdata - data with only polygons that are at least partially in
   ###           bounding box
 
-    filter(dataset, in_range(long, bbox[1], bbox[2]), in_range(lat, bbox[3], bbox[4]))
+    dplyr::filter(dataset, in_range(long, bbox[1], bbox[2]), in_range(lat, bbox[3], bbox[4]))
 }
 
 ## in_range - Test a vector to see which values are in the interval [a,b]
@@ -183,16 +195,15 @@ gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
 ### precalculating and caching graticules for some commonly-used
 ### configurations.
 
-  require(graticule)
 
   #Generate graticule as sp matrix object
   lons=seq(bbox[1],bbox[2],by=longint)
   lats=seq(bbox[3],bbox[4],by=latint)
 
-  grat<-graticule(lons,lats,xlim=range(lons),ylim=range(lats))
+  grat<-graticule::graticule(lons,lats,xlim=range(lons),ylim=range(lats))
 
   #Convert to ggplot2-friendly format
-  grat<-fortify(grat)
+  grat<-ggplot2::fortify(grat)
 
   return(grat)
 
@@ -230,7 +241,7 @@ calc.breaks.map<-function(mapdata, colname, nbreaks=4, zero.min=TRUE){
 #-----------------------------------------------------------------
 
 qualPalette<- function(n = 31, pal = 'Set3', na.val = 'grey50'){
-  colors<-colorRampPalette(brewer.pal(8, pal))(n)
+  colors<-colorRampPalette(RColorBrewer::brewer.pal(8, pal))(n)
   colors<-setNames(colors, as.character(1:n))
   colors["0"]<-na.val
 
@@ -287,7 +298,7 @@ coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., para
 
   # Use ggproto object defined in ggplot2 package if using orthographic map projection
   if(grepl("ortho", proj)){
-    ggproto(NULL, CoordMap,
+    ggproto(NULL, ggplot2::CoordMap,
             projection = proj,
             orientation = orientation,
             limits = list(x = xlim, y = ylim),
@@ -295,7 +306,7 @@ coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., para
     )
   } else{
     # Otherwise use ggproto object defined in ggalt package for default GCAM projections
-    ggproto(NULL, CoordProj,
+    ggproto(NULL, ggalt::CoordProj,
             proj = proj,
             inverse = inverse,
             ellps.default = ellps.default,
@@ -352,30 +363,54 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 
 
 
-#-----------------------------------------------------------------
-# MAPS
-#-----------------------------------------------------------------
-# plot_GCAM: Primary GCAM mapping function. Can handle categorical or continuous data.
-#
-# Arguments:
-#   mapdata - The data frame containing both geometric data (lat, long, id) and regional metadata.
-#     This is the only mandatory variable. If used alone, will produce the default map.
-#   col - If plotting categorical/contiuous data, the name of the column to plot
-#     !Will automatically determine type of style of plot based on type of data (numeric or character)!
-#     !Don't plot numeric data stored as character or this will produce an error!
-#   proj, extent, orientation: arguments passed to coord_GCAM function
-#   title - Title of map
-#   Legend - T/F value - use legend or not. Argument to theme_GCAM function
-#   Colors - a vector of colors to use; otherwise will use defaults if necessary.
-#   qtitle - The title of the legend
-#   limits - The range of the legend color bar; vector with 2 values: c(min, max)
-#   colorfcn - If plotting categorical data, the function used to generate a colorscheme when colors
-#         are not provided (usually qualPalette)
+##-----------------------------------------------------------------
+## MAPS
+##-----------------------------------------------------------------
 
+#' Primary GCAM mapping function. Can handle categorical or continuous data.
+#'
+#' This function produces a map visualization of a data set containing
+#' GCAM output data.  The required argument is a data frame of GCAM
+#' results by region.  The functions \code{parse_mi_output} and
+#' \code{process_batch_q} (q.v.) produce suitable data frames.
+#' 
+#' @param mapdata The data frame containing both geometric data (lat,
+#'   long, id) and regional metadata.  This is the only mandatory
+#'   variable. If used alone, will produce the default map.
+#' @param col If plotting categorical/contiuous data, the name of the
+#'   column to plot.  Will automatically determine type of style of plot
+#'   based on type of data (numeric or character).
+#' @param proj Map projection to use in the display map
+#' @param extent Bounding box for the display map
+#' @param orientation The orientation direction (used in projections
+#'   that allow you to specify which way is "up")
+#' @param title Text to be displayed as the plot title
+#' @param legend Boolean flag:  True = display map legend; False = do not display legend
+#' @param colors Vector of colors to use in the color scale.  If NULL,
+#'   then default color scheme will be used.
+#' @param qtitle Text to be displayed as the legend title.
+#' @param limits Vector of two values giving the range of the color
+#'   bar in the legend.  c(min,max)
+#' @param colorfcn If plotting categorical data, the function used to
+#'   generate a colorscheme when colors are not provided (if NULL, use
+#'   qualPalette)
+#' @examples
+#'   ## Plot a map of GCAM regions
+#'   map_32_wo_Taiwan<-rgdal::readOGR(file.path(basedir.viz, "../data/rgn32/GCAM_32_wo_Taiwan_clean.geojson"), "OGRGeoJSON")
+#'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
+#'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
+#'
+#'   ## Plot oil consumption by region
+#'   tables<-parse_mi_output(fn = file.path(basedir.viz, "../data/sample-batch.csv"))
+#'   prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
+#'   prim_en<-addRegionID(prim_en, file.path(basedir.viz, "../data/rgn32/lookup.txt"), drops=file.path(basedir.viz, "../data/rgn32/drop-regions.txt"))
+#'   mp2<-plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"), title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
+#' @export
 plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orientation = NULL,
                       title = NULL, legend = F, colors = NULL, qtitle=NULL, limits=NULL,
                       colorfcn=NULL, ...){
 
+    library(ggplot2)
   # Generate graticule (latitude/longitude lines) and clip map to extent specified.
   grat<-gen_grat()
   mappolys <- get_bbox_polys(dataset = mapdata)

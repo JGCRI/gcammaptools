@@ -53,22 +53,17 @@
 #   RColorBrewer 1.1-2
 #   dplyr 0.5.0
 
+#' @import rgdal
+#' @import ggplot2
+#' @import ggalt
+#' @import graticule
+#' @import rgeos
+#' @import maptools
+#' @import sp
+#' @import mapproj
+#' @import RColorBrewer
+#' @import dplyr
 
-libs <- c("rgdal", "ggplot2", "ggalt", "graticule", "rgeos", "maptools", "sp", "mapproj", "RColorBrewer", "dplyr")
-
-#libs <- c( "ggplot2", "reshape2", "stringr", "scales", "rgdal", "plyr", "maptools", "grid" )
-for( i in libs ) {
-    if( !require( i, character.only=T ) ) {
-        cat( "Couldn't load", i, "\n" )
-      if(i=='ggalt'){
-        stop( "Use install_github('hrbrmstr/ggalt') to download this library" )
-      }else {
-        stop( "Use install.packages() to download this library")
-      }
-        
-    }
-    library( i, character.only=T )
-}
 
 # -----------------------------------------------------------------------------
 # Global settings (in CAPITALS)
@@ -249,11 +244,11 @@ DEFAULT_CHOROPLETH <- c('white', 'red')
 NA_VAL<-"grey50"
 
 #Background
-PANEL_BORDER<-element_blank()
-PANEL_BACKGROUND<-element_blank()
-PANEL_GRID<-element_line(colour = 'black')
-AXIS_TICKS<-element_blank()
-AXIS_TEXT<-element_blank()
+PANEL_BORDER<-ggplot2::element_blank()
+PANEL_BACKGROUND<-ggplot2::element_blank()
+PANEL_GRID<-ggplot2::element_line(colour = 'black')
+AXIS_TICKS<-ggplot2::element_blank()
+AXIS_TEXT<-ggplot2::element_blank()
 XLAB<-""
 YLAB<-""
 
