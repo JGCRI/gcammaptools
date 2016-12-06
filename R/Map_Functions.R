@@ -57,26 +57,44 @@ process_batch_q<-function(batchq, query, scen, filters, func=sum){
 #' Match GCAM ID to region using data from a lookup table.
 #'
 #' We match by ID number to avoid problems with variant spellings and the like.
+#' With the optional arguments you can also omit regions for which you don't
+#' want to plot the data for some reason, and you can translate the
+#' abbreviations used in subregion output.
+#'
+#' The \code{provincefile} and \code{drops} arguments are a little clunky.  They
+#' are optional, but if you are using one of the built-in map sets, then you
+#' \emph{must not} specify them if they don't exist for the map set you are
+#' using.  Currently, \code{rgn14} and \code{basin235} have neither drops nor
+#' province abbreviations.  The \code{rgn32} set has drops, but not province
+#' abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
+#' finally implemented) has both.
 #' @param datatable A table of results produced by \code{\link{process_batch_q}}
-#' @param lookupfile File containing the region lookup table.  XXX: we
-#' need to provide a mechanism for users to use the data installed
-#' internally in the package.
-#' @param provincefile File containing the province lookup table, if
-#' applicable. XXX: Same comment as above
-#' @param drops File containing a list of regions to drop, if
-#' applicable.  XXX: Same comment as above.
+#' @param lookupfile Name of one of the predefined map sets, OR, if you're using
+#' a custom map set, the file containing the region lookup table
+#' @param provincefile Name of one of the predefined map sets, OR, if you're
+#' using a custom map set, file containing the province lookup table, if
+#' applicable. 
+#' @param drops Name of one of the predefined map sets, OR, if you're using
+#' a custom map set, the file containing a list of regions to drop, if
+#' applicable.
 #' @return Input table modified to include a GCAM ID for reach region.
 #' @export
-addRegionID<-function(datatable, lookupfile, provincefile='none', drops='none') {
-  if (provincefile != 'none'){
+addRegionID<-function(datatable, lookupfile=lut.rgn32, provincefile=NULL, drops=NULL) {
+  if (!is.null(provincefile)){
     datatable<-translateProvince(datatable, provincefile)
   }
 
-  if (drops != 'none'){
+  if (!is.null(drops)){
     datatable<-dropRegions(datatable, drops)
   }
 
-  lookuptable<-read.csv(lookupfile, strip.white=T, stringsAsFactors = F)
+  lookuptable <-
+      if(is.symbol(lookupfile)) {
+          get.internal(lookupfile,'lut')
+      }
+      else {
+          read.csv(lookupfile, strip.white=T, stringsAsFactors = F)
+      }
 
   #Differentiate region-Region issue
   if ("Region" %in% names(datatable)){
@@ -105,16 +123,23 @@ addRegionID<-function(datatable, lookupfile, provincefile='none', drops='none') 
   return(finaltable)
 }
 
+#' Replace subregion abbreviations with full subregion names
+#'
+#' Subregions are given two-letter abbreviations in GCAM output.  This function
+#' uses a lookup table to restore the full names.
+#'
+#' @param datatable The table with the abbreviated names in it.
+#' @param provincefile Name of a defined mapset OR name of a file containing the
+#' lookup table.
 translateProvince<-function(datatable, provincefile){
-  ### Replace province abbreviations with full province names
-  ### to ensure matching with GCAM map names.
-  ### Inputs:
-  ###   datatable - data frame of query from batch query CSV.
-  ###   provincefile - string; path to file with abbreviations and full names of regions.
-  ### Outputs:
-  ###   datatable - datatable modified so that abbreviations are now full names.
 
-  provincetable<-read.csv(provincefile, strip.white=T)
+    provincetable <-
+        if(is.symbol(provincefile)) {
+            get.internal(provincefile,'prov')
+        }
+        else {
+            read.csv(provincefile, strip.white=T)
+        }
 
   #Differentiate region-Region issue
   if ("Region" %in% names(datatable)){
@@ -142,16 +167,24 @@ dropRegions<-function(datatable, drops){
   ### Outputs:
   ###   datatable - updated data frame with regions dropped.
 
-  dr<-read.csv(drops, strip.white=T, header=F)
-  dr<-as.character(dr$V1)
+    dr <-
+        if(is.symbol(drops)) {
+            get.internal(drops,'drop')
+        }
+        else {
+            read.csv(drops, strip.white=T, header=F)
+        }
+    dr<-as.character(dr$V1)
 
-  regcols<-grepl("egion", names(datatable)) #Find instances of "region" or "Region" columns
+    regcols<-grepl("egion", names(datatable)) #Find instances of "region" or "Region" columns
+    ## ^-- Technically this will also trigger on 'Legion' or 'legion'
 
-  datatable[regcols]<-lapply(datatable[regcols], function(x) replace(x, x %in% dr, NA)) #Replace drop col values with NA
+    ## XXX: Do the next step with dplyr instead of this convoluted way
+    datatable[regcols]<-lapply(datatable[regcols], function(x) replace(x, x %in% dr, NA)) #Replace drop col values with NA
 
-  datatable<-na.omit(datatable) #Remove rows containing NA
-
-  return(datatable)
+    datatable<-na.omit(datatable) #Remove rows containing NA
+    
+    return(datatable)
 }
 
 #---------------------------------------------------------------------------
@@ -534,4 +567,42 @@ plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orie
 
   return(mp)
 }
+
+#' Get auxiliary data for a named mapset.
+#'
+#' We have several standard map sets.  Each of them has several auxiliary tables
+#' associated with it.  This function retrieves the auxiliary table associated
+#' with the requested.  Right now this function understands \code{rgn14},
+#' \code{rgn32}, \code{basin235}, and \code{chn}.
+#'
+#' @param mapset The name of the mapset.  Can be either a symbol or a string.
+#' @param type The type of table.  Right now this is either 'lut', 'drop', or
+#' 'prov'
+get.internal <- function(mapset, type) {
+    eval(as.symbol(paste(type,mapset,sep='.')))
+}
+
+#' Designator for the rgn14 map set
+#'
+#' This symbol will select the rgn14 map set
+#' @export
+rgn14 <- quote(rgn14)
+
+#' Designator for the rgn32 map set
+#'
+#' This symbol will select the rgn32 map set
+#' @export 
+rgn32 <- quote(rgn32)
+
+#' Designator for the basin235 map set
+#'
+#' This symbol will select the basin235 map set
+#' @export 
+basin235 <- quote(basin235)
+
+#' Designator for the chn map set
+#'
+#' This symbol will select the chn map set
+#' @export 
+chn <- quote(chn)
 

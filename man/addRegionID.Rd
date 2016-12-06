@@ -4,25 +4,39 @@
 \alias{addRegionID}
 \title{Match GCAM ID to region using data from a lookup table.}
 \usage{
-addRegionID(datatable, lookupfile, provincefile = "none", drops = "none")
+addRegionID(datatable, lookupfile = lut.rgn32, provincefile = NULL,
+  drops = NULL)
 }
 \arguments{
 \item{datatable}{A table of results produced by \code{\link{process_batch_q}}}
 
-\item{lookupfile}{File containing the region lookup table.  XXX: we
-need to provide a mechanism for users to use the data installed
-internally in the package.}
+\item{lookupfile}{Name of one of the predefined map sets, OR, if you're using
+a custom map set, the file containing the region lookup table}
 
-\item{provincefile}{File containing the province lookup table, if
-applicable. XXX: Same comment as above}
+\item{provincefile}{Name of one of the predefined map sets, OR, if you're
+using a custom map set, file containing the province lookup table, if
+applicable.}
 
-\item{drops}{File containing a list of regions to drop, if
-applicable.  XXX: Same comment as above.}
+\item{drops}{Name of one of the predefined map sets, OR, if you're using
+a custom map set, the file containing a list of regions to drop, if
+applicable.}
 }
 \value{
 Input table modified to include a GCAM ID for reach region.
 }
 \description{
 We match by ID number to avoid problems with variant spellings and the like.
+With the optional arguments you can also omit regions for which you don't
+want to plot the data for some reason, and you can translate the
+abbreviations used in subregion output.
+}
+\details{
+The \code{provincefile} and \code{drops} arguments are a little clunky.  They
+are optional, but if you are using one of the built-in map sets, then you
+\emph{must not} specify them if they don't exist for the map set you are
+using.  Currently, \code{rgn14} and \code{basin235} have neither drops nor
+province abbreviations.  The \code{rgn32} set has drops, but not province
+abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
+finally implemented) has both.
 }
 

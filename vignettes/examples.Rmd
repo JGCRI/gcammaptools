@@ -46,8 +46,7 @@ tables<-parse_mi_output(fn = gcam.datafile)
 
 #Break out sample scenario
 prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
-prim_en<-addRegionID(prim_en, system.file('extdata/rgn32','lookup.txt',package='gcammaptools'), 
-                     drops=system.file('extdata/rgn32','drop-regions.txt',package='gcammaptools'))
+prim_en<-addRegionID(prim_en, lookupfile=rgn32, drops=rgn32)
 #Merge dataset with map data
 map_primen<-merge(map_32_wo_Taiwan.fort, prim_en, by="id")
 ```
