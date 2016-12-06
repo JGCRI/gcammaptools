@@ -49,5 +49,6 @@
 #'
 #' @docType package
 #' @name gcammaptools
+#' @import ggplot2
 #' @importFrom magrittr %>%
 NULL

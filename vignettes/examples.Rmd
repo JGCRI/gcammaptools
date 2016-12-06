@@ -26,12 +26,13 @@ maptools::gpclibPermit()                # TODO:  This function is deprecated.  F
 
 ## Loading GCAM data
 
-You will need to load two types of data:  the map data (analogous to shape files in GIS tools) and the GCAM data.  The map data can be either loaded from the package (coming soon), or you can load your own.  Here is an example of how to do the latter.  The first line reads the map data, and the second turns it into a data frame indexed by region identifier.  This "map data frame" is what you will pass to the plotting functions.
+You will need to load two types of data:  the map data (analogous to shape files in GIS tools) and the GCAM data.  The map data can be either loaded from the package (coming soon), or you can load your own.  Here is an example of how to do the latter.  The first line reads the map data, and the second turns it into a data frame indexed by region identifier.  This "map data frame" is what you will pass to the plotting functions.  Most of the map data frames you will need are provided as datasets in this package, but here is how you create one from a geojson file:
 ```{r load.map}
-## This is gross.  We need to provide functions to load the data sets provided with the package.
-map_32_wo_Taiwan<-rgdal::readOGR("../data/rgn32/GCAM_32_wo_Taiwan_clean.geojson", "OGRGeoJSON")
+mapfile <- system.file('extdata/rgn32','GCAM_32_wo_Taiwan_clean.geojson', package = 'gcammaptools')
+map_32_wo_Taiwan<-rgdal::readOGR(mapfile, "OGRGeoJSON")
 map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
 ```
+This gives you the same structure you would have gotten with `data(map.rgn32)`.
 
 The package also provides functions for loading GCAM results from the files produced by the GCAM ModelInterface.  The `parse_mi_output` function reads the file output by the ModelInterface.  The `process_batch_q` function extracts a single table from it, and the `addRegionID` function adds the region identifiers used in the map data.  Once you have done all three of these steps, you must merge the resulting data frame with the map data frame you created above.
 ```{r load.data}
@@ -40,11 +41,13 @@ The package also provides functions for loading GCAM results from the files prod
 #To geojson: writeOGR(d, layer="",dsn="China_map.geojson",driver="GeoJSON")
 
 # Load scenario data
-tables<-parse_mi_output(fn = "../data/sample-batch.csv")
+gcam.datafile <- system.file('extdata','sample-batch.csv',package = 'gcammaptools')
+tables<-parse_mi_output(fn = gcam.datafile)
 
 #Break out sample scenario
 prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
-prim_en<-addRegionID(prim_en, "../data/rgn32/lookup.txt", drops="../data/rgn32/drop-regions.txt")
+prim_en<-addRegionID(prim_en, system.file('extdata/rgn32','lookup.txt',package='gcammaptools'), 
+                     drops=system.file('extdata/rgn32','drop-regions.txt',package='gcammaptools'))
 #Merge dataset with map data
 map_primen<-merge(map_32_wo_Taiwan.fort, prim_en, by="id")
 ```

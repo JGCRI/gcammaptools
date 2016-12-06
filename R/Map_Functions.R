@@ -458,14 +458,17 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #'
 #' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's
 #' "Set3" palette.
-#'   map_32_wo_Taiwan<-rgdal::readOGR(file.path(basedir.viz, "../data/rgn32/GCAM_32_wo_Taiwan_clean.geojson"), "OGRGeoJSON")
+#'   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32', 'GCAM_32_wo_Taiwan_clean.geojson',
+#'                                                package=gcammaptools))
 #'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
 #'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
 #'
 #'   ## Plot oil consumption by region
-#'   tables<-parse_mi_output(fn = file.path(basedir.viz, "../data/sample-batch.csv"))
+#'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',package=gcammaptools))
 #'   prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
-#'   prim_en<-addRegionID(prim_en, file.path(basedir.viz, "../data/rgn32/lookup.txt"), drops=file.path(basedir.viz, "../data/rgn32/drop-regions.txt"))
+#'   prim_en<-addRegionID(prim_en, file.path(basedir.viz,
+#'                                 system.file('extdata/rgn32', 'lookup.txt', package=gcammaptools),
+#'                                 system.file('extdata/rgn32', 'drop-regions.txt', package=gcammaptools))
 #'   mp2<-plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"), title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
 #' @export
 plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orientation = NULL,
