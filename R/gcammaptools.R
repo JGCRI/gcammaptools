@@ -52,3 +52,39 @@
 #' @import ggplot2
 #' @importFrom magrittr %>%
 NULL
+
+#' Base map for 14-region GCAM
+#'
+#' This is the region map used in versions of GCAM prior to GCAM 4.0.  It is
+#' largely obsolete, but there are still some data from those days floating
+#' around in the wild
+#'
+#' @format Spatial data frame
+"map.rgn14"
+
+#' Base map for 32-region GCAM
+#'
+#' This is the region map used in GCAM 4.0 and subsequent.  This version of the
+#' map does not include the Taiwan region.
+#'
+#' @format Spatial data frame
+"map.rgn32"
+
+#' Base map for 235 global water basins
+#'
+#' This is the map of the 235 global water basins.  For compatibility with the
+#' other map data frames it refers to the basins as "regions".  Thus, any GCAM
+#' data with a "basin" column will need to have a "region" column added.  There
+#' is also some variability in how the basin names are represented, so this data
+#' set will need some work.
+#'
+#' @format Spatial data frame
+"map.basin235"
+
+#' Base map for 32-region GCAM with China subregions
+#'
+#' This map has the 32 GCAM regions, plus the subregions corresponding to
+#' China's provinces, municipalities, autonomous regions, and SARs.
+#'
+#' @format Spatial data frame
+"map.chn"
