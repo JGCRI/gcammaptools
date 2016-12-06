@@ -43,6 +43,8 @@
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
 ## Build generated
 build/
+vignettes/*.R
+vignettes/*.html
 DerivedData
 ## Various settings
 *.pbxuser

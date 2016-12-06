@@ -53,17 +53,6 @@
 #   RColorBrewer 1.1-2
 #   dplyr 0.5.0
 
-#' @import rgdal
-#' @import ggplot2
-#' @import ggalt
-#' @import graticule
-#' @import rgeos
-#' @import maptools
-#' @import sp
-#' @import mapproj
-#' @import RColorBrewer
-#' @import dplyr
-
 
 # -----------------------------------------------------------------------------
 # Global settings (in CAPITALS)
@@ -105,7 +94,7 @@ LOGLEVEL_DETAIL     <- 3
 LOGLEVEL_SUMMARY    <- 2
 LOGLEVEL_ERROR      <- 1
 LOGLEVEL_NONE       <- 0
-LOGLEVEL            <- LOGLEVEL_DEBUG
+LOGLEVEL            <- LOGLEVEL_ERROR
 
 # -----------------------------------------------------------------------------
 # Parser settings
@@ -178,13 +167,6 @@ logstop <- function() {
     }
 }
 
-# -----------------------------------------------------------------------------
-# Graphics Specifications (for exporting finished maps)
-WIDTH = 2560/300
-HEIGHT= 1440/300
-DPI = 300/2
-#TYPE= 'cairo-png'
-EXTENSION= '.png'
 
 # -----------------------------------------------------------------------------
 #Default Projections (as PROJ4 strings)
@@ -325,12 +307,13 @@ YLAB<-""
 #Legend
 LEGEND_POSITION='bottom'
 
-# -----------------------------------------------------------------------------
-# Color Palettes
-# World Palettes
-# 1. GCAM 32
-#pal_gcam32<-
-
+#' Color palette for 14-region GCAM
+#'
+#' This palette should be used for plots by region (whether maps, line plots, or
+#' other types) to ensure consistency across plots and publications.  XXX:
+#' Perhaps this sort of thing should go in a separate GCAM style package, since
+#' it isn't really specific to mapping?
+#' @export
 gcam14_colors<- c("Africa" = "navajowhite3",
                   "Australia_NZ" = "lightpink",
                   "India" = "lightslateblue",
@@ -346,8 +329,12 @@ gcam14_colors<- c("Africa" = "navajowhite3",
                   "Middle East" = "indianred",
                   "Former Soviet Union" = "plum2")
 
-# In progress - do we want to make a custom palette?
 
+#' Color palette for 32-region GCAM
+#'
+#' This palette should be used for plots by region (whether maps, line plots, or
+#' other types) to ensure consistency across plots and publications.  XXX: This
+#' color palette doesn't seem to be finished yet, so we haven't exported it.
 gcam32_colors<-c("Africa_Eastern" = "navajowhite3",
                  "Africa_Northern" = "lightgreen",
                  "Australia_NZ" = "lightpink",

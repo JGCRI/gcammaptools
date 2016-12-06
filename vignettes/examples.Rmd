@@ -55,45 +55,45 @@ At the end of all this, `map_primen` is a map data frame that has primary energy
 ### Example 1: Eckert III World Projection, Colored by Region
 
 This example just plots the map data frame with the GCAM region id.  Thus, you get each region colored according to a discrete color palette.
-```{r mp1, fig.width=8}
+```{r mp1, fig.width=6, fig.height=3}
 plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
 ```
 
 ### Example 2: Robinson World Projection, Colored by Oil Consumption by Region
 In this example we plot the map data frame of primary energy that we created above.  We select the column for model year 2050.  We also use a different projection than we used above.
-```{r mp2, fig.width=8}
+```{r mp2, fig.width=6, fig.height=4}
 plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"),
           title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
 ```
 
 ### Example 3: Winkel-Tripel Projection, Default Color and Style
 This is a plot of the region boundaries in the Winkel-Tripel projection.  Since we didn't specify a column to plot, all of the regions are filled in grey.
-```{r mp3, fig.width=8}
+```{r mp3, fig.width=6, fig.height=3}
 plot_GCAM(map_32_wo_Taiwan.fort, proj=wintri, title="Winkel-Tripel World")
 ```
 
 ### Example 4: U.S. Projection (Albers Equal Area)
 This map is specialized to the continental USA.  The `na_aea` and `EXTENT_USA` symbols are defined for convenience, but you can use any valid proj4 string (see `proj4::project` for how these strings are constructed) for the projection.  The extent should be the bounding box of the plot area in the form `c(lon.min, lon.max, lat.min, lat.max)`.
-```{r mp4, fig.width=8}
+```{r mp4, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map_32_wo_Taiwan.fort, proj=na_aea,  extent=EXTENT_USA, title="USA Albers Equal-Area")
 ```
 
 ### Example 5: China Projection (Albers Equal Area)
 A map of China.  Although the projection is once again the Albers equal area projection, we have to have a different projection string because the string includes some information about the parallels the projection is based on.
-```{r mp5, fig.width=8}
+```{r mp5, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map_32_wo_Taiwan.fort, proj=ch_aea,extent=EXTENT_CHINA, title="China Albers Equal-Area")
 ```
 
 ### Example 6: Africa Projection (Orthographic)
 For superregions with a long north-south extent, the orthographic projection gives the best result.  We use a different back-end function to compute the projection for this case, so you should pass the symbol `ortho` to the `proj` argument.  You will also have to supply the `orientation` argument, for which we have defined several convenient values.  This one gives you a map of Africa.
-```{r mp6, fig.width=8}
+```{r mp6, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_AFRICA,
           orientation=ORIENTATION_AFRICA, proj=ortho,title= "Africa Orthographic")
 ```
 
 ### Example 7: Latin America Projection (Orthographic)
 Orthographic projection of the Latin America superregion.
-```{r mp7, fig.width=8}
+```{r mp7, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_LA,
         orientation= ORIENTATION_LA, proj=ortho, title="Latin America Orthographic")
 ```

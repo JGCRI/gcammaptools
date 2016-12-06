@@ -214,7 +214,6 @@ gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
 #' @param minval Smallest value in the scale
 #' @param nbreak Number of break points
 #' @param nsig Number of significant digits to display in the legend.
-#' @importFrom magrittr %>%
 calc.breaks <- function(maxval, minval=0, nbreak=5, nsig=3)
 {
     step <- (maxval-minval)/(nbreak-1)
@@ -368,9 +367,9 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
         panel.grid = PANEL_GRID,
         axis.ticks = AXIS_TICKS,
         axis.text = AXIS_TEXT,
-        legend.key.size = unit(1.5, "cm"),
-        legend.text = element_text(size = 14),
-        legend.title = element_text(size=14, face="bold"),
+        legend.key.size = unit(0.75, "cm"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size=12, face="bold"),
         legend.position = LEGEND_POSITION,
         legend.key=element_rect(color='black')
       )
@@ -429,32 +428,36 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #'    \item \code{\link{EXTENT_LA}} - Latin America
 #' }
 #' 
-#' @param mapdata The data frame containing both geometric data (lat,
-#'   long, id) and regional metadata.  This is the only mandatory
-#'   variable. If used alone, will produce the default map.
-#' @param col If plotting categorical/contiuous data, the name of the
-#'   column to plot.  Will automatically determine type of style of plot
-#'   based on type of data (numeric or character).
-#' @param proj Map projection to use in the display map.  This should
-#' be a proj4 string, except for a few special cases.  There are also
-#' symbols defined for some frequently used projections
-#' (e.g. \code{\link{robin}} or \code{\link{na_aea}}).
+#' @param mapdata The data frame containing both geometric data (lat, long, id)
+#' and regional metadata.  This is the only mandatory variable. If used alone,
+#' will produce the default map.
+#' @param col If plotting categorical/contiuous data, the name of the column to
+#' plot.  Will automatically determine type of style of plot based on type of
+#' data (numeric or character).
+#' @param proj Map projection to use in the display map.  This should be a proj4
+#' string, except for a few special cases.  There are also symbols defined for
+#' some frequently used projections (e.g. \code{\link{robin}} or
+#' \code{\link{na_aea}}).
 #' @param extent Bounding box for the display map
 #' @param orientation The orientation vector.  This is only needed for
-#' projections that don't use proj4.  Projections using proj4 encode
-#' this information in their proj4 string.
+#' projections that don't use proj4.  Projections using proj4 encode this
+#' information in their proj4 string.
 #' @param title Text to be displayed as the plot title
-#' @param legend Boolean flag:  True = display map legend; False = do not display legend
-#' @param colors Vector of colors to use in the color scale.  If NULL,
-#'   then default color scheme will be used.
+#' @param legend Boolean flag: True = display map legend; False = do not display
+#' legend
+#' @param colors Vector of colors to use in the color scale.  If NULL, then
+#' default color scheme will be used.
 #' @param qtitle Text to be displayed as the legend title.
-#' @param limits Vector of two values giving the range of the color
-#'   bar in the legend.  c(min,max)
-#' @param colorfcn If plotting categorical data, the function used to
-#'   generate a colorscheme when colors are not provided (if NULL, use
-#'   qualPalette)
+#' @param limits Vector of two values giving the range of the color bar in the
+#' legend.  c(min,max)
+#' @param colorfcn If plotting categorical data, the function used to generate a
+#' colorscheme when colors are not provided (if NULL, use qualPalette).  If
+#' \code{colors} is specified, or if the data being plotted is numerical, this
+#' argument will be ignored.
 #' @examples
-#'   ## Plot a map of GCAM regions
+#'
+#' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's
+#' "Set3" palette.
 #'   map_32_wo_Taiwan<-rgdal::readOGR(file.path(basedir.viz, "../data/rgn32/GCAM_32_wo_Taiwan_clean.geojson"), "OGRGeoJSON")
 #'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
 #'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
@@ -469,7 +472,6 @@ plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orie
                       title = NULL, legend = F, colors = NULL, qtitle=NULL, limits=NULL,
                       colorfcn=NULL, ...){
 
-    library(ggplot2)
   # Generate graticule (latitude/longitude lines) and clip map to extent specified.
   grat<-gen_grat()
   mappolys <- get_bbox_polys(dataset = mapdata)
@@ -483,7 +485,6 @@ plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orie
   # If a column name is specified, add a color gradient or categorical colors
   if (!is.null(col)){
 
-      ##    if(typeof(mappolys[[col]])=='double'|typeof(mappolys[[col]])=='integer'){
       if(is.numeric(mappolys[[col]])) {
       # Instructions for color gradient
       # Calculate legend label increments ('breaks')
@@ -502,7 +503,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orie
                              na.value=NA_VAL, breaks=breaks,limits=limits,
                              labels=breaks)
 
-    } else if(typeof(mappolys[[col]])=='character'){
+    } else {
       # Instructions for categorical map
       # Use default color scheme and color function if none specified
       if (is.null(colors)){
@@ -530,20 +531,4 @@ plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orie
 
   return(mp)
 }
-
-
-
-
-#-----------------------------------------------------------------
-# MISC UTILS
-#-----------------------------------------------------------------
-# save_image - Wrapper for ggsave function with desired parameters as defaults.
-# Arguments - mp - map object that you want to save
-#             fn - file name you want to save it as
-
-save_image<-function(mp, fn){
-  ggsave(filename = paste("output-files/",fn, EXTENSION, sep=""), plot = mp, dpi=DPI, width=WIDTH, height=HEIGHT)
-}
-
-
 
