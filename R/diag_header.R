@@ -5,7 +5,7 @@
 # CONTRACTOR MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY
 # LIABILITY FOR THE USE OF THIS SOFTWARE. This notice including this
 # sentence must appear on any copies of this computer software.
-# 
+#
 # EXPORT CONTROL
 # User agrees that the Software will not be shipped, transferred or
 # exported into any country or used in any manner prohibited by the
@@ -20,11 +20,11 @@
 # (including without limitation Iran, Syria, Sudan, Cuba, and North Korea)
 #     and that User is not otherwise prohibited
 # under the Export Laws from receiving the Software.
-# 
+#
 # Copyright 2011 Battelle Memorial Institute.  All Rights Reserved.
-# Distributed as open-source under the terms of the Educational Community 
+# Distributed as open-source under the terms of the Educational Community
 # License version 2.0 (ECL 2.0). http://www.opensource.org/licenses/ecl2.php
-# 
+#
 # For further details, see: http://www.globalchange.umd.edu/models/gcam/
 #
 
@@ -57,7 +57,7 @@
 # -----------------------------------------------------------------------------
 # Global settings (in CAPITALS)
 # This first group of settings is protected--we don't want it re-set every time
-# this header is read. This first 
+# this header is read. This first
 if( !exists( "GCAM_SOURCE_FN" ) ) {     # i.e. #ifndef
     GCAM_SOURCE_FN      <- c( "?" )     # name of currently executing source file (stack structure)
     GCAM_LOG_SAVE       <- c( FALSE )   # whether current log is also being saved to file (stack structure)
@@ -148,7 +148,7 @@ logstart <- function( fn, savelog=T ) {
     if( savelog ) sink( paste( logpath, "/", fn, ".log", sep="" ), split=T )
     printlog( "-----" )
     printlog( "Starting", fn )
-    
+
     DEPENDENCIES[[ fn ]] <<- c( NULL ) # Create a new entry in the dependency list
 }
 
@@ -177,19 +177,19 @@ logstop <- function() {
 #' String for specifying the Eckert III projection in mapping
 #' functions.  Its value is \code{'+proj=eck3'}
 #' @export
-eck3<-"+proj=eck3"  
+eck3<-"+proj=eck3"
 #' Proj4 string for the Winkel-Tripel World projection
 #'
 #' String for specifying the Winkel-Tripel projection in mapping
 #' functions.  Its value is \code{'+proj=wintri'}
 #' @export
-wintri<-"+proj=wintri" 
+wintri<-"+proj=wintri"
 #' Proj4 string for the Robinson World projection
 #'
 #' String for specifying the Robinson projection in mapping functions.
 #' Its value is \code{'+proj=robin'}
 #' @export
-robin<-"+proj=robin"  
+robin<-"+proj=robin"
 #' Proj4 string for the Albers equal area projection over North America.
 #'
 #' String for specifying the Albers equal area projection over North
@@ -213,11 +213,11 @@ ch_aea<-"+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps
 #' Projection string for orthographic projections
 #'
 #' Unlike most projections, the orthographic does not use proj4; it
-#' uses the \code{\link{mapproj::coord_map}} function.  You can pass
+#' uses the \code{mapproj::coord_map} function.  You can pass
 #' this value to the \code{proj} argument of \code{\link{plot_GCAM}}
 #' to get an orthographic projection.
 #' @export
-ortho<-"orthographic" 
+ortho<-"orthographic"
 
 #' Orientation vector for orthographic projection of Africa
 #'
@@ -282,7 +282,7 @@ EXTENT_LA<-c(-120,-30,-60,40)
 
 
 # -----------------------------------------------------------------------------
-# AESTHETICS 
+# AESTHETICS
 
 #Default Colors
 LINE_COLOR<-"black"
