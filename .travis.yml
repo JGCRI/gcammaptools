@@ -5,6 +5,13 @@ warnings_are_errors: true
 #sudo: required
 cache: packages
 
+# The proj4 package doesn't build without these apt-get pkgs
+addons:
+  apt:
+    packages:
+      - libgdal-dev 
+      - libproj-dev
+      
 r_github_packages:
   - jimhester/covr
   - hrbrmstr/ggalt
