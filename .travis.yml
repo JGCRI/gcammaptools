@@ -2,8 +2,8 @@
 
 language: r
 warnings_are_errors: true
-#sudo: required
-cache: packages
+sudo: required
+#cache: packages
 
 # The proj4 package doesn't build without these apt-get pkgs
 addons:
