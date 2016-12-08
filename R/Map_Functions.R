@@ -1,4 +1,4 @@
-##MAP FUNCTIONS
+## MAP FUNCTIONS
 #---------------------------------------------------------------------------
 # DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
@@ -19,41 +19,39 @@
 #' @param filters A named vector of filtering criteria in the form
 #' \code{c(header1=value1, header2=value2,...)}.  Headers are the
 #' names of columns in the data frame.  If aggregating data, use the
-#' value "Aggregate".  (XXX: Needs further explanation!)
+#' value 'Aggregate'.  (XXX: Needs further explanation!)
 #' @param func Operation to apply to the aggregated data.  (XXX: Does
 #' this mean that this option is active only when using the
-#' "Aggregate" option above?)
+#' 'Aggregate' option above?)
 #' @export
-process_batch_q<-function(batchq, query, scen, filters, func=sum){
+process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 
-  qdata<-as.data.frame(batchq[[query]])
+    qdata <- as.data.frame(batchq[[query]])
 
-  #Filter for scenario; allow partial lookup
-  #Bug: if partial has multiple matches, will return multiple scenarios
-  qdata<-qdata[grepl(scen, qdata$scenario),]
+    # Filter for scenario; allow partial lookup
+    # Bug: if partial has multiple matches, will return multiple scenarios
+    qdata <- qdata[grepl(scen, qdata$scenario), ]
 
-  #Get years and aggregate value if applicable
-  years<-grep("(X1)|(X2)", names(qdata), value=T)
-  ag<-names(filters[filters[names(filters)]=="Aggregate"]) #Super clunky
+    # Get years and aggregate value if applicable
+    years <- grep("(X1)|(X2)", names(qdata), value = T)
+    ag <- names(filters[filters[names(filters)] == "Aggregate"])  #Super clunky
 
-  nms<-!(names(qdata) %in% years| names(qdata) %in% ag)
+    nms <- !(names(qdata) %in% years | names(qdata) %in% ag)
 
-  #Filter to query of interest using filters
-  for (name in names(filters)){
-    if (filters[[name]]=="Aggregate"){
-      qdata<-aggregate(qdata[years], by=qdata[nms], FUN=func)
-      qdata[[ag]]<-"All"
+    # Filter to query of interest using filters
+    for (name in names(filters)) {
+        if (filters[[name]] == "Aggregate") {
+            qdata <- aggregate(qdata[years], by = qdata[nms], FUN = func)
+            qdata[[ag]] <- "All"
+        } else {
+            qdata <- qdata[qdata[[name]] == filters[[name]], ]
+        }
     }
-    else{
-      qdata<-qdata[qdata[[name]]==filters[[name]],]
-    }
-  }
 
-  return(qdata)
-
+    return(qdata)
 }
 
-###TODO - modify to search for appropriate lookup, province, drop files in directory.
+### TODO - modify to search for appropriate lookup, province, drop files in directory.
 #' Match GCAM ID to region using data from a lookup table.
 #'
 #' We match by ID number to avoid problems with variant spellings and the like.
@@ -79,48 +77,45 @@ process_batch_q<-function(batchq, query, scen, filters, func=sum){
 #' applicable.
 #' @return Input table modified to include a GCAM ID for reach region.
 #' @export
-addRegionID<-function(datatable, lookupfile=lut.rgn32, provincefile=NULL, drops=NULL) {
-  if (!is.null(provincefile)){
-    datatable<-translateProvince(datatable, provincefile)
-  }
+addRegionID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
+    if (!is.null(provincefile)) {
+        datatable <- translateProvince(datatable, provincefile)
+    }
 
-  if (!is.null(drops)){
-    datatable<-dropRegions(datatable, drops)
-  }
+    if (!is.null(drops)) {
+        datatable <- dropRegions(datatable, drops)
+    }
 
-  lookuptable <-
-      if(is.symbol(lookupfile)) {
-          get.internal(lookupfile,'lut')
-      }
-      else {
-          read.csv(lookupfile, strip.white=T, stringsAsFactors = F)
-      }
+    lookuptable <- if (is.symbol(lookupfile)) {
+        get.internal(lookupfile, "lut")
+    } else {
+        read.csv(lookupfile, strip.white = T, stringsAsFactors = F)
+    }
 
-  #Differentiate region-Region issue
-  if ("Region" %in% names(datatable)){
-    rgn<-"Region"
-  } else{
-    rgn<-"region"
-  }
+    # Differentiate region-Region issue
+    if ("Region" %in% names(datatable)) {
+        rgn <- "Region"
+    } else {
+        rgn <- "region"
+    }
 
-  finaltable<-merge(datatable, lookuptable, by.x=rgn, by.y=colnames(lookuptable)[1], all.y=TRUE )
+    finaltable <- merge(datatable, lookuptable, by.x = rgn, by.y = colnames(lookuptable)[1], all.y = TRUE)
 
-  ## Regions that weren't in the original table will show as NA.  Zero
-  ## them out and give them a sensible unit.
-  finaltable$Units[is.na(finaltable$Units)] <- finaltable$Units[1] # units will usually be all the same
-  finaltable[is.na(finaltable)] <- 0                               # set all remaining NA values to zero.
-  colnames(finaltable)[ncol(finaltable)]<-'id'
-  finaltable$id<-as.character(finaltable$id)
+    ## Regions that weren't in the original table will show as NA.
+    ## Zero them out and give them a sensible unit.
+    finaltable$Units[is.na(finaltable$Units)] <- finaltable$Units[1]  # units will usually be all the same
+    finaltable[is.na(finaltable)] <- 0  # set all remaining NA values to zero.
+    colnames(finaltable)[ncol(finaltable)] <- "id"
+    finaltable$id <- as.character(finaltable$id)
 
+    # Add null vector row to end to account for GCAM region 0
+    nullvec <- rep(NA, ncol(finaltable))
 
-  #Add null vector row to end to account for GCAM region 0
-  nullvec <- rep(NA, ncol(finaltable))
+    finaltable <- rbind(finaltable, nullvec)
+    finaltable[nrow(finaltable), rgn] <- "0"  # region 0 name (should be something more descriptive?)
+    finaltable$id[nrow(finaltable)] <- "0"
 
-  finaltable<-rbind(finaltable, nullvec)
-  finaltable[nrow(finaltable),rgn] <- '0'                     # region 0 name (should be something more descriptive?)
-  finaltable$id[nrow(finaltable)]<-'0'
-
-  return(finaltable)
+    return(finaltable)
 }
 
 #' Replace subregion abbreviations with full subregion names
@@ -131,58 +126,53 @@ addRegionID<-function(datatable, lookupfile=lut.rgn32, provincefile=NULL, drops=
 #' @param datatable The table with the abbreviated names in it.
 #' @param provincefile Name of a defined mapset OR name of a file containing the
 #' lookup table.
-translateProvince<-function(datatable, provincefile){
+translateProvince <- function(datatable, provincefile) {
 
-    provincetable <-
-        if(is.symbol(provincefile)) {
-            get.internal(provincefile,'prov')
-        }
-        else {
-            read.csv(provincefile, strip.white=T)
-        }
+    provincetable <- if (is.symbol(provincefile)) {
+        get.internal(provincefile, "prov")
+    } else {
+        read.csv(provincefile, strip.white = T)
+    }
 
-  #Differentiate region-Region issue
-  if ("Region" %in% names(datatable)){
-    rgn<-"Region"
-  } else{
-    rgn<-"region"
-  }
+    # Differentiate region-Region issue
+    if ("Region" %in% names(datatable)) {
+        rgn <- "Region"
+    } else {
+        rgn <- "region"
+    }
 
-  datatable$rgn<-as.character(datatable$rgn)
-  provincetable$province<-as.character(provincetable$province)
-  provincetable$province.name<-as.character(provincetable$province.name)
+    datatable$rgn <- as.character(datatable$rgn)
+    provincetable$province <- as.character(provincetable$province)
+    provincetable$province.name <- as.character(provincetable$province.name)
 
-  datatable$rgn<-ifelse(is.na(provincetable$province.name[match(datatable$rgn, provincetable$province)]),
-                           datatable$rgn,
-                           provincetable$province.name[match(datatable$rgn, provincetable$province)])
+    datatable$rgn <- ifelse(is.na(provincetable$province.name[match(datatable$rgn, provincetable$province)]),
+        datatable$rgn, provincetable$province.name[match(datatable$rgn, provincetable$province)])
 
-  return(datatable)
+    return(datatable)
 }
 
-dropRegions<-function(datatable, drops){
-  ### Drop regions listed in drops file from data frame.
-  ### Inputs:
-  ###   datatable - a data frame of query from batch query CSV
-  ###   drops - string; path to file containing regions to be dropped
-  ### Outputs:
-  ###   datatable - updated data frame with regions dropped.
+dropRegions <- function(datatable, drops) {
+    ### Drop regions listed in drops file from data frame.
+    ### Inputs:
+    ###   datatable - a data frame of query from batch query CSV
+    ###   drops - string; path to file containing regions to be dropped
+    ### Outputs:
+    ###   datatable - updated data frame with regions dropped.
 
-    dr <-
-        if(is.symbol(drops)) {
-            get.internal(drops,'drop')
-        }
-        else {
-            read.csv(drops, strip.white=T, header=F)
-        }
-    dr<-as.character(dr$V1)
+    dr <- if (is.symbol(drops)) {
+        get.internal(drops, "drop")
+    } else {
+        read.csv(drops, strip.white = T, header = F)
+    }
+    dr <- as.character(dr$V1)
 
-    regcols<-grepl("egion", names(datatable)) #Find instances of "region" or "Region" columns
+    regcols <- grepl("egion", names(datatable))  # Find instances of 'region' or 'Region' columns
     ## ^-- Technically this will also trigger on 'Legion' or 'legion'
 
     ## XXX: Do the next step with dplyr instead of this convoluted way
-    datatable[regcols]<-lapply(datatable[regcols], function(x) replace(x, x %in% dr, NA)) #Replace drop col values with NA
+    datatable[regcols] <- lapply(datatable[regcols], function(x) replace(x, x %in% dr, NA))  #Replace drop col values with NA
 
-    datatable<-na.omit(datatable) #Remove rows containing NA
+    datatable <- na.omit(datatable)  # Remove rows containing NA
 
     return(datatable)
 }
@@ -190,15 +180,15 @@ dropRegions<-function(datatable, drops){
 #---------------------------------------------------------------------------
 # MAPPING UTILS
 #---------------------------------------------------------------------------
-get_bbox_polys<-function(dataset, bbox=EXTENT_WORLD){
-  ### Modifies map data to include only polygons that lie partially within
-  ### bounding box.
-  ### Inputs:
-  ###   dataset - data frame of map geometry
-  ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
-  ### Outputs:
-  ###   newdata - data with only polygons that are at least partially in
-  ###           bounding box
+get_bbox_polys <- function(dataset, bbox = EXTENT_WORLD) {
+    ### Modifies map data to include only polygons that lie partially within
+    ### bounding box.
+    ### Inputs:
+    ###   dataset - data frame of map geometry
+    ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
+    ### Outputs:
+    ###   newdata - data with only polygons that are at least partially in
+    ###           bounding box
 
     dplyr::filter(dataset, in_range(long, bbox[1], bbox[2]), in_range(lat, bbox[3], bbox[4]))
 }
@@ -206,35 +196,34 @@ get_bbox_polys<-function(dataset, bbox=EXTENT_WORLD){
 ## in_range - Test a vector to see which values are in the interval [a,b]
 ## params: x:  vector to test
 ##       a,b:  interval bounds. can be int or numeric; a<=b
-in_range<-function(x, a, b){
-    x>=a & x<=b
+in_range <- function(x, a, b) {
+    x >= a & x <= b
 }
 
-gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
-  ### Generate graticule (long/lat lines) given bbox
-  ### Inputs:
-  ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
-  ###   longint - interval between longitude lines
-  ###   latint - interval between latitude lines
-  ### Outputs:
-  ###   grat - dataframe describing of latitude and longitude lines
-  ###         spaced at specified intervals
+gen_grat <- function(bbox = EXTENT_WORLD, longint = 20, latint = 30) {
+    ### Generate graticule (long/lat lines) given bbox
+    ### Inputs:
+    ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
+    ###   longint - interval between longitude lines
+    ###   latint - interval between latitude lines
+    ### Outputs:
+    ###   grat - dataframe describing of latitude and longitude lines
+    ###         spaced at specified intervals
 
-### TODO: We could probably realize some savings here by
-### precalculating and caching graticules for some commonly-used
-### configurations.
+    ### TODO: We could probably realize some savings here by
+    ### precalculating and caching graticules for some commonly-used
+    ### configurations.
 
+    # Generate graticule as sp matrix object
+    lons = seq(bbox[1], bbox[2], by = longint)
+    lats = seq(bbox[3], bbox[4], by = latint)
 
-  #Generate graticule as sp matrix object
-  lons=seq(bbox[1],bbox[2],by=longint)
-  lats=seq(bbox[3],bbox[4],by=latint)
+    grat <- graticule::graticule(lons, lats, xlim = range(lons), ylim = range(lats))
 
-  grat<-graticule::graticule(lons,lats,xlim=range(lons),ylim=range(lats))
+    # Convert to ggplot2-friendly format
+    grat <- ggplot2::fortify(grat)
 
-  #Convert to ggplot2-friendly format
-  grat<-ggplot2::fortify(grat)
-
-  return(grat)
+    return(grat)
 
 }
 
@@ -247,29 +236,26 @@ gen_grat<-function(bbox=EXTENT_WORLD,longint=20,latint=30){
 #' @param minval Smallest value in the scale
 #' @param nbreak Number of break points
 #' @param nsig Number of significant digits to display in the legend.
-calc.breaks <- function(maxval, minval=0, nbreak=5, nsig=3)
-{
-    step <- (maxval-minval)/(nbreak-1)
-    seq(0,maxval, by=step) %>% signif(nsig)
+calc.breaks <- function(maxval, minval = 0, nbreak = 5, nsig = 3) {
+    step <- (maxval - minval)/(nbreak - 1)
+    seq(0, maxval, by = step) %>% signif(nsig)
 }
-calc.breaks.map<-function(mapdata, colname, nbreaks=4, zero.min=TRUE){
-  ### Calculate legend
-  ### Inputs:
-  ###   mapdata - data frame of geometry and scenario data
-  ###   colname - column name of interest from which to calculate legend intervals
-  ###   nbreaks - number of intervals
-  ###   zero.min- force minimum value of scale to zero
-  ### Outputs:
-  ###   breaks - vector of values at which to include legend label
 
+calc.breaks.map <- function(mapdata, colname, nbreaks = 4, zero.min = TRUE) {
+    ### Calculate legend
+    ### Inputs:
+    ###   mapdata - data frame of geometry and scenario data
+    ###   colname - column name of interest from which to calculate legend intervals
+    ###   nbreaks - number of intervals
+    ###   zero.min- force minimum value of scale to zero
+    ### Outputs:
+    ###   breaks - vector of values at which to include legend label
 
     vals <- as.numeric(mapdata[[colname]])
 
     max_dat <- max(vals, na.rm = T)
-    if(zero.min)
-        min_dat = 0
-    else
-        min_dat <- min(vals, na.rm= T)
+    if (zero.min)
+        min_dat = 0 else min_dat <- min(vals, na.rm = T)
 
     calc.breaks(max_dat, min_dat, nbreaks)
 }
@@ -290,12 +276,12 @@ calc.breaks.map<-function(mapdata, colname, nbreaks=4, zero.min=TRUE){
 #' \code{RColorBrewer} for the palettes available.
 #' @param na.val Color to use for the null region
 #' @export
-qualPalette<- function(n = 31, pal = 'Set3', na.val = 'grey50'){
-  colors<-colorRampPalette(RColorBrewer::brewer.pal(8, pal))(n)
-  colors<-setNames(colors, as.character(1:n))
-  colors["0"]<-na.val
+qualPalette <- function(n = 31, pal = "Set3", na.val = "grey50") {
+    colors <- colorRampPalette(RColorBrewer::brewer.pal(8, pal))(n)
+    colors <- setNames(colors, as.character(1:n))
+    colors["0"] <- na.val
 
-  return(colors)
+    return(colors)
 }
 
 
@@ -320,51 +306,39 @@ qualPalette<- function(n = 31, pal = 'Set3', na.val = 'grey50'){
 #  ggplot()+
 #   geom_polygon(data, aes(x,y,group))+
 #   coord_GCAM(proj)
+coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., parameters = NULL,
+    inverse = FALSE, degrees = TRUE, ellps.default = "sphere") {
 
-coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., parameters = NULL, inverse=FALSE,
-                       degrees=TRUE, ellps.default="sphere"){
+    if (is.null(proj)) {
+        # Default proj4 pstring for default GCAM projection (Robinson)
+        proj <- paste0(c("+proj=robin +lon_0=0 +x_0=0 +y_0=0", "+ellps=WGS84 +datum=WGS84 +units=m +nodefs"),
+            collapse = " ")
+    }
 
-  if (is.null(proj)){
-    # Default proj4 pstring for default GCAM projection (Robinson)
-    proj <- paste0(c("+proj=robin +lon_0=0 +x_0=0 +y_0=0",
-                     "+ellps=WGS84 +datum=WGS84 +units=m +nodefs"),
-                   collapse = " ")
-  }
+    if (is.null(parameters)) {
+        params <- list(...)
+    } else {
+        params <- parameters
+    }
 
-  if (is.null(parameters)){
-    params <- list(...)
-  } else {
-    params <- parameters
-  }
+    # Default extent is EXTENT_WORLD (-180,180,-90,90)
+    if (is.null(extent)) {
+        xlim <- c(-180, 180)
+        ylim <- c(-90, 90)
+    } else {
+        xlim <- c(extent[1], extent[2])
+        ylim <- c(extent[3], extent[4])
+    }
 
-  # Default extent is EXTENT_WORLD (-180,180,-90,90)
-  if (is.null(extent)){
-    xlim <- c(-180,180)
-    ylim <- c(-90,90)
-  } else{
-    xlim <- c(extent[1], extent[2])
-    ylim <- c(extent[3], extent[4])
-  }
-
-  # Use ggproto object defined in ggplot2 package if using orthographic map projection
-  if(grepl("ortho", proj)){
-    ggproto(NULL, ggplot2::CoordMap,
-            projection = proj,
-            orientation = orientation,
-            limits = list(x = xlim, y = ylim),
-            params = params
-    )
-  } else{
-    # Otherwise use ggproto object defined in ggalt package for default GCAM projections
-    ggproto(NULL, ggalt::CoordProj,
-            proj = proj,
-            inverse = inverse,
-            ellps.default = ellps.default,
-            degrees=degrees,
-            limits = list(x = xlim, y = ylim),
-            params = list()
-    )
-  }
+    # Use ggproto object defined in ggplot2 package if using orthographic map projection
+    if (grepl("ortho", proj)) {
+        ggproto(NULL, ggplot2::CoordMap, projection = proj, orientation = orientation, limits = list(x = xlim,
+            y = ylim), params = params)
+    } else {
+        # Otherwise use ggproto object defined in ggalt package for default GCAM projections
+        ggproto(NULL, ggalt::CoordProj, proj = proj, inverse = inverse, ellps.default = ellps.default,
+            degrees = degrees, limits = list(x = xlim, y = ylim), params = list())
+    }
 
 }
 
@@ -378,35 +352,19 @@ coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., para
 #   legend: T or F; whether to include a legend with default legend formatting.
 #
 # Usage: As add-on function to any ggplot2 object.
-theme_GCAM <- function(base_size = 11, base_family="", legend=F){
+theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 
-  if (legend==F){
-    theme_bw(base_size = base_size, base_family= base_family) %+replace%
-      theme(
-        panel.border = element_rect(color = LINE_COLOR, fill = NA),
-        panel.background = PANEL_BACKGROUND,
-        panel.grid = PANEL_GRID,
-        axis.ticks = AXIS_TICKS,
-        axis.text = AXIS_TEXT,
-        legend.position='none'
-      )
-  }
-
-  else if (legend==T){
-    theme_bw(base_size = base_size, base_family= base_family) %+replace%
-      theme(
-        panel.border = element_rect(color = LINE_COLOR, fill = NA),
-        panel.background = PANEL_BACKGROUND,
-        panel.grid = PANEL_GRID,
-        axis.ticks = AXIS_TICKS,
-        axis.text = AXIS_TEXT,
-        legend.key.size = unit(0.75, "cm"),
-        legend.text = element_text(size = 10),
-        legend.title = element_text(size=12, face="bold"),
-        legend.position = LEGEND_POSITION,
-        legend.key=element_rect(color='black')
-      )
-  }
+    if (legend == F) {
+        theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR,
+            fill = NA), panel.background = PANEL_BACKGROUND, panel.grid = PANEL_GRID, axis.ticks = AXIS_TICKS,
+            axis.text = AXIS_TEXT, legend.position = "none")
+    } else if (legend == T) {
+        theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR,
+            fill = NA), panel.background = PANEL_BACKGROUND, panel.grid = PANEL_GRID, axis.ticks = AXIS_TICKS,
+            axis.text = AXIS_TEXT, legend.key.size = unit(0.75, "cm"), legend.text = element_text(size = 10),
+            legend.title = element_text(size = 12, face = "bold"), legend.position = LEGEND_POSITION,
+            legend.key = element_rect(color = "black"))
+    }
 
 }
 
@@ -490,83 +448,74 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #' argument will be ignored.
 #' @examples \dontrun{
 #'
-#' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's "Set3" palette.
+#' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
 #'   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32', 'GCAM_32_wo_Taiwan_clean.geojson',
 #'                                                package='gcammaptools'))
-#'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
+#'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region='GCAM_ID')
 #'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
 #'
 #'   ## Plot oil consumption by region
 #'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',package='gcammaptools'))
-#'   prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
+#'   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel='a oil'))
 #'   prim_en<-addRegionID(prim_en, file.path(basedir.viz,
 #'                                 system.file('extdata/rgn32', 'lookup.txt', package='gcammaptools'),
 #'                                 system.file('extdata/rgn32', 'drop-regions.txt', package='gcammaptools')))
-#'   mp2<-plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"), title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
+#'   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'), title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
 #' }
 #' @export
-plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orientation = NULL,
-                      title = NULL, legend = F, colors = NULL, qtitle=NULL, limits=NULL,
-                      colorfcn=NULL, ...){
+plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD, orientation = NULL,
+    title = NULL, legend = F, colors = NULL, qtitle = NULL, limits = NULL, colorfcn = NULL, ...) {
 
-  # Generate graticule (latitude/longitude lines) and clip map to extent specified.
-  grat<-gen_grat()
-  mappolys <- get_bbox_polys(dataset = mapdata)
+    # Generate graticule (latitude/longitude lines) and clip map to extent specified.
+    grat <- gen_grat()
+    mappolys <- get_bbox_polys(dataset = mapdata)
 
 
-  #Plot graticule and polygons
-  mp<-ggplot()+
-    geom_path(data=grat,aes(long,lat,group=group,fill=NULL),color=LINE_GRAT)+
-    geom_polygon(data=mappolys, aes_string("long","lat",group="group",fill=col), color=LINE_COLOR)
+    # Plot graticule and polygons
+    mp <- ggplot() + geom_path(data = grat, aes(long, lat, group = group, fill = NULL), color = LINE_GRAT) +
+        geom_polygon(data = mappolys, aes_string("long", "lat", group = "group", fill = col),
+            color = LINE_COLOR)
 
-  # If a column name is specified, add a color gradient or categorical colors
-  if (!is.null(col)){
+    # If a column name is specified, add a color gradient or categorical colors
+    if (!is.null(col)) {
 
-      if(is.numeric(mappolys[[col]])) {
-      # Instructions for color gradient
-      # Calculate legend label increments ('breaks')
-      if(is.null(limits))
-        breaks <- calc.breaks.map(mappolys, col)
-      else
-        breaks <- calc.breaks(limits[2])
+        if (is.numeric(mappolys[[col]])) {
+            # Instructions for color gradient Calculate legend label increments ('breaks')
+            if (is.null(limits))
+                breaks <- calc.breaks.map(mappolys, col) else breaks <- calc.breaks(limits[2])
 
-      # Use default colors if none specified
-      if(is.null(colors))
-        colors <- DEFAULT_CHOROPLETH
+            # Use default colors if none specified
+            if (is.null(colors))
+                colors <- DEFAULT_CHOROPLETH
 
-      # Add color scale to map
-      mp <- mp+
-        scale_fill_gradientn(name=qtitle, colors=colors, values=NULL, guide=GUIDE, space=SPACE,
-                             na.value=NA_VAL, breaks=breaks,limits=limits,
-                             labels=breaks)
+            # Add color scale to map
+            mp <- mp + scale_fill_gradientn(name = qtitle, colors = colors, values = NULL, guide = GUIDE,
+                space = SPACE, na.value = NA_VAL, breaks = breaks, limits = limits, labels = breaks)
 
-    } else {
-      # Instructions for categorical map
-      # Use default color scheme and color function if none specified
-      if (is.null(colors)){
-        if(is.null(colorfcn)){
-          colorfcn <- qualPalette
+        } else {
+            # Instructions for categorical map Use default color scheme and color function if none
+            # specified
+            if (is.null(colors)) {
+                if (is.null(colorfcn)) {
+                  colorfcn <- qualPalette
+                }
+                colors <- colorfcn(n = length(unique(mappolys[[col]])), ...)
+            }
+
+            # Add color scale to map
+            mp <- mp + scale_fill_manual(values = colors, name = qtitle)
         }
-        colors<-colorfcn(n = length(unique(mappolys[[col]])), ...)
-      }
-
-      # Add color scale to map
-      mp <- mp+
-        scale_fill_manual(values=colors,name=qtitle)
+    } else {
+        # If no data is being plotted, use default color scale
+        mp <- mp + geom_polygon(data = mappolys, aes_string("long", "lat", group = "group", fill = col),
+            fill = RGN_FILL, color = LINE_COLOR)
     }
-  } else{
-    # If no data is being plotted, use default color scale
-    mp <- mp +
-      geom_polygon(data=mappolys, aes_string("long","lat",group="group",fill=col),fill=RGN_FILL, color=LINE_COLOR)
-  }
 
-  # Project map and add theme and labels
-  mp <- mp +
-    coord_GCAM(proj=proj,orientation=orientation,extent=extent)+
-    theme_GCAM(legend=legend)+
-    labs(title=title, x=XLAB, y=YLAB)
+    # Project map and add theme and labels
+    mp <- mp + coord_GCAM(proj = proj, orientation = orientation, extent = extent) + theme_GCAM(legend = legend) +
+        labs(title = title, x = XLAB, y = YLAB)
 
-  return(mp)
+    return(mp)
 }
 
 #' Get auxiliary data for a named mapset.
@@ -580,7 +529,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orie
 #' @param type The type of table.  Right now this is either 'lut', 'drop', or
 #' 'prov'
 get.internal <- function(mapset, type) {
-    eval(as.symbol(paste(type,mapset,sep='.')))
+    eval(as.symbol(paste(type, mapset, sep = ".")))
 }
 
 #' Designator for the rgn14 map set
@@ -606,4 +555,3 @@ basin235 <- quote(basin235)
 #' This symbol will select the chn map set
 #' @export
 chn <- quote(chn)
-

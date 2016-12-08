@@ -109,16 +109,16 @@ DATE_FIELD_NAME         <- "date"
 # -----------------------------------------------------------------------------
 # Name variables
 # Model base years
-model_base_years <- c( 1975, 1990, 2005, 2010 )
-X_model_base_years <- paste0( "X", model_base_years )
+model_base_years <- c(1975, 1990, 2005, 2010)
+X_model_base_years <- paste0("X", model_base_years)
 
 # Model future years
-model_future_years <- seq( 2015, 2100, 5 )
-X_model_future_years <- paste0( "X", model_future_years )
+model_future_years <- seq(2015, 2100, 5)
+X_model_future_years <- paste0("X", model_future_years)
 
-#All model years
-model_years <- c( model_base_years, model_future_years )
-X_model_years <- paste0( "X", model_years )
+# All model years
+model_years <- c(model_base_years, model_future_years)
+X_model_years <- paste0("X", model_years)
 
 
 # Column name variables
@@ -127,46 +127,51 @@ lookup_region_column <- "REGION_NAME"
 # -----------------------------------------------------------------------------
 # printlog: time-stamped output
 # params: msg (message", " can be many items); ts (add timestamp?), cr (print CR?)
-printlog <- function( msg, ..., ts=TRUE, cr=TRUE, level=LOGLEVEL_DEBUG ) {
-    if( level <= LOGLEVEL ) {
-        if( ts ) cat( date(), GCAM_SOURCE_FN[ GCAM_SOURCE_RD ], "[", GCAM_SOURCE_RD, "]", ": " )
-        cat( msg, ... )
-        if( cr ) cat( "\n")
+printlog <- function(msg, ..., ts = TRUE, cr = TRUE, level = LOGLEVEL_DEBUG) {
+    if (level <= LOGLEVEL) {
+        if (ts)
+            cat(date(), GCAM_SOURCE_FN[GCAM_SOURCE_RD], "[", GCAM_SOURCE_RD, "]", ": ")
+        cat(msg, ...)
+        if (cr)
+            cat("\n")
     }
 }
 
 # -----------------------------------------------------------------------------
 # logstart: start a new log (to screen and optionally file)
 # params: fn (name of source file being executed), savelog (whether to write to disk)
-logstart <- function( fn, savelog=T ) {
-    GCAM_SOURCE_RD <<- GCAM_SOURCE_RD + 1       # push
-    GCAM_SOURCE_FN[ GCAM_SOURCE_RD ]  <<- fn
-    GCAM_LOG_SAVE[ GCAM_SOURCE_RD ] <<- savelog
+logstart <- function(fn, savelog = T) {
+    GCAM_SOURCE_RD <<- GCAM_SOURCE_RD + 1  # push
+    GCAM_SOURCE_FN[GCAM_SOURCE_RD] <<- fn
+    GCAM_LOG_SAVE[GCAM_SOURCE_RD] <<- savelog
     logpath <- "logs"
-    if( !file.exists( logpath ) )
-        dir.create( logpath )
-    if( savelog ) sink( paste( logpath, "/", fn, ".log", sep="" ), split=T )
-    printlog( "-----" )
-    printlog( "Starting", fn )
+    if (!file.exists(logpath))
+        dir.create(logpath)
+    if (savelog)
+        sink(paste(logpath, "/", fn, ".log", sep = ""), split = T)
+    printlog("-----")
+    printlog("Starting", fn)
 
-    DEPENDENCIES[[ fn ]] <<- c( NULL ) # Create a new entry in the dependency list
+    DEPENDENCIES[[fn]] <<- c(NULL)  # Create a new entry in the dependency list
 }
 
 # -----------------------------------------------------------------------------
 # logstop: stop the current log (to screen and optionally file)
 logstop <- function() {
+    logstop <- function() {
 
-    fn <- GCAM_SOURCE_FN[ GCAM_SOURCE_RD ]
+        fn <- GCAM_SOURCE_FN[GCAM_SOURCE_RD]
 
-    printlog( "All done with", fn )
-    if( GCAM_SOURCE_RD > 0 ) {
-        if( GCAM_LOG_SAVE[ GCAM_SOURCE_RD ] ) sink()
-        GCAM_SOURCE_RD <<- GCAM_SOURCE_RD - 1       # pop
-    } else {
-        printlog( "WARNING: Attempt to close a non-open log file")
+        printlog("All done with", fn)
+        if (GCAM_SOURCE_RD > 0) {
+            if (GCAM_LOG_SAVE[GCAM_SOURCE_RD])
+                sink()
+            GCAM_SOURCE_RD <<- GCAM_SOURCE_RD - 1  # pop
+        } else {
+            printlog("WARNING: Attempt to close a non-open log file")
+        }
     }
 }
-
 
 # -----------------------------------------------------------------------------
 #Default Projections (as PROJ4 strings)
@@ -177,19 +182,19 @@ logstop <- function() {
 #' String for specifying the Eckert III projection in mapping
 #' functions.  Its value is \code{'+proj=eck3'}
 #' @export
-eck3<-"+proj=eck3"
+eck3 <- "+proj=eck3"
 #' Proj4 string for the Winkel-Tripel World projection
 #'
 #' String for specifying the Winkel-Tripel projection in mapping
 #' functions.  Its value is \code{'+proj=wintri'}
 #' @export
-wintri<-"+proj=wintri"
+wintri <- "+proj=wintri"
 #' Proj4 string for the Robinson World projection
 #'
 #' String for specifying the Robinson projection in mapping functions.
 #' Its value is \code{'+proj=robin'}
 #' @export
-robin<-"+proj=robin"
+robin <- "+proj=robin"
 #' Proj4 string for the Albers equal area projection over North America.
 #'
 #' String for specifying the Albers equal area projection over North
@@ -198,7 +203,7 @@ robin<-"+proj=robin"
 #' +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80
 #' +datum=NAD83'}
 #' @export
-na_aea<-"+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83"
+na_aea <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83"
 #' Proj4 string for the Albers equal area projection over China
 #'
 #' String for specifying the Albers equal area projection over China
@@ -206,7 +211,7 @@ na_aea<-"+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps
 #' China.  Its value is \code{'+proj=aea +lat_1=20 +lat_2=60 +lat_0=40
 #' +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83'}
 #' @export
-ch_aea<-"+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84"
+ch_aea <- "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84"
 
 ### Special cases using coord_map
 
@@ -217,26 +222,26 @@ ch_aea<-"+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps
 #' this value to the \code{proj} argument of \code{\link{plot_GCAM}}
 #' to get an orthographic projection.
 #' @export
-ortho<-"orthographic"
+ortho <- "orthographic"
 
 #' Orientation vector for orthographic projection of Africa
 #'
 #' This vector can be used as the \code{orientation} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-ORIENTATION_AFRICA<-c(0,15,0)
+ORIENTATION_AFRICA <- c(0,15,0)
 #' Orientation vector for orthographic projection of the Latin America superregion
 #'
 #' This vector can be used as the \code{orientation} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-ORIENTATION_LA<-c(-10,-70,0)
+ORIENTATION_LA <- c(-10,-70,0)
 #' Orientation vector for orthographic projection of the south pole
 #'
 #' This vector can be used as the \code{orientation} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-ORIENTATION_SPOLE<-c(-90,0,0)
+ORIENTATION_SPOLE <- c(-90,0,0)
 #' Orientation vector for orthographic projection of the north pole
 #'
 #' This vector can be used as the \code{orientation} argument to
@@ -272,40 +277,40 @@ EXTENT_CHINA <- c(77,130,15,53)
 #' This vector can be used as the \code{extent} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-EXTENT_AFRICA<-c(-20,60,-40,40)
+EXTENT_AFRICA <- c(-20,60,-40,40)
 #' Extent vector for Latin America
 #'
 #' This vector can be used as the \code{extent} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-EXTENT_LA<-c(-120,-30,-60,40)
+EXTENT_LA <- c(-120,-30,-60,40)
 
 
 # -----------------------------------------------------------------------------
 # AESTHETICS
 
-#Default Colors
-LINE_COLOR<-"black"
-RGN_FILL<-"grey"
-LINE_GRAT<-"grey50"
-GUIDE="colourbar"
-SPACE="Lab"
+# Default Colors
+LINE_COLOR <- "black"
+RGN_FILL <- "grey"
+LINE_GRAT <- "grey50"
+GUIDE = "colourbar"
+SPACE = "Lab"
 
-#TODO - ALTER to inc. colorschemes
-DEFAULT_CHOROPLETH <- c('white', 'red')
-NA_VAL<-"grey50"
+# TODO - ALTER to inc. colorschemes
+DEFAULT_CHOROPLETH <- c("white", "red")
+NA_VAL <- "grey50"
 
-#Background
-PANEL_BORDER<-ggplot2::element_blank()
-PANEL_BACKGROUND<-ggplot2::element_blank()
-PANEL_GRID<-ggplot2::element_line(colour = 'black')
-AXIS_TICKS<-ggplot2::element_blank()
-AXIS_TEXT<-ggplot2::element_blank()
-XLAB<-""
-YLAB<-""
+# Background
+PANEL_BORDER <- ggplot2::element_blank()
+PANEL_BACKGROUND <- ggplot2::element_blank()
+PANEL_GRID <- ggplot2::element_line(colour = "black")
+AXIS_TICKS <- ggplot2::element_blank()
+AXIS_TEXT <- ggplot2::element_blank()
+XLAB <- ""
+YLAB <- ""
 
-#Legend
-LEGEND_POSITION='bottom'
+# Legend
+LEGEND_POSITION = "bottom"
 
 #' Color palette for 14-region GCAM
 #'
@@ -350,5 +355,3 @@ gcam32_colors<-c("Africa_Eastern" = "navajowhite3",
                  "South America_Northern" = "seagreen2",
                  "Middle East" = "indianred",
                  "Russia" = "plum2")
-
-
