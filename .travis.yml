@@ -11,6 +11,7 @@ sudo: required
 # The proj4 package doesn't build without these apt-get pkgs
 apt_packages:
   - libproj-dev
+  - libgdal-dev
 
 #addons:
 #  apt:
