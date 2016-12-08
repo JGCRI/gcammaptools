@@ -5,20 +5,23 @@ os:
   - osx
 language: r
 warnings_are_errors: true
-#sudo: required
-cache: packages
+sudo: required
+#cache: packages
 
 # The proj4 package doesn't build without these apt-get pkgs
+apt_packages:
+  - libproj-dev
+
 #addons:
 #  apt:
 #    packages:
 #      - libhdf5-serial-dev
-#      - libgdal-dev 
+#      - libgdal-dev
 #      - libproj-dev
-      
+
 r_github_packages:
   - jimhester/covr
   - hrbrmstr/ggalt
-  
+
 #after_success:
 #  - Rscript -e 'library(covr);codecov(function_exclusions = "atest")'
