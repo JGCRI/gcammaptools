@@ -73,7 +73,7 @@ process_batch_q<-function(batchq, query, scen, filters, func=sum){
 #' a custom map set, the file containing the region lookup table
 #' @param provincefile Name of one of the predefined map sets, OR, if you're
 #' using a custom map set, file containing the province lookup table, if
-#' applicable. 
+#' applicable.
 #' @param drops Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing a list of regions to drop, if
 #' applicable.
@@ -183,7 +183,7 @@ dropRegions<-function(datatable, drops){
     datatable[regcols]<-lapply(datatable[regcols], function(x) replace(x, x %in% dr, NA)) #Replace drop col values with NA
 
     datatable<-na.omit(datatable) #Remove rows containing NA
-    
+
     return(datatable)
 }
 
@@ -253,7 +253,7 @@ calc.breaks <- function(maxval, minval=0, nbreak=5, nsig=3)
     seq(0,maxval, by=step) %>% signif(nsig)
 }
 calc.breaks.map<-function(mapdata, colname, nbreaks=4, zero.min=TRUE){
-  ### Calculate legend 
+  ### Calculate legend
   ### Inputs:
   ###   mapdata - data frame of geometry and scenario data
   ###   colname - column name of interest from which to calculate legend intervals
@@ -426,7 +426,7 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #'
 #' For specifying the projection you can use any Proj4 string.
 #' Projections specified this way are computed using
-#' \code{\link{ggalt::coord_proj}}.  For convenience, this package
+#' \code{ggalt::coord_proj}.  For convenience, this package
 #' defines the following proj4 strings:
 #' \itemize{
 #'   \item \code{\link{eck3}} - Eckert III
@@ -437,7 +437,7 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #' }
 #'
 #' For orthographic projections, we compute the projection using the
-#' \code{\link{mapproj::coord_map}} function.  To get this projection
+#' \code{mapproj::coord_map} function.  To get this projection
 #' pass the \code{\link{ortho}} symbol as the \code{proj} argument.
 #' You will then need to pass a vector in the \code{orientation}
 #' argument.  We have defined the following fequently used orientation
@@ -460,7 +460,7 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #'    \item \code{\link{EXTENT_AFRICA}} - Africa
 #'    \item \code{\link{EXTENT_LA}} - Latin America
 #' }
-#' 
+#'
 #' @param mapdata The data frame containing both geometric data (lat, long, id)
 #' and regional metadata.  This is the only mandatory variable. If used alone,
 #' will produce the default map.
@@ -485,24 +485,25 @@ theme_GCAM <- function(base_size = 11, base_family="", legend=F){
 #' legend.  c(min,max)
 #' @param colorfcn If plotting categorical data, the function used to generate a
 #' colorscheme when colors are not provided (if NULL, use qualPalette).  If
+#' @param ... Other parameters passed on to \code{mappolys}
 #' \code{colors} is specified, or if the data being plotted is numerical, this
 #' argument will be ignored.
-#' @examples
+#' @examples \dontrun{
 #'
-#' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's
-#' "Set3" palette.
+#' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's "Set3" palette.
 #'   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32', 'GCAM_32_wo_Taiwan_clean.geojson',
-#'                                                package=gcammaptools))
+#'                                                package='gcammaptools'))
 #'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
 #'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
 #'
 #'   ## Plot oil consumption by region
-#'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',package=gcammaptools))
+#'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',package='gcammaptools'))
 #'   prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
 #'   prim_en<-addRegionID(prim_en, file.path(basedir.viz,
-#'                                 system.file('extdata/rgn32', 'lookup.txt', package=gcammaptools),
-#'                                 system.file('extdata/rgn32', 'drop-regions.txt', package=gcammaptools))
+#'                                 system.file('extdata/rgn32', 'lookup.txt', package='gcammaptools'),
+#'                                 system.file('extdata/rgn32', 'drop-regions.txt', package='gcammaptools')))
 #'   mp2<-plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"), title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
+#' }
 #' @export
 plot_GCAM <- function(mapdata, col = NULL, proj=robin, extent=EXTENT_WORLD, orientation = NULL,
                       title = NULL, legend = F, colors = NULL, qtitle=NULL, limits=NULL,
@@ -591,18 +592,18 @@ rgn14 <- quote(rgn14)
 #' Designator for the rgn32 map set
 #'
 #' This symbol will select the rgn32 map set
-#' @export 
+#' @export
 rgn32 <- quote(rgn32)
 
 #' Designator for the basin235 map set
 #'
 #' This symbol will select the basin235 map set
-#' @export 
+#' @export
 basin235 <- quote(basin235)
 
 #' Designator for the chn map set
 #'
 #' This symbol will select the chn map set
-#' @export 
+#' @export
 chn <- quote(chn)
 

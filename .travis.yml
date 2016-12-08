@@ -1,24 +1,20 @@
 # Travis-CI configuration file
 
-os:
-  - linux
-  - osx
 language: r
-warnings_are_errors: true
-#sudo: required
-cache: packages
+warnings_are_errors: false
+r_build_args: '--no-build-vignettes'
+r_check_args: '--as-cran --no-build-vignettes'
+sudo: true
 
-# The proj4 package doesn't build without these apt-get pkgs
-#addons:
-#  apt:
-#    packages:
-#      - libhdf5-serial-dev
-#      - libgdal-dev 
-#      - libproj-dev
-      
+r_binary_packages:
+  - rgdal
+  - rgeos
+  - sp
+
 r_github_packages:
   - jimhester/covr
   - hrbrmstr/ggalt
-  
+
 #after_success:
+#  - Rscript -e 'devtools::test()'
 #  - Rscript -e 'library(covr);codecov(function_exclusions = "atest")'
