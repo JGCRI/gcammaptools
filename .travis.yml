@@ -10,6 +10,7 @@ sudo: required
 
 # The proj4 package doesn't build without these apt-get pkgs
 apt_packages:
+  - libhdf5-serial-dev
   - libproj-dev
   - libgdal-dev
 
