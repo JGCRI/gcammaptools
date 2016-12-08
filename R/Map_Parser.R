@@ -5,7 +5,7 @@
 # CONTRACTOR MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY
 # LIABILITY FOR THE USE OF THIS SOFTWARE. This notice including this
 # sentence must appear on any copies of this computer software.
-# 
+#
 # EXPORT CONTROL
 # User agrees that the Software will not be shipped, transferred or
 # exported into any country or used in any manner prohibited by the
@@ -20,11 +20,11 @@
 # (including without limitation Iran, Syria, Sudan, Cuba, and North Korea)
 #     and that User is not otherwise prohibited
 # under the Export Laws from receiving the Software.
-# 
+#
 # Copyright 2011 Battelle Memorial Institute.  All Rights Reserved.
-# Distributed as open-source under the terms of the Educational Community 
+# Distributed as open-source under the terms of the Educational Community
 # License version 2.0 (ECL 2.0). http://www.opensource.org/licenses/ecl2.php
-# 
+#
 # For further details, see: http://www.globalchange.umd.edu/models/gcam/
 #
 
@@ -45,69 +45,68 @@
 #'
 #' @param fn Name of the file containing the output from the GCAM Model Interface.
 #' @export
-parse_mi_output <- function( fn ) {
+parse_mi_output <- function(fn) {
 
     tables <- list()
 
-    # See if the user has provided any values overriding our defaults   
+    # See if the user has provided any values overriding our defaults
     use_tablenames <- TRUE
     headerline <- "scenario"
     yearpat <- "X[0-9]{4}"
-        
-    printlog( "Reading", fn, "...", cr=F, level=LOGLEVEL_SUMMARY )
-    tryCatch( {
-        fdata <- scan( fn, what=character(), sep="\n", blank.lines.skip=F, quiet=T )    
-    }, error=function( err ) {
-        printlog( "error reading file" )
-        printlog( as.character( err ) )
+
+    printlog("Reading", fn, "...", cr = F, level = LOGLEVEL_SUMMARY)
+    tryCatch({
+        fdata <- scan(fn, what = character(), sep = "\n", blank.lines.skip = F, quiet = T)
+    }, error = function(err) {
+        printlog("error reading file")
+        printlog(as.character(err))
         stop()
-    } )
-    
-    printlog( "OK.", ts=F )
-    tableheaders <- grep( headerline, fdata )
-    printlog( "Table headers located in lines", tableheaders )
+    })
+
+    printlog("OK.", ts = F)
+    tableheaders <- grep(headerline, fdata)
+    printlog("Table headers located in lines", tableheaders)
     table_name <- NA
-    
-    for( i in 1:length( tableheaders ) ) {
-      if( use_tablenames ) {
-        table_name <- fdata[ tableheaders[ i ]-1 ]
-      } else {
-        table_name <- i
-      }
-      printlog( "Table", i, "name is", table_name )
-      
-      nskip <- tableheaders[ i ] - 1
-      headers <- fdata[ tableheaders[ i ] ]
-      extrafields <- 0
-      while( substr( headers, nchar( headers), nchar( headers ) )=="," ) {
-        headers <- substr( headers, 1, nchar( headers )-1 )
-        extrafields <- extrafields + 1
-      }
-      
-      if( i==length( tableheaders ) )
-        nrows <- -1
-      else
-        nrows <- tableheaders[ i+1 ] - tableheaders[ i ] - 1- use_tablenames   		# i.e., subtract 1 is using table names
-      
-      printlog( "Reading table", i, "in", fn, "( skip =", nskip, " nrows =", nrows, ")" )
-      tempdata <- read.table( fn, row.names=NULL, skip=nskip, nrows=nrows, header=T, sep=",", comment.char=GCAM_DATA_COMMENT, stringsAsFactors=F)  
-      
-      # Remove extra columns on end - this is often present in the MI output
-      if( extrafields > 0 ) {
-        printlog( "Removing", extrafields, "extra fields" )
-        tempdata <- tempdata[ -seq( ncol( tempdata ) - extrafields+1, ncol( tempdata ) ) ]
-      }
-      
 
-      printlog( "Table", i, "name is", table_name )
-      
-      #Get rid of "X" in year names
-      #names(tempdata)<-ifelse(grepl("(X2)|(X1)", names(tempdata)), sub("X","",names(tempdata)), names(tempdata))
-      
-      
-      tables[[ table_name ]] <- tempdata
+    for (i in seq_along(tableheaders)) {
+        if (use_tablenames) {
+            table_name <- fdata[tableheaders[i] - 1]
+        } else {
+            table_name <- i
+        }
+        printlog("Table", i, "name is", table_name)
+
+        nskip <- tableheaders[i] - 1
+        headers <- fdata[tableheaders[i]]
+        extrafields <- 0
+        while (substr(headers, nchar(headers), nchar(headers)) == ",") {
+            headers <- substr(headers, 1, nchar(headers) - 1)
+            extrafields <- extrafields + 1
+        }
+
+        if (i == length(tableheaders)) {
+            nrows <- -1
+        } else {
+            nrows <- tableheaders[i + 1] - tableheaders[i] - 1 - use_tablenames  # i.e., subtract 1 is using table names
+        }
+
+        printlog("Reading table", i, "in", fn, "( skip =", nskip, " nrows =", nrows, ")")
+        tempdata <- read.table(fn, row.names = NULL, skip = nskip, nrows = nrows, header = T,
+                               sep = ",", comment.char = GCAM_DATA_COMMENT, stringsAsFactors = F)
+
+        # Remove extra columns on end - this is often present in the MI output
+        if (extrafields > 0) {
+            printlog("Removing", extrafields, "extra fields")
+            tempdata <- tempdata[-seq(ncol(tempdata) - extrafields + 1, ncol(tempdata))]
+        }
+
+        printlog("Table", i, "name is", table_name)
+
+        # Get rid of 'X' in year names names(tempdata)<-ifelse(grepl('(X2)|(X1)', names(tempdata)),
+        # sub('X','',names(tempdata)), names(tempdata))
+
+        tables[[table_name]] <- tempdata
     }
-      
-    return( tables )
-} # parse_mi_output
 
+    return(tables)
+}  # parse_mi_output

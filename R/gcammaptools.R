@@ -73,8 +73,8 @@ NULL
 #' Base map for 235 global water basins
 #'
 #' This is the map of the 235 global water basins.  For compatibility with the
-#' other map data frames it refers to the basins as "regions".  Thus, any GCAM
-#' data with a "basin" column will need to have a "region" column added.  There
+#' other map data frames it refers to the basins as 'regions'.  Thus, any GCAM
+#' data with a 'basin' column will need to have a 'region' column added.  There
 #' is also some variability in how the basin names are represented, so this data
 #' set will need some work.
 #'

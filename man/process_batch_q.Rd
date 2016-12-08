@@ -18,11 +18,11 @@ one of the queries cointained in the GCAM output.}
 \item{filters}{A named vector of filtering criteria in the form
 \code{c(header1=value1, header2=value2,...)}.  Headers are the
 names of columns in the data frame.  If aggregating data, use the
-value "Aggregate".  (XXX: Needs further explanation!)}
+value 'Aggregate'.  (XXX: Needs further explanation!)}
 
 \item{func}{Operation to apply to the aggregated data.  (XXX: Does
 this mean that this option is active only when using the
-"Aggregate" option above?)}
+'Aggregate' option above?)}
 }
 \description{
 Extract the desired table from the structure produced by
