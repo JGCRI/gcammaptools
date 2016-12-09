@@ -22,8 +22,8 @@ Imports:
     mapproj (>= 1.2.4),
     maptools (>= 0.8.40),
     RColorBrewer (>= 1.1.2),
-    rgdal (>= 1.2.4),
-    rgeos (>= 0.3.21),
+    rgdal,
+    rgeos,
     sp (>= 1.2.3)
 RoxygenNote: 5.0.1
 Suggests: knitr,
