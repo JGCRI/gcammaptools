@@ -1,5 +1,10 @@
 # Travis-CI configuration file
 
+notifications:
+  email:
+    - robert.link@pnnl.gov
+#    - catherine.ledna@pnnl.gov
+
 language: r
 warnings_are_errors: false
 r_build_args: '--no-build-vignettes'
@@ -16,5 +21,4 @@ r_github_packages:
   - hrbrmstr/ggalt
 
 #after_success:
-#  - Rscript -e 'devtools::test()'
 #  - Rscript -e 'library(covr);codecov(function_exclusions = "atest")'
