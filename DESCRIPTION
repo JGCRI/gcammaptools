@@ -14,17 +14,17 @@ Depends:
 License: GPL-2
 LazyData: true
 Imports:
-    dplyr,
-    ggplot2,
+    dplyr (>= 0.5.0),
+    ggplot2 (>= 2.2),
     ggalt (>= 0.3.1.9000),
-    graticule,
+    graticule (>= 0.1.2),
     magrittr (>= 1.5),
-    mapproj,
-    maptools,
-    RColorBrewer,
+    mapproj (>= 1.2.4),
+    maptools (>= 0.8.40),
+    RColorBrewer (>= 1.1.2),
     rgdal,
     rgeos,
-    sp
+    sp (>= 1.2.3)
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown
