@@ -32,7 +32,7 @@ mapfile <- system.file('extdata/rgn32','GCAM_32_wo_Taiwan_clean.geojson', packag
 map_32_wo_Taiwan<-rgdal::readOGR(mapfile, "OGRGeoJSON")
 map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
 ```
-This gives you the same structure you would have gotten with `data(map.rgn32)`.
+This gives you the same structure you would have gotten with `data(map.rgn32)`.  Generally you should use one of the map datasets included in the package whenever possible because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32 regions plus China subregions map.
 
 The package also provides functions for loading GCAM results from the files produced by the GCAM ModelInterface.  The `parse_mi_output` function reads the file output by the ModelInterface.  The `process_batch_q` function extracts a single table from it, and the `addRegionID` function adds the region identifiers used in the map data.  Once you have done all three of these steps, you must merge the resulting data frame with the map data frame you created above.
 ```{r load.data}
@@ -100,5 +100,10 @@ plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_LA,
         orientation= ORIENTATION_LA, proj=ortho, title="Latin America Orthographic")
 ```
 
-
+### Example 8: Global Water basins
+Here's an example using the global water basin map.
+```{r mp8, fig.width=6, fig.height=3}
+data(map.basin235)
+plot_GCAM(map.basin235, col='id', colorfcn=qualPalette, proj=eck3)
+```
 

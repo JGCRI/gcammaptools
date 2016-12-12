@@ -22,8 +22,27 @@ don't have it already.
 ``` r
 install.packages('devtools')         # if you don't have it already
 devtools::install_github('hrbrmstr/ggalt')
-devtools::install_github('JGCRI/gcammaptools')
+devtools::install_github('JGCRI/gcammaptools', build_vignettes=TRUE)
+```  
+
+The `build_vignettes` argument is optional, but the "examples"
+vignette shows how to do several common mapping tasks.
+
+Two of the package dependencies, `proj4` and `rgeos`, require certain
+software libraries to be installed on your system.  If you don't have
+those libraries installed, then the package installation will fail.
+Windows and Mac users can get around this problem by installing the
+binary versions of these packages:  
+
 ```
+install.packages(c('proj4','rgeos'), type='binary')
+```
+
+Alternatively, you can download and install the required system
+libraries yourself.  The PROJ4 library required by `proj4` is
+available at [https://github.com/OSGeo/proj.4].  The GEOS library
+required by `rgeos` is available at [http://trac.osgeo.org/geos/].
+
 
 ## Usage
 
@@ -39,7 +58,7 @@ In operation it looks like this:
 tables <- parse_mi_output(fn = 'batch-output.csv')
 oil.cons <- process_batch_q(tables, 'primary_energy',
                                   'Reference', c(fuel='a oil'))
-oil.cons <- addRegionID(primary.energy, lookupfile=rgn32, drops=rgn32)
+oil.cons <- addRegionID(oil.cons, lookupfile=rgn32, drops=rgn32)
 ```
 
 ### Plotting maps
@@ -52,5 +71,5 @@ frame with the map structure, and then passing the result to
 ``` r
 data(map.rgn32)
 map.oil <- merge(map.rgn32, oil.cons, by='id')
-plot_GCAM(map.pe, col='X2050', title='Oil Consumption (2050)', legend=TRUE)
+plot_GCAM(map.oil, col='X2050', title='Oil Consumption (2050)', legend=TRUE)
 ```
