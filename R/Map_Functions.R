@@ -26,6 +26,9 @@
 #' @export
 process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 
+    .Deprecated('getQuery', 'rgcam',
+                'Consider using the rgam package to manage GCAM data.')
+
     qdata <- as.data.frame(batchq[[query]])
 
     # Filter for scenario; allow partial lookup

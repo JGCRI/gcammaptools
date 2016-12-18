@@ -47,6 +47,9 @@
 #' @export
 parse_mi_output <- function(fn) {
 
+    .Deprecated('addScenario', 'rgcam',
+                'Consider using the rgcam package to import GCAM data into R.')
+
     tables <- list()
 
     # See if the user has provided any values overriding our defaults
