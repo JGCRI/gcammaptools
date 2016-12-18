@@ -1,7 +1,7 @@
 --- 
 title: "GCAM Mapping Tools Examples"
 author: "Catherine Ledna and Robert Link"
-date: "`r Sys.Date()`"
+date: "18 December, 2106"
 output:  rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{GCAM Mapping Tools Examples}
@@ -13,6 +13,12 @@ vignette: >
 
 ## Introduction
 This vignette explains how to use the GCAM Mapping Tools package to display GCAM data in map form.  Using this package has a couple of advangages over rolling your own maps.  First, it's easy.  By the time you've worked through these examples, you will be able to make maps of GCAM data with just a few simple commands.  Second, we have defined some default projections and extents for common use cases.  This will ensure that the maps you make look professional and conform the the GCAM house style.
+
+```{r checknamespace, echo=FALSE}
+if(!requireNamespace('rgcam',quietly=TRUE)) {
+    stop('The rgcam package is required to build this vignette')
+}
+```
 
 ## Setup
 To get started with the GCAM map tools, attach the `gcammaptools` package.  For now, you will also need to make the arcane-looking call to `gpclibPermit()` as shown below.
@@ -34,23 +40,29 @@ map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
 ```
 This gives you the same structure you would have gotten with `data(map.rgn32)`.  Generally you should use one of the map datasets included in the package whenever possible because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32 regions plus China subregions map.
 
-The package also provides functions for loading GCAM results from the files produced by the GCAM ModelInterface.  The `parse_mi_output` function reads the file output by the ModelInterface.  The `process_batch_q` function extracts a single table from it, and the `addRegionID` function adds the region identifiers used in the map data.  Once you have done all three of these steps, you must merge the resulting data frame with the map data frame you created above.
-```{r load.data}
-### What is this writeOGR stuff?  Do we need it?
-#-----------------------------------------------------------------
-#To geojson: writeOGR(d, layer="",dsn="China_map.geojson",driver="GeoJSON")
+The best way to import GCAM results is to use the `rgcam` package, which will create a project file with your data in it.  You can load the project data with `rgcam::loadProject()` and retrieve tables for individual queries using `rgcam::getQuery()`.  However, if you aren't using `rgcam`, you can start with any data frame that has a `region` column and one or more data columns.
 
-# Load scenario data
-gcam.datafile <- system.file('extdata','sample-batch.csv',package = 'gcammaptools')
-tables<-parse_mi_output(fn = gcam.datafile)
+After loading the query you want to display, you must add the region identifiers used in the map data to the data frame using the `addRegionID()` function.  Then you can join the data and the map using `merge()`.
 
-#Break out sample scenario
-prim_en<-process_batch_q(tables, "primary_energy", "Reference", c(fuel="a oil"))
-prim_en<-addRegionID(prim_en, lookupfile=rgn32, drops=rgn32)
-#Merge dataset with map data
-map_primen<-merge(map_32_wo_Taiwan.fort, prim_en, by="id")
+```{r load_data}
+library('rgcam')
+### Load the example scenario data.  We wrap it in suppressMessages() to hide an unhelpful notice
+### about the file name of the sample data having changed.
+suppressMessages({
+    prj <- loadProject(system.file('sample-gcam-data','gcam-sample-project.dat', package='gcammaptools'))
+})
+listScenarios(prj)
+listQueries(prj, 'Reference')
 ```
-At the end of all this, `map_primen` is a map data frame that has primary energy consumption by region.  Each model year is a separate column.
+
+The sample data has two scenarios and and a dozen queries for each scenario.  For demonstration purposes we will load the CO<sub>2</sub> emissions table.  
+
+```{r get_query}
+co2 <- getQuery(prj, 'CO2 emissions by region', 'Reference')
+co2 <- addRegionID(co2, lookupfile=rgn32, drops=rgn32)
+map_co2<-merge(map_32_wo_Taiwan.fort, co2, by="id")
+```
+At the end of all this, `map_co2` is a map data frame that has primary energy consumption by region.  Each model year is a separate column.  This structure can be passed to `plot_GCAM` to plot maps.
 
 ## Sample Maps generated with plot_GCAM and GCAM32 shapefile
 
@@ -61,11 +73,11 @@ This example just plots the map data frame with the GCAM region id.  Thus, you g
 plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
 ```
 
-### Example 2: Robinson World Projection, Colored by Oil Consumption by Region
-In this example we plot the map data frame of primary energy that we created above.  We select the column for model year 2050.  We also use a different projection than we used above.
+### Example 2: Robinson World Projection, Colored by Regional CO<sub>2</sub> Emissions
+In this example we plot the map data frame of CO<sub>2</sub> that we created above.  We select the column for model year 2050.  We also use a different projection than we used above.
 ```{r mp2, fig.width=6, fig.height=4}
-plot_GCAM(map_primen, col = "X2050", colors = c("white", "red"),
-          title="Robinson World", qtitle="Oil Consumption, 2050", legend=T)
+plot_GCAM(map_co2, col = "X2050", colors = c("white", "blue"),
+          title="Robinson World", qtitle="CO2 Emissions, 2050", legend=T)
 ```
 
 ### Example 3: Winkel-Tripel Projection, Default Color and Style
