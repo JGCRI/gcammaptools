@@ -247,10 +247,23 @@ gen_grat <- function(bbox = EXTENT_WORLD, longint = 20, latint = 30) {
 #' @param nsig Number of significant digits to display in the legend.
 calc.breaks <- function(maxval, minval = 0, nbreak = 5, nsig = 3) {
     step <- (maxval - minval)/(nbreak - 1)
-    seq(0, maxval, by = step) %>% signif(nsig)
+    brk <- seq(minval, maxval, by = step) %>% signif(nsig)
+    ## The rounding at the ends may have put the final label off the scale.  Fix
+    ## if necessary
+    if(brk[1] < minval) {
+        pwr <- ceiling(log10(abs(minval)))
+        unit <- 10**(-nsig)*10**pwr
+        brk[1] <- signif(brk[1] + unit, nsig)
+    }
+    if(brk[nbreak] > maxval) {
+        pwr <- ceiling(log10(abs(maxval)))
+        unit <- 10**(-nsig)*10**pwr
+        brk[nbreak] <- signif(brk[nbreak]-unit, nsig)
+    }
+    brk
 }
 
-calc.breaks.map <- function(mapdata, colname, nbreaks = 4, zero.min = TRUE) {
+calc.limits.map <- function(mapdata, colname, nbreaks = 5, zero.min = TRUE) {
     ### Calculate legend
     ### Inputs:
     ###   mapdata - data frame of geometry and scenario data
@@ -262,11 +275,25 @@ calc.breaks.map <- function(mapdata, colname, nbreaks = 4, zero.min = TRUE) {
 
     vals <- as.numeric(mapdata[[colname]])
 
-    max_dat <- max(vals, na.rm = T)
-    if (zero.min)
-        min_dat = 0 else min_dat <- min(vals, na.rm = T)
+    max_dat <- max(vals, na.rm = TRUE)
+    if (zero.min) {
+        if(min(vals, na.rm=TRUE) < 0) {
+            ## If there are negative values in the data set, then pinning to
+            ## zero means putting the zero point in the middle of the color
+            ## bar.
+            mag <- max(abs(vals), na.rm=TRUE)
+            max_dat <- mag
+            min_dat <- -mag
+        }
+        else {
+            min_dat = 0
+        }
+    }                                   # if(zero.min)
+    else {
+        min_dat <- min(vals, na.rm = T)
+    }
 
-    calc.breaks(max_dat, min_dat, nbreaks)
+    c(min_dat, max_dat)
 }
 
 #-----------------------------------------------------------------
@@ -490,8 +517,10 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD, 
 
         if (is.numeric(mappolys[[col]])) {
             # Instructions for color gradient Calculate legend label increments ('breaks')
-            if (is.null(limits))
-                breaks <- calc.breaks.map(mappolys, col) else breaks <- calc.breaks(limits[2])
+            if (is.null(limits)) {
+                limits <- calc.limits.map(mappolys, col)
+            }
+            breaks <- calc.breaks(limits[2], limits[1])
 
             # Use default colors if none specified
             if (is.null(colors))
