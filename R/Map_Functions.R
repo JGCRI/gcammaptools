@@ -106,10 +106,16 @@ addRegionID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, 
 
     ## Regions that weren't in the original table will show as NA.
     ## Zero them out and give them a sensible unit.
-    finaltable$Units[is.na(finaltable$Units)] <- finaltable$Units[1]  # units will usually be all the same
-    finaltable[is.na(finaltable)] <- 0  # set all remaining NA values to zero.
+    unit <- finaltable$Units[!is.na(finaltable$Units)][1]  # pick the first available unit value; they should all be the same
+    finaltable$Units[is.na(finaltable$Units)] <- unit
+    ## set column name for id column
     colnames(finaltable)[ncol(finaltable)] <- "id"
-    finaltable$id <- as.character(finaltable$id)
+
+    ## find NA values
+    na.vals <- is.na(finaltable)
+    na.vals[finaltable$id==0,] <- FALSE    # exclude non-regions; they should stay NA
+    finaltable[na.vals] <- 0
+    finaltable$id <- as.character(finaltable$id)  # other functions are expecting id to be a char
 
     # Add null vector row to end to account for GCAM region 0
     nullvec <- rep(NA, ncol(finaltable))
