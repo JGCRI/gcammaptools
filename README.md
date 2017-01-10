@@ -19,14 +19,26 @@ package. (Installing from CRAN won't get you the right version.)  To
 do this, you will need to install `devtools` first if you
 don't have it already.  
 
-``` r
+```R
 install.packages('devtools')         # if you don't have it already
 devtools::install_github('hrbrmstr/ggalt')
 devtools::install_github('JGCRI/gcammaptools', build_vignettes=TRUE)
 ```  
-
 The `build_vignettes` argument is optional, but the "examples"
 vignette shows how to do several common mapping tasks.
+
+Sometimes R can't find the CRAN repository without help.  If during
+the `install_github` steps you get errors about missing packages or
+functions, rerun them with the `repos` option:  
+
+```R
+cran <- 'http://cran.us.r-project.org'
+devtools::install_github('hrbrmstr/ggalt', repos=cran)
+devtools::install_github('JGCRI/gcammaptools', build_vignettes=TRUE,
+                         repos=cran)
+```  
+This should allow R to fetch the packages it needs to complete the
+installation from CRAN.
 
 Two of the package dependencies, `proj4` and `rgeos`, require certain
 software libraries to be installed on your system.  If you don't have
@@ -34,7 +46,7 @@ those libraries installed, then the package installation will fail.
 Windows and Mac users can get around this problem by installing the
 binary versions of these packages:  
 
-```
+```R
 install.packages(c('proj4','rgeos'), type='binary')
 ```
 
@@ -54,7 +66,7 @@ You read the data in three stages:
 * Translate the region names to a numerical ID.
 
 In operation it looks like this:  
-``` r
+```R
 tables <- parse_mi_output(fn = 'batch-output.csv')
 oil.cons <- process_batch_q(tables, 'primary_energy',
                                   'Reference', c(fuel='a oil'))
@@ -68,7 +80,7 @@ map of region boundaries, but most of the time you will want to use
 the ones supplied with the package.  You start by merging your data
 frame with the map structure, and then passing the result to
 `plot_GCAM`:  
-``` r
+```R
 data(map.rgn32)
 map.oil <- merge(map.rgn32, oil.cons, by='id')
 plot_GCAM(map.oil, col='X2050', title='Oil Consumption (2050)', legend=TRUE)
