@@ -6,7 +6,8 @@
 \usage{
 plot_GCAM(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
   orientation = NULL, title = NULL, legend = F, colors = NULL,
-  qtitle = NULL, limits = NULL, colorfcn = NULL, ...)
+  qtitle = NULL, limits = NULL, colorfcn = NULL, nacolor = gray(0.75),
+  ...)
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (lat, long, id)
@@ -42,11 +43,15 @@ default color scheme will be used.}
 legend.  c(min,max)}
 
 \item{colorfcn}{If plotting categorical data, the function used to generate a
-colorscheme when colors are not provided (if NULL, use qualPalette).  If}
-
-\item{...}{Other parameters passed on to \code{mappolys}
+colorscheme when colors are not provided (if NULL, use qualPalette).  If
 \code{colors} is specified, or if the data being plotted is numerical, this
 argument will be ignored.}
+
+\item{nacolor}{Color to use for polygons with no data.  The default is
+gray(0.75), which works well for thematic plots.  For plotting gridded data you
+probably want something a little more neutral, like gray(0.9).}
+
+\item{...}{Other parameters passed on to \code{mappolys}}
 }
 \description{
 This function produces a map visualization of a data set containing

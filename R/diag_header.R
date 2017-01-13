@@ -291,14 +291,12 @@ EXTENT_LA <- c(-120,-30,-60,32)
 
 # Default Colors
 LINE_COLOR <- "black"
-RGN_FILL <- "grey"
 LINE_GRAT <- "grey50"
 GUIDE = "colourbar"
 SPACE = "Lab"
 
 # TODO - ALTER to inc. colorschemes
 DEFAULT_CHOROPLETH <- c("white", "red")
-NA_VAL <- "grey50"
 
 # Background
 PANEL_BORDER <- ggplot2::element_blank()

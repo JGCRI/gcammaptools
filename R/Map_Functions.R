@@ -479,9 +479,12 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' legend.  c(min,max)
 #' @param colorfcn If plotting categorical data, the function used to generate a
 #' colorscheme when colors are not provided (if NULL, use qualPalette).  If
-#' @param ... Other parameters passed on to \code{mappolys}
 #' \code{colors} is specified, or if the data being plotted is numerical, this
 #' argument will be ignored.
+#' @param nacolor Color to use for polygons with no data.  The default is
+#' gray(0.75), which works well for thematic plots.  For plotting gridded data you
+#' probably want something a little more neutral, like gray(0.9).
+#' @param ... Other parameters passed on to \code{mappolys}
 #' @examples \dontrun{
 #'
 #' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
@@ -499,8 +502,10 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #'   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'), title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
 #' }
 #' @export
-plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD, orientation = NULL,
-    title = NULL, legend = F, colors = NULL, qtitle = NULL, limits = NULL, colorfcn = NULL, ...) {
+plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
+                      orientation = NULL, title = NULL, legend = F, colors =
+                          NULL, qtitle = NULL, limits = NULL, colorfcn = NULL,
+                      nacolor=gray(0.75),  ...) {
 
     # Generate graticule (latitude/longitude lines) and clip map to extent specified.
     grat <- gen_grat()
@@ -528,7 +533,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD, 
 
             # Add color scale to map
             mp <- mp + scale_fill_gradientn(name = qtitle, colors = colors, values = NULL, guide = GUIDE,
-                space = SPACE, na.value = NA_VAL, breaks = breaks, limits = limits, labels = breaks)
+                space = SPACE, na.value = nacolor, breaks = breaks, limits = limits, labels = breaks)
 
         } else {
             # Instructions for categorical map Use default color scheme and color function if none
@@ -546,7 +551,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD, 
     } else {
         # If no data is being plotted, use default color scale
         mp <- mp + geom_polygon(data = mappolys, aes_string("long", "lat", group = "group", fill = col),
-            fill = RGN_FILL, color = LINE_COLOR)
+            fill = nacolor, color = LINE_COLOR)
     }
 
     # Project map and add theme and labels
