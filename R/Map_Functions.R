@@ -484,7 +484,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' @param nacolor Color to use for polygons with no data.  The default is
 #' gray(0.75), which works well for thematic plots.  For plotting gridded data you
 #' probably want something a little more neutral, like gray(0.9).
-#' @param ... Other parameters passed on to \code{mappolys}
+#' @param ... Other parameters passed on to \code{colorfcn}.
 #' @examples \dontrun{
 #'
 #' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
@@ -560,6 +560,61 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
 
     return(mp)
 }
+
+#' Plot a gridded dataset over a base map
+#'
+#' This function produces a map visualization of a gridded (i.e., values
+#' specified by latitude and longitude) data set.  The data will be plotted over
+#' the base map supplied
+#'
+#' The plot data should be in the form of a table of latitude (lat), longitude
+#' (lon), and data values.  The name of the data column is given as an argument
+#' to the function, so you can have, for example, latitude and longitude columns
+#' followed by columns for time slices.  Columns besides the coordinate and data
+#' columns will be ignored.
+#'
+#' Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping,
+#' legend title, etc. as arguments to this function.  The ggplot2 way of
+#' specifying this information is way more flexible. Eventually \code{plot_GCAM}
+#' will use this method too.
+#'
+#' To customize your color mapping, use one of
+#' \itemize{
+#'   \item \code{\link[ggplot2]{scale_fill_gradient}} : A gradient from one
+#' color to another.
+#'   \item \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging gradient
+#' from one color to another, passing through white in the middle.  You can set
+#' the data value that gets assigned to white with the \code{midpoint}
+#' argument.
+#'  \item \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth gradient
+#' between an arbitrary selection of colors.
+#' }
+#' If you choose to display a legend for the color mapping, you will have to
+#' give it a title using the \code{title} argument to any of the above gradient
+#' functions.  You have to do this even if you want a legend with no title at
+#' all.  Use an empty string in that case.
+#'
+#' @param plotdata Data frame with the coordinates and values to be plotted.
+#' @param col Name of the column holding the data values to plot
+#' @param map Base map data.  Default is GCAM 32-region
+#' @param alpha Transparency of the grid data layer.  Given as a number between
+#' 0 and 1, where 0 is completely transparent and 1 is completely opaque.
+#' @inheritParams plot_GCAM
+#' @export
+plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent
+                           = EXTENT_WORLD, orientation = NULL, title = NULL,
+                           legend = TRUE, nacolor = gray(0.9), alpha=0.8)
+{
+    ## start by plotting the base map
+    plt <- plot_GCAM(map, proj = proj, extent = extent,
+                     orientation = orientation, title = title, legend = legend,
+                     colors = colors, qtitle = qtitle, limits = limits, nacolor
+                     = nacolor)
+    ## add the raster layer and return
+    plt + geom_tile(data=plotdata, mapping=aes_string(x='lon', y='lat',
+                                   fill=col), alpha=alpha)
+}
+
 
 #' Get auxiliary data for a named mapset.
 #'

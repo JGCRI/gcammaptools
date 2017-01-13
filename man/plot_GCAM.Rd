@@ -51,7 +51,7 @@ argument will be ignored.}
 gray(0.75), which works well for thematic plots.  For plotting gridded data you
 probably want something a little more neutral, like gray(0.9).}
 
-\item{...}{Other parameters passed on to \code{mappolys}}
+\item{...}{Other parameters passed on to \code{colorfcn}.}
 }
 \description{
 This function produces a map visualization of a data set containing
