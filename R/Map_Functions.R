@@ -549,9 +549,10 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
             mp <- mp + scale_fill_manual(values = colors, name = qtitle)
         }
     } else {
-        # If no data is being plotted, use default color scale
-        mp <- mp + geom_polygon(data = mappolys, aes_string("long", "lat", group = "group", fill = col),
-            fill = nacolor, color = LINE_COLOR)
+          ## If no data is being plotted, use default color scale
+          mp <- mp + geom_polygon(data = mappolys, aes_string("long", "lat",
+                                  group = "group"), fill = nacolor, color =
+                                      LINE_COLOR)
     }
 
     # Project map and add theme and labels
@@ -603,13 +604,13 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent
                            = EXTENT_WORLD, orientation = NULL, title = NULL,
-                           legend = TRUE, nacolor = gray(0.9), alpha=0.8)
+                           legend = TRUE, nacolor = gray(0.9),
+                           alpha=0.8)
 {
     ## start by plotting the base map
     plt <- plot_GCAM(map, proj = proj, extent = extent,
                      orientation = orientation, title = title, legend = legend,
-                     colors = colors, qtitle = qtitle, limits = limits, nacolor
-                     = nacolor)
+                     nacolor = nacolor)
     ## add the raster layer and return
     plt + geom_tile(data=plotdata, mapping=aes_string(x='lon', y='lat',
                                    fill=col), alpha=alpha)
