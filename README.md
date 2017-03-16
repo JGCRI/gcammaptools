@@ -15,13 +15,16 @@ style for GCAM plots.
 This package must be installed from the github repository using
 `install_github`.  You will also need to install the development
 version of the [`ggalt`](https://github.com/hrbrmstr/ggalt)
-package. (Installing from CRAN won't get you the right version.)  To
+package. (Installing from CRAN won't get you the right version.
+**_Note: the latest version of `ggalt` has some changes in it that
+break our code.  Until we get those fixed, you will need to be sure to
+install the specific version included in the instructions below._**)  To
 do this, you will need to install `devtools` first if you
 don't have it already.  
 
 ```R
 install.packages('devtools')         # if you don't have it already
-devtools::install_github('hrbrmstr/ggalt')
+devtools::install_github('hrbrmstr/ggalt',ref="017b4824f3")
 devtools::install_github('JGCRI/gcammaptools', build_vignettes=TRUE)
 ```  
 The `build_vignettes` argument is optional, but the "examples"
