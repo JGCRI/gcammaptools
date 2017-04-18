@@ -16,7 +16,9 @@ LazyData: true
 Imports:
     dplyr (>= 0.5.0),
     ggplot2 (>= 2.2),
+    ggplot2 (<= 2.2.0),
     ggalt (>= 0.3.1.9000),
+    ggalt (<= 0.3.2),
     graticule (>= 0.1.2),
     magrittr (>= 1.5),
     mapproj (>= 1.2.4),
