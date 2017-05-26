@@ -3,7 +3,6 @@
 notifications:
   email:
     - robert.link@pnnl.gov
-#    - catherine.ledna@pnnl.gov
 
 language: r
 warnings_are_errors: false

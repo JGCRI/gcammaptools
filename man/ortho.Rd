@@ -10,7 +10,7 @@ ortho
 }
 \description{
 Unlike most projections, the orthographic does not use proj4; it
-uses the \code{mapproj::coord_map} function.  You can pass
+uses the \code{\link[ggplot2]{coord_map}} function.  You can pass
 this value to the \code{proj} argument of \code{\link{plot_GCAM}}
 to get an orthographic projection.
 }

@@ -7,3 +7,7 @@
 
 # Travis configuration file
 .travis.yml
+
+# License and readme
+LICENSE.md
+README.md

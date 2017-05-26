@@ -420,7 +420,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #'
 #' For specifying the projection you can use any Proj4 string.
 #' Projections specified this way are computed using
-#' \code{ggalt::coord_proj}.  For convenience, this package
+#' \code{\link[ggalt]{coord_proj}}.  For convenience, this package
 #' defines the following proj4 strings:
 #' \itemize{
 #'   \item \code{\link{eck3}} - Eckert III
@@ -431,7 +431,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' }
 #'
 #' For orthographic projections, we compute the projection using the
-#' \code{mapproj::coord_map} function.  To get this projection
+#' \code{\link[ggplot2]{coord_map}} function.  To get this projection
 #' pass the \code{\link{ortho}} symbol as the \code{proj} argument.
 #' You will then need to pass a vector in the \code{orientation}
 #' argument.  We have defined the following fequently used orientation
@@ -487,8 +487,9 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' @param ... Other parameters passed on to \code{colorfcn}.
 #' @examples \dontrun{
 #'
-#' ##Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
-#'   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32', 'GCAM_32_wo_Taiwan_clean.geojson',
+#' ## Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
+#'   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32',
+#'                                                'GCAM_32_wo_Taiwan_clean.geojson',
 #'                                                package='gcammaptools'))
 #'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region='GCAM_ID')
 #'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
@@ -497,9 +498,12 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',package='gcammaptools'))
 #'   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel='a oil'))
 #'   prim_en<-addRegionID(prim_en, file.path(basedir.viz,
-#'                                 system.file('extdata/rgn32', 'lookup.txt', package='gcammaptools'),
-#'                                 system.file('extdata/rgn32', 'drop-regions.txt', package='gcammaptools')))
-#'   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'), title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
+#'                                 system.file('extdata/rgn32', 'lookup.txt',
+#'                                             package='gcammaptools'),
+#'                                 system.file('extdata/rgn32',
+#'                                             'drop-regions.txt', package='gcammaptools')))
+#'   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'),
+#'                  title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
 #' }
 #' @export
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,

@@ -39,22 +39,6 @@
 
 
 # -----------------------------------------------------------------------------
-# Load required libraries
-# NB this diag has been tested with the following libraries:
-#   rgdal 1.1-3
-#   ggplot2 2.1.0
-#   ggalt # must install the github version:  install_github('hrbrmstr/ggalt')
-#   graticule 0.1.0
-#   rgeos 0.3-15
-#   maptools 0.8-37 , "gpclib"
-#   gpclib [[???]]
-#   sp 1.2-1
-#   mapproj 1.2-4
-#   RColorBrewer 1.1-2
-#   dplyr 0.5.0
-
-
-# -----------------------------------------------------------------------------
 # Global settings (in CAPITALS)
 # This first group of settings is protected--we don't want it re-set every time
 # this header is read. This first
@@ -218,7 +202,7 @@ ch_aea <- "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ell
 #' Projection string for orthographic projections
 #'
 #' Unlike most projections, the orthographic does not use proj4; it
-#' uses the \code{mapproj::coord_map} function.  You can pass
+#' uses the \code{\link[ggplot2]{coord_map}} function.  You can pass
 #' this value to the \code{proj} argument of \code{\link{plot_GCAM}}
 #' to get an orthographic projection.
 #' @export

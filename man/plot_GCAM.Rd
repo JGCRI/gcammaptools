@@ -62,7 +62,7 @@ results by region.  The functions \code{\link{parse_mi_output}} and
 \details{
 For specifying the projection you can use any Proj4 string.
 Projections specified this way are computed using
-\code{ggalt::coord_proj}.  For convenience, this package
+\code{\link[ggalt]{coord_proj}}.  For convenience, this package
 defines the following proj4 strings:
 \itemize{
   \item \code{\link{eck3}} - Eckert III
@@ -73,7 +73,7 @@ defines the following proj4 strings:
 }
 
 For orthographic projections, we compute the projection using the
-\code{mapproj::coord_map} function.  To get this projection
+\code{\link[ggplot2]{coord_map}} function.  To get this projection
 pass the \code{\link{ortho}} symbol as the \code{proj} argument.
 You will then need to pass a vector in the \code{orientation}
 argument.  We have defined the following fequently used orientation
