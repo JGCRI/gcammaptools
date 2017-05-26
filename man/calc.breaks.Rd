@@ -19,4 +19,3 @@ calc.breaks(maxval, minval = 0, nbreak = 5, nsig = 3)
 Given a minimum and maximum value, and number of breaks, calculate
 evenly-spaced break values.
 }
-

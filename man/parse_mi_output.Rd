@@ -15,4 +15,3 @@ Normally you will pass the structure returned by this function to
 \code{process_batch_q} extract (and optionally do some filtering
 and processing on) the table you are looking for.
 }
-

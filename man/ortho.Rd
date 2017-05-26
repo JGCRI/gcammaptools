@@ -15,4 +15,3 @@ this value to the \code{proj} argument of \code{\link{plot_GCAM}}
 to get an orthographic projection.
 }
 \keyword{datasets}
-

@@ -12,4 +12,3 @@ chn
 This symbol will select the chn map set
 }
 \keyword{datasets}
-

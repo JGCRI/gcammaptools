@@ -16,4 +16,3 @@ lookup table.}
 Subregions are given two-letter abbreviations in GCAM output.  This function
 uses a lookup table to restore the full names.
 }
-

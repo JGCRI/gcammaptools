@@ -12,4 +12,3 @@ rgn14
 This symbol will select the rgn14 map set
 }
 \keyword{datasets}
-

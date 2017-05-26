@@ -18,4 +18,3 @@ associated with it.  This function retrieves the auxiliary table associated
 with the requested.  Right now this function understands \code{rgn14},
 \code{rgn32}, \code{basin235}, and \code{chn}.
 }
-

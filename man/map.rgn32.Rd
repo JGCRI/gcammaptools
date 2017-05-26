@@ -13,4 +13,3 @@ This is the region map used in GCAM 4.0 and subsequent.  This version of the
 map does not include the Taiwan region.
 }
 \keyword{datasets}
-

@@ -16,4 +16,3 @@ over the continental United States.  Its value is \code{'+proj=aea
 +datum=NAD83'}
 }
 \keyword{datasets}
-

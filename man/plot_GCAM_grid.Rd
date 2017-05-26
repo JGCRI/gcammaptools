@@ -71,4 +71,3 @@ give it a title using the \code{title} argument to any of the above gradient
 functions.  You have to do this even if you want a legend with no title at
 all.  Use an empty string in that case.
 }
-

@@ -115,4 +115,3 @@ frequently used map extents:
   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'), title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
 }
 }
-

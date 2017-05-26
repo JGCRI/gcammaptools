@@ -20,4 +20,3 @@ function uses a ramp function to extend the palettes from
 \code{\link{RColorBrewer}} so they can handle a larger number of
 entries.
 }
-

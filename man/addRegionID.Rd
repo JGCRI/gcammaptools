@@ -39,4 +39,3 @@ province abbreviations.  The \code{rgn32} set has drops, but not province
 abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
 finally implemented) has both.
 }
-

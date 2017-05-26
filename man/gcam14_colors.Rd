@@ -15,4 +15,3 @@ Perhaps this sort of thing should go in a separate GCAM style package, since
 it isn't really specific to mapping?
 }
 \keyword{datasets}
-

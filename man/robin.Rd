@@ -13,4 +13,3 @@ String for specifying the Robinson projection in mapping functions.
 Its value is \code{'+proj=robin'}
 }
 \keyword{datasets}
-

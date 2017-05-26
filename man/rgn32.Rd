@@ -12,4 +12,3 @@ rgn32
 This symbol will select the rgn32 map set
 }
 \keyword{datasets}
-

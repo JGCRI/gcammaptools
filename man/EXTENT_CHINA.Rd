@@ -13,4 +13,3 @@ This vector can be used as the \code{extent} argument to
 \code{\link{plot_GCAM}}.
 }
 \keyword{datasets}
-

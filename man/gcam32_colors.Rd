@@ -14,4 +14,3 @@ other types) to ensure consistency across plots and publications.  XXX: This
 color palette doesn't seem to be finished yet, so we haven't exported it.
 }
 \keyword{datasets}
-

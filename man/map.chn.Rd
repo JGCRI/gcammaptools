@@ -13,4 +13,3 @@ This map has the 32 GCAM regions, plus the subregions corresponding to
 China's provinces, municipalities, autonomous regions, and SARs.
 }
 \keyword{datasets}
-

@@ -24,7 +24,7 @@ don't have it already.
 
 ```R
 install.packages('devtools')         # if you don't have it already
-devtools::install_github('hrbrmstr/ggalt',ref="017b4824f3")
+devtools::install_github('rplzzz/ggalt',ref="ggp221")
 devtools::install_github('JGCRI/gcammaptools', build_vignettes=TRUE)
 ```  
 The `build_vignettes` argument is optional, but the "examples"
@@ -36,7 +36,7 @@ functions, rerun them with the `repos` option:
 
 ```R
 cran <- 'http://cran.us.r-project.org'
-devtools::install_github('hrbrmstr/ggalt', repos=cran)
+devtools::install_github('rplzzz/ggalt', ref='ggp221', repos=cran)
 devtools::install_github('JGCRI/gcammaptools', build_vignettes=TRUE,
                          repos=cran)
 ```  

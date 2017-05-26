@@ -13,4 +13,3 @@ String for specifying the Winkel-Tripel projection in mapping
 functions.  Its value is \code{'+proj=wintri'}
 }
 \keyword{datasets}
-

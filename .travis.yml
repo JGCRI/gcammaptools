@@ -18,8 +18,6 @@ r_binary_packages:
 
 r_github_packages:
   - jimhester/covr
-  - hrbrmstr/ggalt
-  - JGCRI/rgcam
 
 #after_success:
 #  - Rscript -e 'library(covr);codecov(function_exclusions = "atest")'
