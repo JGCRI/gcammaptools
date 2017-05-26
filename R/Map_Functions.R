@@ -513,7 +513,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
 
 
     # Plot graticule and polygons
-    mp <- ggplot() + geom_path(data = grat, aes(long, lat, group = group, fill = NULL), color = LINE_GRAT) +
+    mp <- ggplot() + geom_path(data = grat, aes(long, lat, group = group), color = LINE_GRAT) +
         geom_polygon(data = mappolys, aes_string("long", "lat", group = "group", fill = col),
             color = LINE_COLOR)
 

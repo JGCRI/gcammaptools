@@ -1,7 +1,7 @@
 --- 
 title: "GCAM Mapping Tools Examples"
 author: "Catherine Ledna and Robert Link"
-date: "18 December, 2106"
+date: "18 December, 2016"
 output:  rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{GCAM Mapping Tools Examples}
