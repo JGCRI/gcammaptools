@@ -31,5 +31,5 @@ Suggests: knitr,
     rgcam
 VignetteBuilder: knitr
 Remotes:
-    rplzzz/ggalt@ggp221
+    rplzzz/ggalt@ggp221,
     JGCRI/rgcam
