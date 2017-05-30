@@ -5,15 +5,28 @@ notifications:
     - robert.link@pnnl.gov
 
 language: r
+cache: packages
 warnings_are_errors: false
 r_build_args: '--no-build-vignettes'
 r_check_args: '--as-cran --no-build-vignettes'
-sudo: true
+dist: trusty
+sudo: false
 
 r_binary_packages:
   - rgdal
   - rgeos
   - sp
+
+addons:
+  apt:
+    packages:
+      - libhdf5-7
+      - libhdf5-dev
+      - libgeos-dev
+      - libproj-dev
+      - proj-data
+      - proj-bin
+      - libgdal-dev 
 
 r_github_packages:
   - jimhester/covr
