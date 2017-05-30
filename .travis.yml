@@ -6,6 +6,9 @@ notifications:
 
 language: r
 cache: packages
+os:
+  - linux
+  - osx
 dist: trusty
 sudo: false
 
