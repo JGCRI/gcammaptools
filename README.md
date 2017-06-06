@@ -13,22 +13,25 @@ style for GCAM plots.
 ## Installation
 
 This package must be installed from the github repository using
-`install_github`.  You will also need to install the development
-version of the [`ggalt`](https://github.com/hrbrmstr/ggalt)
-package. (Installing from CRAN won't get you the right version.
-**_Note: the latest version of `ggalt` has some changes in it that
-break our code.  Until we get those fixed, you will need to be sure to
-install the specific version included in the instructions below._**)  To
+`install_github`.  To
 do this, you will need to install `devtools` first if you
 don't have it already.  
 
 ```R
 install.packages('devtools')         # if you don't have it already
-devtools::install_github('rplzzz/ggalt',ref="ggp221")
-devtools::install_github('JGCRI/gcammaptools', build_vignettes=TRUE)
+devtools::install_github('JGCRI/gcammaptools')
 ```  
-The `build_vignettes` argument is optional, but the "examples"
-vignette shows how to do several common mapping tasks.
+Optionally, you can build the "examples" vignette, which shows how to
+do several common mapping tasks.  To build these examples, replace the
+`install_github` command above with:
+```R
+devtools::install_github('JGCRI/gcammaptools', dependencies=TRUE,
+                         build_vignettes=TRUE)
+```
+You can display the vignette by running
+```R
+vignette('examples','gcammaptools')
+```
 
 Sometimes R can't find the CRAN repository without help.  If during
 the `install_github` steps you get errors about missing packages or
@@ -36,9 +39,8 @@ functions, rerun them with the `repos` option:
 
 ```R
 cran <- 'http://cran.us.r-project.org'
-devtools::install_github('rplzzz/ggalt', ref='ggp221', repos=cran)
 devtools::install_github('JGCRI/gcammaptools', build_vignettes=TRUE,
-                         repos=cran)
+                         dependencies=TRUE, repos=cran)
 ```  
 This should allow R to fetch the packages it needs to complete the
 installation from CRAN.
