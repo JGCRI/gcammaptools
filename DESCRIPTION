@@ -1,6 +1,6 @@
 Package: gcammaptools
 Title: Plot GCAM Output on Maps
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: c(
 	   person("Catherine", "Ledna", email = "catherine.ledna@pnnl.gov", role = c("aut", "cre")),
 	   person("Robert", "Link", email="robert.link@pnnl.gov", role="ctb")
