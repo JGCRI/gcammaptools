@@ -515,7 +515,14 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
 
     # Generate graticule (latitude/longitude lines) and clip map to extent specified.
     grat <- gen_grat()
-    mappolys <- get_bbox_polys(dataset = mapdata)
+    
+    # Only clip polygons if using an AEA projection; otherwise this can induce distortions
+    if(proj %in% c(na_aea, ch_aea)){
+      mappolys <- get_bbox_polys(dataset = mapdata)
+    } else{
+      mappolys <- mapdata
+    }
+
 
 
     # Plot graticule and polygons
