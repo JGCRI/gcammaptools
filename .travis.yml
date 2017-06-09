@@ -12,6 +12,9 @@ os:
 dist: trusty
 sudo: false
 
+before_install:
+  - tlmgr install inconsolata
+
 r_binary_packages:
   - rgdal
   - rgeos
