@@ -334,7 +334,7 @@ qualPalette <- function(n = 31, pal = "Set3", na.val = "grey50") {
 #   orientation - Use if using orthographic projection
 #   extent - Vector of lat/lon limits c(lat0,lat1,lon0,lon1)
 #   parameters - additional parameters corresponding to coord_map ggplot2 function
-#   inverse ?
+#   inverse - ?
 #   degrees - Units for lat/longitude ?
 #   ellps.default - default ellipse to use with projection ?
 #
