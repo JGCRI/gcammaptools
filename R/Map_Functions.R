@@ -1,4 +1,281 @@
 ## MAP FUNCTIONS
+
+#' Import ESRI Shapefile as SpatialDataFrame.
+#'
+#' Creates a SpatialDataFrame from full path string to ESRI Shapefile. User
+#' defines which field is supposed to represent the ID for the data.
+#'
+#' @param shp_path Full path to directory that contains the Shapefile
+#' @param layer_name Name of the Shapefile without the extension
+#' @param field Name of field in the Shapefile containing the ID of the data
+#' @param proj The coordinate reference system number or object provided by the user
+load_shp <- function(shp_path, layer_name, field) {
+
+    # read into a SpatialDataFrame
+    xmap <- readOGR(shp_path, layer_name)
+
+    # add id column to merge by using gridcode
+    xmap$id <- xmap$field
+
+    return(xmap)
+}
+
+#' Import text file as a data frame and add id field.
+#'
+#' Creates a DataFrame from full path string to file. User
+#' defines which field is supposed to represent the ID for the data.
+#'
+#' @param txt Full path to directory that contains the file
+#' @param field Name of field in the Shapefile containing the ID of the data
+load_txt <- function(txt, field) {
+
+    # read into a DataFrame
+    xdat <- read.csv(txt)
+
+    # add id column to merge by using gridcode
+    xdat$id <- xdat$field
+
+    return(xdat)
+}
+
+#' Retrieve proj4 projection string.
+#'
+#' Provides a lookup list for default proj4 strings utilized.  Users
+#' may also specify their own lookup list.  Options also include
+#' providing either the EPSG, ESRI, or SR-ORG projection codes to
+#' retrieve the associated proj4 string from a web query from
+#' http://spatialreference.org.  Definitions for proj4 string
+#' parmeters can be referenced here:
+#' http://proj4.org/parameters.html#parameter-list
+#'
+#' @param obj Use object instead that has a predefined proj4 string.
+#' @param prj4s_key Lookup key string identifying the default projection.
+#' @param epsg The EPSG projection code as an integer.
+#' @param esri The ESRI projection code as an integer.
+#' @param srorg The SR-ORG projection code as an integer.
+#' @param lu A key=value list where key is a string and value is the
+#' associated proj4 string.
+get_prj4s <- function(obj=NULL, prj4s_key=NULL, epsg=NULL, esri=NULL, srorg=NULL, lu=NULL) {
+
+    # default prj4 key: string lookup
+    def_lu <- list('us' = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83",
+                   'africa' = "+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0 ",
+                   'world' = "+proj=longlat +datum=WGS84 +no_defs",
+                   'china' = "+proj=robin +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs")
+
+    # use default lookup if none provided
+    if (is.null(lu)) {
+        lu <- def_lu
+    }
+
+    # use object if defined
+    if (!is.null(obj) && (obj %in% names(lu))) {
+        return(lu[[obj]])
+    }
+    else if (!is.null(obj)) {
+        return(obj)
+    }
+
+    # if prj4 key is provided and none other
+    if ((!is.null(prj4s_key)) && (is.null(epsg)) && (is.null(esri)) && (is.null(srorg))) {
+        return(lu[[prj4s_key]])
+    }
+    # if epsg is provided and none other
+    else if ((!is.null(epsg)) && (is.null(prj4s_key)) && (is.null(esri)) && (is.null(srorg))) {
+
+        # create url
+        url = paste0('http://spatialreference.org/ref/epsg/', epsg, '/proj4/')
+
+        # get prj4s string from EPSG code url
+        return(readLines(url, warn=FALSE))
+    }
+    # if esri is provided and none other
+    else if ((!is.null(esri)) && (is.null(prj4s_key)) && (is.null(epsg)) && (is.null(srorg))) {
+
+        # create url
+        url = paste0('http://spatialreference.org/ref/esri/', esri, '/proj4/')
+
+        # get prj4s string from ESRI code url
+        return(readLines(url, warn=FALSE))
+    }
+    # if srorg is provided and none other
+    else if ((!is.null(srorg)) && (is.null(prj4s_key)) && (is.null(epsg)) && (is.null(esri))) {
+
+        # create url
+        url = past0('http://spatialreference.org/reg/sr-org/', srorg, '/proj4/')
+
+        # get prj4s string from ESRI code url
+        return(readLines(url, warn=FALSE))
+    }
+    else {
+        return(FALSE)
+    }
+}
+
+#' Helper function for to assign return Proj4 string.
+#'
+#' Uses user-input for projection type to identify what
+#' type of URL fetch needs to be conducted to retrieve
+#' a Proj4 string from http://spatialreference.org
+#'
+#' @param proj_type Either esri, epsg, or sr-org as string.  These correspond to
+#' available reference types hosted by http://spatialreference.org/
+#' @param proj The coordinate reference system number or object provided by the user
+assign_prj4s <- function(proj_type, proj) {
+
+    # change proj_type to lower case
+    if (is.null(proj_type)) {
+        pt <- NULL
+    }
+    else {
+        pt <- tolower(c(proj_type))
+    }
+
+    # get proj4 string that corresponds to user selection
+    if (is.null(pt)) {
+        return(get_prj4s(obj=proj))
+    }
+    else if (pt == 'prj4s_key') {
+        return(get_prj4s(prj4s_key=proj))
+    }
+    else if (pt == 'epsg') {
+        return(get_prj4s(epsg=proj))
+    }
+    else if (pt == 'esri') {
+        return(get_prj4s(esri=proj))
+    }
+    else if (pt == 'sr-org') {
+        return(get_prj4s(srorg=proj))
+    }
+}
+
+#' Create SpatialPolygonDataFrame from numeric extent.
+#'
+#' Creates a SpatialPolygonDataFrame from numeric extent vector and
+#' applies a default WGS84 (EPSG:4326) coordinate reference
+#' system.
+#'
+#' @param ext Numeric extent [xmin, xmax, ymin, ymax]
+spat_bb <- function(b_ext) {
+
+    # convert bounding box to coordinates matrix
+    bb_crds <- matrix(c(b_ext[1], b_ext[3],
+                        b_ext[1], b_ext[4],
+                        b_ext[2], b_ext[4],
+                        b_ext[2], b_ext[3],
+                        b_ext[1], b_ext[3]),
+                      ncol = 2, byrow = TRUE)
+
+    # create id that will associated with the single polygon; arbitrary
+    bid <- "a"
+
+    # create a SpatialPolygons object from bounds
+    bb_spat <- SpatialPolygons(list(Polygons(list(Polygon(bb_crds)), ID=bid)))
+
+    # create data attributes
+    bb_df <- data.frame(value=1, row.names=bid)
+
+    # generate SpatialPolygonsDataFrame
+    bb_sdf <- SpatialPolygonsDataFrame(bb_spat, data=bb_df)
+
+    # assign default projection of WGS84 (EPSG:4326)
+    proj4string(bb_sdf) <- CRS("+init=EPSG:4326")
+
+    return(bb_sdf)
+}
+
+#' Reproject SpatialDataFrame.
+#'
+#' Recalculates the projection of the input SpatialDataFrame to
+#' the user-defined one using a Proj4 string.
+#'
+#' @param sdf SpatialDataFrame
+#' @param prj4s Proj4 string
+reproject <- function(sdf, prj4s) {
+
+    # reproject SpatialDataFrame with an assigned coordinate system
+    psdf <- spTransform(sdf, CRS(prj4s))
+
+    return(psdf)
+}
+
+#' Create graticules (lat lon lines) from bounding box.
+#'
+#' Creates a SpatialLinesDataFrame from a SpatialPolygonDataFrame bounding box
+#' and sets its default projection to the native projection inherited from
+#' the input SpatialPolygonDataFrame.
+#'
+#' @param bbox SpatialPolygonDataFrame bounding box (sdf@bbox)
+#' @param prj4s SpatialPolygonDataFrame proj4string (sdf@proj4string)
+#' @param longint The longitude length of spacing between lines in the
+#' native unit of the bounding box.  Default is 20 for WGS84 degrees.
+#' @param latint The latitude length of spacing between lines in the
+#' native unit of the bounding box.  Default is 30 for WGS84 degrees.
+gen_grat <- function(bbox=NULL, prj4s=NULL, longint=20, latint=30) {
+
+    # create lat and lon sequences spaced by interval
+    lons = seq(bbox[1], bbox[3], by = longint)
+    lats = seq(bbox[2], bbox[4], by = latint)
+
+    # generate graticule SpatialLinesDataFrame
+    return(graticule::graticule(lons, lats, xlim=range(lons), ylim=range(lats)))
+}
+
+#' Harmonize coordinate reference system of data sources.
+#'
+#' Reprojects the map, bounding box, and graticule SpatialDataFrames
+#' into a common, user-defined coordinate reference system.
+#'
+#' @param map_sdf SpatialPolygonDataFrame of the map data
+#' @param bb_sdf SpatialPolygonDataFrame of the bounding box
+#' @param grat_sdf SpatialLinesDataFrame of the graticules
+#' @param prj4s Proj4 string defined by the user that identifies
+#' the target coordinate reference system
+harmonize_proj <- function(map_sdf, bb_sdf, grat_sdf, prj4s) {
+
+    m_sdf <- reproject(sdf=map_sdf, prj4s=prj4s)
+    b_sdf <- reproject(sdf=bb_sdf, prj4s=prj4s)
+    g_sdf <- reproject(sdf=grat_sdf, prj4s=prj4s)
+
+    return(list(m_sdf, b_sdf, g_sdf))
+}
+
+#' Helper function to create DataFrame from SpatialDataFrame.
+#'
+#' Creates and forifies a SpatialDataFrame to a DataFrame for use
+#' in ggplot.
+#'
+#' @param sdf SpatialDataFrame
+prep_df <- function(sdf) {
+
+    # create a unique ID to conduct the join
+    sdf$id = rownames(as.data.frame(sdf))
+
+    # split out shapes
+    sdf.shps <- ggplot2::fortify(sdf, region="id")
+
+    # add data attributes
+    sdf.df <- merge(sdf.shps, sdf, by="id", type='left') # add the attributes back
+
+    return(sdf.df)
+}
+
+#' Prepare data for ggalt plotting.
+#'
+#' Creates and forifies all map data SpatialDataFrames to a DataFrames
+#' for use in ggplot.
+#'
+#' @param harm_list List of SpatialDataFrames [mapdata, boundingbox, graticules]
+fortify_all <- function(harm_list) {
+
+    # create fortified data frames from input SpatialDataFrames for all data
+    m <- prep_df(harm_list[1])
+    b <- prep_df(harm_list[2])
+    g <- prep_df(harm_list[3])
+
+    return(list(m, b, g))
+}
+
 #---------------------------------------------------------------------------
 # DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
@@ -209,33 +486,6 @@ in_range <- function(x, a, b) {
     x >= a & x <= b
 }
 
-gen_grat <- function(bbox = EXTENT_WORLD, longint = 20, latint = 30) {
-    ### Generate graticule (long/lat lines) given bbox
-    ### Inputs:
-    ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
-    ###   longint - interval between longitude lines
-    ###   latint - interval between latitude lines
-    ### Outputs:
-    ###   grat - dataframe describing of latitude and longitude lines
-    ###         spaced at specified intervals
-
-    ### TODO: We could probably realize some savings here by
-    ### precalculating and caching graticules for some commonly-used
-    ### configurations.
-
-    # Generate graticule as sp matrix object
-    lons = seq(bbox[1], bbox[2], by = longint)
-    lats = seq(bbox[3], bbox[4], by = latint)
-
-    grat <- graticule::graticule(lons, lats, xlim = range(lons), ylim = range(lats))
-
-    # Convert to ggplot2-friendly format
-    grat <- ggplot2::fortify(grat)
-
-    return(grat)
-
-}
-
 #' Calculate legend breaks (intervals to put labels on legend scale)
 #'
 #' Given a minimum and maximum value, and number of breaks, calculate
@@ -334,7 +584,7 @@ qualPalette <- function(n = 31, pal = "Set3", na.val = "grey50") {
 #   orientation - Use if using orthographic projection
 #   extent - Vector of lat/lon limits c(lat0,lat1,lon0,lon1)
 #   parameters - additional parameters corresponding to coord_map ggplot2 function
-#   inverse - ?
+#   inverse ?
 #   degrees - Units for lat/longitude ?
 #   ellps.default - default ellipse to use with projection ?
 #
@@ -465,7 +715,9 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' string, except for a few special cases.  There are also symbols defined for
 #' some frequently used projections (e.g. \code{\link{robin}} or
 #' \code{\link{na_aea}}).
-#' @param extent Bounding box for the display map
+#' @param proj_type Either esri, epsg, or sr-org as string.  These correspond to
+#' available reference types hosted by http://spatialreference.org/
+#' @param ext Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to
 #' @param orientation The orientation vector.  This is only needed for
 #' projections that don't use proj4.  Projections using proj4 encode this
 #' information in their proj4 string.
@@ -484,6 +736,10 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' @param nacolor Color to use for polygons with no data.  The default is
 #' gray(0.75), which works well for thematic plots.  For plotting gridded data you
 #' probably want something a little more neutral, like gray(0.9).
+#' @param altdata A DataFrame, SpatialDataFrame, or full path to an ESRI Shapefile or CSV
+#' that contains data that can be linked to the map geometry data using a unique identifier.
+#' @param altid The field name containing a unique identifier in the altdata data set.
+#' @param mapid The field name containing a unique identifier in the mapdata data set.
 #' @param ... Other parameters passed on to \code{colorfcn}.
 #' @examples \dontrun{
 #'
@@ -508,28 +764,44 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #'                  title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
 #' }
 #' @export
-plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
-                      orientation = NULL, title = NULL, legend = F, colors =
-                          NULL, qtitle = NULL, limits = NULL, colorfcn = NULL,
-                      nacolor=gray(0.75),  ...) {
+plot_GCAM <- function(mapdata, col=NULL, proj=robin, proj_type=NULL, extent=EXTENT_WORLD,
+                      orientation=NULL, title=NULL, legend=F, colors=NULL, qtitle=NULL,
+                      limits=NULL, colorfcn=NULL, nacolor=gray(0.75), altdata=NULL, altid=NULL,
+                      mapid=NULL, ...) {
 
-    # Generate graticule (latitude/longitude lines) and clip map to extent specified.
-    grat <- gen_grat()
-    mappolys <- get_bbox_polys(dataset = mapdata)
+    # mappolys <- get_bbox_polys(dataset = mapdata)
+
+    # WORKING import data function to import all types for main mapdata SDF
 
 
-    # Plot graticule and polygons
-    mp <- ggplot() + geom_path(data = grat, aes(long, lat, group = group), color = LINE_GRAT) +
-        geom_polygon(data = mappolys, aes_string("long", "lat", group = "group", fill = col),
-            color = LINE_COLOR)
+    # create SpatialPolygonDataFrame from numeric bounds and project as WGS84
+    b_sdf  <- spat_bb(b_ext=extent)
+
+    # create graticule SpatialLinesDataFrame and project as WGS84
+    g_sdf <- gen_grat(bbox=b_sdf@bbox, prj4s=b_sdf@proj4string)
+
+    # get proj4 string that corresponds to user selection
+    p4s <- assign_prj4s(proj_type=proj_type, proj=proj)
+
+    # reproject map data, bounding box, and graticules to user-defined projection
+    # h <- harmonize_proj(map_sdf=mapdata, bb_sdf=b_sdf, grat_sdf=g_sdf, prj4s=p4s)
+    m <- prep_df(reproject(sdf=mapdata, prj4s=p4s))
+    b <- reproject(sdf=b_sdf, prj4s=p4s)
+    g <- prep_df(reproject(sdf=g_sdf, prj4s=p4s))
+
+    # create ggplot
+    mp <- ggplot() +
+        geom_path(data=g, aes(long, lat, group=group), color=LINE_GRAT) +
+        geom_polygon(data=m, aes_string("long", "lat", group="group", fill=col), color=LINE_COLOR) +
+        coord_fixed(xlim=c(b@bbox[1], b@bbox[3]), ylim=c(b@bbox[2], b@bbox[4]))
 
     # If a column name is specified, add a color gradient or categorical colors
     if (!is.null(col)) {
 
-        if (is.numeric(mappolys[[col]])) {
+        if (is.numeric(m[[col]])) {
             # Instructions for color gradient Calculate legend label increments ('breaks')
             if (is.null(limits)) {
-                limits <- calc.limits.map(mappolys, col)
+                limits <- calc.limits.map(m, col)
             }
             breaks <- calc.breaks(limits[2], limits[1])
 
@@ -548,7 +820,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
                 if (is.null(colorfcn)) {
                   colorfcn <- qualPalette
                 }
-                colors <- colorfcn(n = length(unique(mappolys[[col]])), ...)
+                colors <- colorfcn(n = length(unique(m[[col]])), ...)
             }
 
             # Add color scale to map
@@ -556,14 +828,22 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
         }
     } else {
           ## If no data is being plotted, use default color scale
-          mp <- mp + geom_polygon(data = mappolys, aes_string("long", "lat",
+          mp <- mp + geom_polygon(data = m, aes_string("long", "lat",
                                   group = "group"), fill = nacolor, color =
                                       LINE_COLOR)
     }
 
     # Project map and add theme and labels
-    mp <- mp + coord_GCAM(proj = proj, orientation = orientation, extent = extent) + theme_GCAM(legend = legend) +
-        labs(title = title, x = XLAB, y = YLAB)
+    mp <- mp +
+            theme_GCAM(legend=legend) +
+            labs(title = title, x = XLAB, y = YLAB)
+
+
+    # mp <- mp + coord_GCAM(proj = p4s,
+    #                       orientation = orientation,
+    #                       extent = extent) +
+    #                         theme_GCAM(legend = legend) +
+    #                         labs(title = title, x = XLAB, y = YLAB)
 
     return(mp)
 }
