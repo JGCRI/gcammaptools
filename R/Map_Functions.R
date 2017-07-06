@@ -20,6 +20,38 @@ load_shp <- function(shp_path, layer_name, field) {
     return(xmap)
 }
 
+#' Convert a DataFrame to a SpatialPolygonDataFrame
+#'
+#' Fill in
+#'
+#' @param Fill in
+df_to_sdf <- function(df, longfield='long', latfield='lat', region='group', pr4s=NULL) {
+
+    # only get needed data
+    edf <- df[,c(longfield, latfield, region)]
+
+    # split data frame by region
+    s <- split(edf, df[[region]])
+
+    # keep only coordinates as lists
+    c <- lapply(s, function(x) { x[[region]] <- NULL; x })
+
+    # create polygons of each list
+    p <- sapply(c, Polygon)
+
+    # group into polygons
+    ps <- lapply(seq_along(p), function(i) { Polygons(list(p[[i]]), ID=names(c)[i]) })
+
+    # create spatial polygons
+    psp <- SpatialPolygons(ps, proj4string=CRS(pr4s))
+
+    # create SpatialPolygonsDataFrame
+    sdf <- SpatialPolygonsDataFrame(psp, data.frame(region=unique(edf[[region]]),
+                                    row.names= unique(edf[[region]])))
+
+    return(sdf)
+}
+
 #' Import text file as a data frame and add id field.
 #'
 #' Creates a DataFrame from full path string to file. User
