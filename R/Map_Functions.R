@@ -52,6 +52,68 @@ df_to_sdf <- function(df, longfield='long', latfield='lat', region='group', pr4s
     return(sdf)
 }
 
+#' WORKING - Single import function for data frames, spatial data frames,
+#' ESRI Shapefiles, or text files.
+#'
+#' Fill in
+#'
+#' @param Fill in
+import_mapdata <- function(obj, fld) {
+
+    # get object class
+    cls <- class(obj)
+
+    # check for file path
+    if (is.character(obj)) {
+
+        # get file extension
+        extn <- tolower(c(tools::file_ext(obj)))
+
+        # if ESRI Shapefile
+        if (extn == 'shp') {
+
+            # create layer name from file basename without extension
+            lyr <- basename(tools::file_path_sans_ext(obj))
+
+            # get dirname
+            shp_dir <- dirname(obj)
+
+            # load Shapefile
+            return(load_shp(shp_path=shp_dir, layer_name=lyr, field=fld))
+        }
+        # if text file
+        else if (extn %in% list('txt', 'csv')) {
+
+            # load text file
+            return(load_txt(txt=obj, field=fld))
+        }
+        # catch unknown
+        else {
+            return(NULL)
+        }
+    }
+    # check for DataFrame
+    else if (is.data.frame(obj)) {
+
+        # convert data frame to spatial polygons data frame
+        sdf <- df_to_sdf(obj)
+
+        return(sdf)
+    }
+    else if (cls %in% list("SpatialPolygonsDataFrame", "SpatialPointsDataFrame",
+                          "SpatialLinesDataFrame")) {
+
+        # assign id field to SDF
+        obj$id <- obj$field
+
+        return(obj)
+    }
+    else {
+        return(NULL)
+    }
+}
+
+
 #' Import text file as a data frame and add id field.
 #'
 #' Creates a DataFrame from full path string to file. User
