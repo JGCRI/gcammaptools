@@ -47,7 +47,7 @@ df_to_sdf <- function(df, longfield='long', latfield='lat', region='group', pr4s
 
     # create SpatialPolygonsDataFrame
     sdf <- SpatialPolygonsDataFrame(psp, data.frame(region=unique(edf[[region]]),
-                                    row.names= unique(edf[[region]])))
+                                                    row.names= unique(edf[[region]])))
 
     return(sdf)
 }
@@ -101,7 +101,7 @@ import_mapdata <- function(obj, fld) {
         return(sdf)
     }
     else if (cls %in% list("SpatialPolygonsDataFrame", "SpatialPointsDataFrame",
-                          "SpatialLinesDataFrame")) {
+                           "SpatialLinesDataFrame")) {
 
         # assign id field to SDF
         obj$id <- obj$field
@@ -526,7 +526,7 @@ translateProvince <- function(datatable, provincefile) {
     provincetable$province.name <- as.character(provincetable$province.name)
 
     datatable$rgn <- ifelse(is.na(provincetable$province.name[match(datatable$rgn, provincetable$province)]),
-        datatable$rgn, provincetable$province.name[match(datatable$rgn, provincetable$province)])
+                            datatable$rgn, provincetable$province.name[match(datatable$rgn, provincetable$province)])
 
     return(datatable)
 }
@@ -687,12 +687,12 @@ qualPalette <- function(n = 31, pal = "Set3", na.val = "grey50") {
 #   geom_polygon(data, aes(x,y,group))+
 #   coord_GCAM(proj)
 coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., parameters = NULL,
-    inverse = FALSE, degrees = TRUE, ellps.default = "sphere") {
+                       inverse = FALSE, degrees = TRUE, ellps.default = "sphere") {
 
     if (is.null(proj)) {
         # Default proj4 pstring for default GCAM projection (Robinson)
         proj <- paste0(c("+proj=robin +lon_0=0 +x_0=0 +y_0=0", "+ellps=WGS84 +datum=WGS84 +units=m +nodefs"),
-            collapse = " ")
+                       collapse = " ")
     }
 
     if (is.null(parameters)) {
@@ -713,11 +713,11 @@ coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., para
     # Use ggproto object defined in ggplot2 package if using orthographic map projection
     if (grepl("ortho", proj)) {
         ggproto(NULL, ggplot2::CoordMap, projection = proj, orientation = orientation, limits = list(x = xlim,
-            y = ylim), params = params)
+                                                                                                     y = ylim), params = params)
     } else {
         # Otherwise use ggproto object defined in ggalt package for default GCAM projections
         ggproto(NULL, ggalt::CoordProj, proj = proj, inverse = inverse, ellps.default = ellps.default,
-            degrees = degrees, limits = list(x = xlim, y = ylim), params = list())
+                degrees = degrees, limits = list(x = xlim, y = ylim), params = list())
     }
 
 }
@@ -736,14 +736,14 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 
     if (legend == F) {
         theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR,
-            fill = NA), panel.background = PANEL_BACKGROUND, panel.grid = PANEL_GRID, axis.ticks = AXIS_TICKS,
-            axis.text = AXIS_TEXT, legend.position = "none")
+                                                                                                                fill = NA), panel.background = PANEL_BACKGROUND, panel.grid = PANEL_GRID, axis.ticks = AXIS_TICKS,
+                                                                                    axis.text = AXIS_TEXT, legend.position = "none")
     } else if (legend == T) {
         theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR,
-            fill = NA), panel.background = PANEL_BACKGROUND, panel.grid = PANEL_GRID, axis.ticks = AXIS_TICKS,
-            axis.text = AXIS_TEXT, legend.key.size = unit(0.75, "cm"), legend.text = element_text(size = 10),
-            legend.title = element_text(size = 12, face = "bold"), legend.position = LEGEND_POSITION,
-            legend.key = element_rect(color = "black"))
+                                                                                                                fill = NA), panel.background = PANEL_BACKGROUND, panel.grid = PANEL_GRID, axis.ticks = AXIS_TICKS,
+                                                                                    axis.text = AXIS_TEXT, legend.key.size = unit(0.75, "cm"), legend.text = element_text(size = 10),
+                                                                                    legend.title = element_text(size = 12, face = "bold"), legend.position = LEGEND_POSITION,
+                                                                                    legend.key = element_rect(color = "black"))
     }
 
 }
@@ -866,7 +866,7 @@ plot_GCAM <- function(mapdata, col=NULL, proj=robin, proj_type=NULL, extent=EXTE
     # mappolys <- get_bbox_polys(dataset = mapdata)
 
     # WORKING import data function to import all types for main mapdata SDF
-
+    mdf <- import_mapdata(mapdata, fld=col)
 
     # create SpatialPolygonDataFrame from numeric bounds and project as WGS84
     b_sdf  <- spat_bb(b_ext=extent)
@@ -879,7 +879,7 @@ plot_GCAM <- function(mapdata, col=NULL, proj=robin, proj_type=NULL, extent=EXTE
 
     # reproject map data, bounding box, and graticules to user-defined projection
     # h <- harmonize_proj(map_sdf=mapdata, bb_sdf=b_sdf, grat_sdf=g_sdf, prj4s=p4s)
-    m <- prep_df(reproject(sdf=mapdata, prj4s=p4s))
+    m <- prep_df(reproject(sdf=mdf, prj4s=p4s))
     b <- reproject(sdf=b_sdf, prj4s=p4s)
     g <- prep_df(reproject(sdf=g_sdf, prj4s=p4s))
 
@@ -905,14 +905,14 @@ plot_GCAM <- function(mapdata, col=NULL, proj=robin, proj_type=NULL, extent=EXTE
 
             # Add color scale to map
             mp <- mp + scale_fill_gradientn(name = qtitle, colors = colors, values = NULL, guide = GUIDE,
-                space = SPACE, na.value = nacolor, breaks = breaks, limits = limits, labels = breaks)
+                                            space = SPACE, na.value = nacolor, breaks = breaks, limits = limits, labels = breaks)
 
         } else {
             # Instructions for categorical map Use default color scheme and color function if none
             # specified
             if (is.null(colors)) {
                 if (is.null(colorfcn)) {
-                  colorfcn <- qualPalette
+                    colorfcn <- qualPalette
                 }
                 colors <- colorfcn(n = length(unique(m[[col]])), ...)
             }
@@ -921,16 +921,16 @@ plot_GCAM <- function(mapdata, col=NULL, proj=robin, proj_type=NULL, extent=EXTE
             mp <- mp + scale_fill_manual(values = colors, name = qtitle)
         }
     } else {
-          ## If no data is being plotted, use default color scale
-          mp <- mp + geom_polygon(data = m, aes_string("long", "lat",
-                                  group = "group"), fill = nacolor, color =
-                                      LINE_COLOR)
+        ## If no data is being plotted, use default color scale
+        mp <- mp + geom_polygon(data = m, aes_string("long", "lat",
+                                                     group = "group"), fill = nacolor, color =
+                                    LINE_COLOR)
     }
 
     # Project map and add theme and labels
     mp <- mp +
-            theme_GCAM(legend=legend) +
-            labs(title = title, x = XLAB, y = YLAB)
+        theme_GCAM(legend=legend) +
+        labs(title = title, x = XLAB, y = YLAB)
 
 
     # mp <- mp + coord_GCAM(proj = p4s,
@@ -993,7 +993,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent
                      nacolor = nacolor)
     ## add the raster layer and return
     plt + geom_tile(data=plotdata, mapping=aes_string(x='lon', y='lat',
-                                   fill=col), alpha=alpha)
+                                                      fill=col), alpha=alpha)
 }
 
 
