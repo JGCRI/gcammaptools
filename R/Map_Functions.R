@@ -565,14 +565,14 @@ addRegionID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, 
     na.vals <- is.na(finaltable)
     na.vals[finaltable$id==0,] <- FALSE    # exclude non-regions; they should stay NA
     finaltable[na.vals] <- 0
-    finaltable$id <- as.character(finaltable$id)  # other functions are expecting id to be a char
+    # finaltable$id <- as.character(finaltable$id)  # other functions used id to be a char
 
     # Add null vector row to end to account for GCAM region 0
     nullvec <- rep(NA, ncol(finaltable))
 
     finaltable <- rbind(finaltable, nullvec)
     finaltable[nrow(finaltable), rgn] <- "0"  # region 0 name (should be something more descriptive?)
-    finaltable$id[nrow(finaltable)] <- "0"
+    finaltable$id[nrow(finaltable)] <- 0
 
     return(finaltable)
 }
@@ -824,7 +824,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' \code{\link{na_aea}}).
 #' @param proj_type Either esri, epsg, or sr-org as string.  These correspond to
 #' available reference types hosted by http://spatialreference.org/
-#' @param ext Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to
+#' @param extent Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to
 #' @param orientation The orientation vector.  This is only needed for
 #' projections that don't use proj4.  Projections using proj4 encode this
 #' information in their proj4 string.
@@ -845,7 +845,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' probably want something a little more neutral, like gray(0.9).
 #' @param gcam_df A data frame generated from rgcam getQuery() that contains data
 #' that can be linked to the map geometry data using a unique identifier.
-#' @param gcam_id The field name containing a join identifier in the gcam_df data frame.
+#' @param gcam_key The field name containing a join identifier in the gcam_df data frame.
 #' @param mapdata_key The field name containing a join identifier in the mapdata.
 #' @param zoom A distance to buffer the bounding box extent by for on-the-fly
 #' adjustments needed when fitting area to maps.

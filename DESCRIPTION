@@ -28,7 +28,8 @@ Imports:
 RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown,
-    rgcam
+    rgcam,
+    testthat
 VignetteBuilder: knitr
 Remotes:
     rplzzz/ggalt@ggp221,

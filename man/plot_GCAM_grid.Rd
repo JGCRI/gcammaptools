@@ -6,7 +6,8 @@
 \usage{
 plot_GCAM_grid(plotdata, col, map = map.rgn32, proj = robin,
   extent = EXTENT_WORLD, orientation = NULL, title = NULL,
-  legend = TRUE, nacolor = gray(0.9), alpha = 0.8)
+  legend = TRUE, nacolor = gray(0.9), alpha = 0.8, zoom = NULL,
+  proj_type = NULL, qtitle = "")
 }
 \arguments{
 \item{plotdata}{Data frame with the coordinates and values to be plotted.}
@@ -20,7 +21,7 @@ string, except for a few special cases.  There are also symbols defined for
 some frequently used projections (e.g. \code{\link{robin}} or
 \code{\link{na_aea}}).}
 
-\item{extent}{Bounding box for the display map}
+\item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to}
 
 \item{orientation}{The orientation vector.  This is only needed for
 projections that don't use proj4.  Projections using proj4 encode this
@@ -37,6 +38,14 @@ probably want something a little more neutral, like gray(0.9).}
 
 \item{alpha}{Transparency of the grid data layer.  Given as a number between
 0 and 1, where 0 is completely transparent and 1 is completely opaque.}
+
+\item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
+adjustments needed when fitting area to maps.}
+
+\item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
+available reference types hosted by http://spatialreference.org/}
+
+\item{qtitle}{Text to be displayed as the legend title.}
 }
 \description{
 This function produces a map visualization of a gridded (i.e., values
