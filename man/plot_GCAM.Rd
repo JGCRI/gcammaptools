@@ -66,7 +66,6 @@ adjustments needed when fitting area to maps.}
 \item{orientation}{The orientation vector.  This is only needed for
 projections that don't use proj4.  Projections using proj4 encode this
 information in their proj4 string.}
-
 }
 \description{
 This function produces a map visualization of a data set containing

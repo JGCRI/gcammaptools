@@ -27,6 +27,7 @@ if(!requireNamespace('sf', quietly=TRUE)) {
 To get started with the GCAM map tools, attach the `gcammaptools` package.
 ```{r setup}
 library('gcammaptools')
+library('sf') # TODO: Figure out how to rebuild examples without loading this library
 ```
 
 ## Loading GCAM data

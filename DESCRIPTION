@@ -16,6 +16,7 @@ LazyData: true
 Imports:
     dplyr (>= 0.5.0),
     ggplot2 (>= 2.2),
+    ggalt (>= 0.3.2),
     graticule (>= 0.1.2),
     magrittr (>= 1.5),
     mapproj (>= 1.2.4),
@@ -23,11 +24,7 @@ Imports:
     RColorBrewer (>= 1.1.2),
     rgdal,
     rgeos,
-<<<<<<< HEAD
     sf (>= 0.5.4)
-=======
-    sf (>= 0.5-4)
->>>>>>> alter-proj4-method
 RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown,
@@ -35,4 +32,5 @@ Suggests: knitr,
     testthat
 VignetteBuilder: knitr
 Remotes:
+    rplzzz/ggalt@ggp221,
     JGCRI/rgcam
