@@ -4,8 +4,7 @@
 \alias{spat_bb}
 \title{Create sf object from numeric extent.}
 \usage{
-spat_bb(b_ext, buff_dist,
-  proj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+spat_bb(b_ext, buff_dist, proj4s = wgs84)
 }
 \arguments{
 \item{b_ext}{Numeric extent [xmin, xmax, ymin, ymax]}
@@ -15,7 +14,6 @@ spat_bb(b_ext, buff_dist,
 \item{proj4s}{Either the proj4 string or EPSG number of the native projection of the bounds}
 }
 \description{
-Creates a sf object from numeric extent vector and
-applies a default WGS84 (EPSG:4326) coordinate reference
-system.
+Creates a sf object from numeric extent vector and applies a default WGS84
+(EPSG:4326) coordinate reference system.
 }

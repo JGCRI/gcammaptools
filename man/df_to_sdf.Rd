@@ -2,7 +2,7 @@
 % Please edit documentation in R/Map_Functions.R
 \name{df_to_sdf}
 \alias{df_to_sdf}
-\title{Convert a DataFrame to a SpatialPolygonDataFrame}
+\title{Convert a DataFrame to a SpatialPolygonsDataFrame}
 \usage{
 df_to_sdf(df, longfield = "long", latfield = "lat", region = NULL,
   pr4s = NULL)

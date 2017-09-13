@@ -4,8 +4,7 @@
 \alias{import_mapdata}
 \title{Single import function for compatible data types.}
 \usage{
-import_mapdata(obj, fld = NULL,
-  prj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+import_mapdata(obj, fld = NULL, prj4s = wgs84)
 }
 \arguments{
 \item{obj}{Input full path string or object}

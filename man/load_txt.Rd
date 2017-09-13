@@ -2,16 +2,13 @@
 % Please edit documentation in R/Map_Functions.R
 \name{load_txt}
 \alias{load_txt}
-\title{Import text file as a data frame and add id field.}
+\title{Import text file as a data frame .}
 \usage{
 load_txt(txt, field)
 }
 \arguments{
 \item{txt}{Full path to file including extension}
-
-\item{field}{Name of field containing the ID of the data}
 }
 \description{
-Creates a DataFrame from full path string to file. User
-defines which field is supposed to represent the ID for the data.
+Creates a DataFrame from full path string to file.
 }

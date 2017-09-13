@@ -18,7 +18,7 @@ get_prj4s(obj = NULL, prj4s_key = NULL, epsg = NULL, esri = NULL,
 
 \item{srorg}{The SR-ORG projection code as an integer.}
 
-\item{lu}{A key=value list where key is a string and value is the
+\item{lu}{A key = value list where key is a string and value is the
 associated proj4 string.}
 }
 \description{

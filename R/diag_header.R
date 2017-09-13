@@ -161,16 +161,22 @@ logstop <- function() {
 #Default Projections (as PROJ4 strings)
 
 ### Predefined PROJ4 projection strings
+#' Proj4 string for default WGS84 (EPSG:4326) coordinate reference system
+#'
+#' String for specifying the default WGS84 projection in mapping functions
+#' Its value is \code{'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'}
+#' @export
+wgs84 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 #' Proj4 string for the Eckert III World projection
 #'
-#' String for specifying the Eckert III projection in mapping
-#' functions.  Its value is \code{'+proj=eck3'}
+#' String for specifying the Eckert III projection in mapping functions.
+#' Its value is \code{'+proj=eck3'}
 #' @export
 eck3 <- "+proj=eck3"
 #' Proj4 string for the Winkel-Tripel World projection
 #'
-#' String for specifying the Winkel-Tripel projection in mapping
-#' functions.  Its value is \code{'+proj=wintri'}
+#' String for specifying the Winkel-Tripel projection in mapping functions.
+#' Its value is \code{'+proj=wintri'}
 #' @export
 wintri <- "+proj=wintri"
 #' Proj4 string for the Robinson World projection

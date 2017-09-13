@@ -42,7 +42,7 @@ This gives you the same structure you would have gotten with `data(map.rgn32)`. 
 
 The best way to import GCAM results is to use the `rgcam` package, which will create a project file with your data in it.  You can load the project data with `rgcam::loadProject()` and retrieve tables for individual queries using `rgcam::getQuery()`.  However, if you aren't using `rgcam`, you can start with any data frame that has a `region` column and one or more data columns.
 
-After loading the query you want to display, you must add the region identifiers used in the map data to the data frame using the `addRegionID()` function.  Then you can join the data and the map using `merge()`.
+After loading the query you want to display, you must add the region identifiers used in the map data to the data frame using the `add_region_ID()` function.  Then you can join the data and the map using `merge()`.
 
 ```{r load_data}
 library('rgcam')
@@ -59,7 +59,7 @@ The sample data has two scenarios and and a dozen queries for each scenario.  Fo
 
 ```{r get_query}
 co2 <- getQuery(prj, 'CO2 emissions by region', 'Reference')
-co2 <- addRegionID(co2, lookupfile=rgn32, drops=rgn32)
+co2 <- add_region_ID(co2, lookupfile=rgn32, drops=rgn32)
 map_co2<-merge(map_32_wo_Taiwan.fort, co2, by="id")
 ```
 At the end of all this, `map_co2` is a map data frame that has primary energy consumption by region.  Each model year is a separate column.  This structure can be passed to `plot_GCAM` to plot maps.
@@ -70,7 +70,7 @@ At the end of all this, `map_co2` is a map data frame that has primary energy co
 
 This example just plots the map data frame with the GCAM region id.  Thus, you get each region colored according to a discrete color palette.
 ```{r mp1, fig.width=6, fig.height=3}
-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn=qualPalette)
+plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn = qualPalette)
 ```
 
 ### Example 2: Robinson World Projection, Colored by Regional CO<sub>2</sub> Emissions

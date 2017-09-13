@@ -6,7 +6,7 @@
 #'
 #' @param col Field name with target information to map.
 #' @param sub_val Field position to substitue as column reference
-set_col <- function(col, sub_val=1) {
+set_col <- function(col, sub_val = 1) {
 
     if (is.null(col)) {
         return(1)
@@ -53,22 +53,22 @@ set_color_scheme <- function(mapdata, col, qtitle, nacolor, colors, colorfcn) {
     # for continuous data
     if (is.numeric(mapdata[[clm]])) {
 
-        return(ggplot2::scale_fill_gradientn(name=nm, colors=clr,
-                                    values=NULL, guide=GUIDE,
-                                    space=SPACE, na.value=nacolor))
+        return(ggplot2::scale_fill_gradientn(name = nm, colors = clr,
+                                        values = NULL, guide = GUIDE,
+                                        space = SPACE, na.value = nacolor))
     }
     # for discrete
     else {
 
         # set color scheme using function
         if (is.null(colorfcn)) {
-            clr <- qualPalette(n=length(unique(mapdata[[clm]])))
+            clr <- qualPalette(n = length(unique(mapdata[[clm]])))
         }
         else {
-            clr <- colorfcn(n=length(unique(mapdata[[clm]])))
+            clr <- colorfcn(n = length(unique(mapdata[[clm]])))
         }
 
-        return(ggplot2::scale_fill_manual(values=clr, name=nm))
+        return(ggplot2::scale_fill_manual(values = clr, name = nm))
     }
 }
 
@@ -85,17 +85,20 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
     if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
 
         # reproject bounding box and get bounds
-        bx <- reproject(bbox, prj4s=p4s) %>%
+        bx <- reproject(bbox, prj4s = p4s) %>%
             sf::st_bbox()
 
-        return(ggplot2::coord_sf(crs=p4s, datum=sf::st_crs(p4s), xlim=c(bx[1], bx[3]), ylim=c(bx[2], bx[4]), expand=TRUE))
+        return(ggplot2::coord_sf(crs = p4s, datum = sf::st_crs(p4s),
+                                 xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]),
+                                 expand = TRUE))
     }
     else {
 
         # use map bounds instead of bounding box for zoom
         bx <- sf::st_bbox(mapdata)
 
-        return(ggplot2::coord_sf(xlim=c(bx[1], bx[3]), ylim=c(bx[2], bx[4])))
+        return(ggplot2::coord_sf(xlim = c(bx[1], bx[3]),
+                                 ylim = c(bx[2], bx[4])))
     }
 }
 
@@ -108,16 +111,16 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 #' @param bbox Bounding box.
 #' @param extent Extent provided by the user or as default.
 #' @param col Field name with target information to map.
-#' @param topo SF topologic function to define how the join will be conducted. Default is
-#' to join any feature that intersects the bounding box.
-filter_spatial <- function(mapdata, bbox, extent, col, topo=sf::st_intersects) {
+#' @param topo SF topologic function to define how the join will be conducted. Default
+#' is to join any feature that intersects the bounding box.
+filter_spatial <- function(mapdata, bbox, extent, col, topo = sf::st_intersects) {
 
     # set NULL column to index
     clm <- set_col(col)
 
     # if extent is not world conduct spatial join; else, return all
     if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
-        return(sf::st_join(mapdata[clm], bbox, left=FALSE))
+        return(sf::st_join(mapdata[clm], bbox, left = FALSE))
     }
     else {
         return(sf::st_intersection(bbox, mapdata[clm])[clm])
@@ -147,8 +150,8 @@ join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
         mapdata['pkey'] <- mapdata[[mapdata_key]]
         gcam_df['pkey'] <- gcam_df[gcam_key]
 
-        # replace with by=c(mapdata_key = gcam_key) eqivalent and drop the need to create extra pkey fields
-        return(dplyr::left_join(mapdata, gcam_df, by=c('pkey' = 'pkey')))  # error_catch: no records returned, join_id not found, others
+        # replace with by = c(mapdata_key = gcam_key) eqivalent and drop the need to create extra pkey fields
+        return(dplyr::left_join(mapdata, gcam_df, by = c('pkey' = 'pkey')))  # error_catch: no records returned, join_id not found, others
     }
     else {
         return(mapdata)
@@ -166,15 +169,15 @@ join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
 load_shp <- function(file_pth) {
 
     # read into an sf object
-    return(sf::st_read(file_pth, quiet=TRUE))
+    return(sf::st_read(file_pth, quiet = TRUE))
 }
 
-#' Convert a DataFrame to a SpatialPolygonDataFrame
+#' Convert a DataFrame to a SpatialPolygonsDataFrame
 #'
 #' Fill in
 #'
 #' @param Fill in
-df_to_sdf <- function(df, longfield='long', latfield='lat', region=NULL, pr4s=NULL) {
+df_to_sdf <- function(df, longfield = 'long', latfield = 'lat', region = NULL, pr4s = NULL) {
 
     # only get needed data
     edf <- df[,c(longfield, latfield, region)]
@@ -189,15 +192,17 @@ df_to_sdf <- function(df, longfield='long', latfield='lat', region=NULL, pr4s=NU
     p <- sapply(c, Polygon)
 
     # group into polygons
-    ps <- lapply(seq_along(p), function(i) { Polygons(list(p[[i]]), ID=names(c)[i]) })
+    ps <- lapply(seq_along(p), function(i) {
+                Polygons(list(p[[i]]), ID = names(c)[i])
+            })
 
     # create spatial polygons
-    psp <- SpatialPolygons(ps, proj4string=CRS(pr4s))
+    psp <- SpatialPolygons(ps, proj4string = CRS(pr4s))
 
     # create SpatialPolygonsDataFrame
-    sdf <- SpatialPolygonsDataFrame(psp, data.frame(region=unique(edf[[region]]),
-                                                    row.names= unique(edf[[region]])))
-    #
+    sdf <- SpatialPolygonsDataFrame(psp, data.frame(region = unique(edf[[region]]),
+                                                    row.names = unique(edf[[region]])))
+
     # # add field back to data; convert from factor to numeric
     # sdf@data[region] <- as.numeric(as.character(sdf@data['region']))
     #
@@ -215,7 +220,7 @@ df_to_sdf <- function(df, longfield='long', latfield='lat', region=NULL, pr4s=NU
 #' @param obj Input full path string or object
 #' @param fld Field name to use as identifier
 #' @param prj4s Proj4 string for projection (default WGS84)
-import_mapdata <- function(obj, fld=NULL, prj4s="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") {
+import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 
     # get object class
     cls <- class(obj)
@@ -235,13 +240,13 @@ import_mapdata <- function(obj, fld=NULL, prj4s="+proj=longlat +ellps=WGS84 +dat
         if (extn %in% list('shp', 'geojson')) {
 
             # load Shapefile
-            return(load_shp(file_pth=obj))
+            return(load_shp(file_pth = obj))
         }
         # if text file
         else if (extn %in% list('txt', 'csv')) {
 
             # load text file
-            return(load_txt(txt=obj, field=fld))
+            return(load_txt(txt = obj, field = fld))
         }
         # catch unknown
         else {
@@ -253,7 +258,7 @@ import_mapdata <- function(obj, fld=NULL, prj4s="+proj=longlat +ellps=WGS84 +dat
 
         # convert non-sf data frame to sf object
         if (cls[1] == "data.frame") {
-            return(df_to_sdf(df=map.rgn32, pr4s=prj4s, region=fld) %>% sf::st_as_sf())
+            return(df_to_sdf(df = map.rgn32, pr4s = prj4s, region = fld) %>% sf::st_as_sf())
         }
         else if (cls[1] == "sf") {
             return(obj)
@@ -274,13 +279,11 @@ import_mapdata <- function(obj, fld=NULL, prj4s="+proj=longlat +ellps=WGS84 +dat
 }
 
 
-#' Import text file as a data frame and add id field.
+#' Import text file as a data frame .
 #'
-#' Creates a DataFrame from full path string to file. User
-#' defines which field is supposed to represent the ID for the data.
+#' Creates a DataFrame from full path string to file.
 #'
 #' @param txt Full path to file including extension
-#' @param field Name of field containing the ID of the data
 load_txt <- function(txt, field) {
 
     # read into a DataFrame
@@ -302,9 +305,9 @@ load_txt <- function(txt, field) {
 #' @param epsg The EPSG projection code as an integer.
 #' @param esri The ESRI projection code as an integer.
 #' @param srorg The SR-ORG projection code as an integer.
-#' @param lu A key=value list where key is a string and value is the
+#' @param lu A key = value list where key is a string and value is the
 #' associated proj4 string.
-get_prj4s <- function(obj=NULL, prj4s_key=NULL, epsg=NULL, esri=NULL, srorg=NULL, lu=NULL) {
+get_prj4s <- function(obj = NULL, prj4s_key = NULL, epsg = NULL, esri = NULL, srorg = NULL, lu = NULL) {
 
     # default prj4 key: string lookup
     def_lu <- list('us' = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83",
@@ -338,7 +341,7 @@ get_prj4s <- function(obj=NULL, prj4s_key=NULL, epsg=NULL, esri=NULL, srorg=NULL
         url = paste0('http://spatialreference.org/ref/epsg/', epsg, '/proj4/')
 
         # get prj4s string from EPSG code url
-        return(readLines(url, warn=FALSE))
+        return(readLines(url, warn = FALSE))
     }
     # if esri is provided and none other
     else if ((!is.null(esri)) && (is.null(prj4s_key)) && (is.null(epsg)) && (is.null(srorg))) {
@@ -347,7 +350,7 @@ get_prj4s <- function(obj=NULL, prj4s_key=NULL, epsg=NULL, esri=NULL, srorg=NULL
         url = paste0('http://spatialreference.org/ref/esri/', esri, '/proj4/')
 
         # get prj4s string from ESRI code url
-        return(readLines(url, warn=FALSE))
+        return(readLines(url, warn = FALSE))
     }
     # if srorg is provided and none other
     else if ((!is.null(srorg)) && (is.null(prj4s_key)) && (is.null(epsg)) && (is.null(esri))) {
@@ -356,7 +359,7 @@ get_prj4s <- function(obj=NULL, prj4s_key=NULL, epsg=NULL, esri=NULL, srorg=NULL
         url = paste0('http://spatialreference.org/ref/sr-org/', srorg, '/proj4/')
 
         # get prj4s string from ESRI code url
-        return(readLines(url, warn=FALSE))
+        return(readLines(url, warn = FALSE))
     }
     else {
         return(FALSE)
@@ -384,32 +387,31 @@ assign_prj4s <- function(proj_type, proj) {
 
     # get proj4 string that corresponds to user selection
     if (is.null(pt)) {
-        return(get_prj4s(obj=proj))
+        return(get_prj4s(obj = proj))
     }
     else if (pt == 'prj4s_key') {
-        return(get_prj4s(prj4s_key=proj))
+        return(get_prj4s(prj4s_key = proj))
     }
     else if (pt == 'epsg') {
-        return(get_prj4s(epsg=proj))
+        return(get_prj4s(epsg = proj))
     }
     else if (pt == 'esri') {
-        return(get_prj4s(esri=proj))
+        return(get_prj4s(esri = proj))
     }
     else if (pt == 'sr-org') {
-        return(get_prj4s(srorg=proj))
+        return(get_prj4s(srorg = proj))
     }
 }
 
 #' Create sf object from numeric extent.
 #'
-#' Creates a sf object from numeric extent vector and
-#' applies a default WGS84 (EPSG:4326) coordinate reference
-#' system.
+#' Creates a sf object from numeric extent vector and applies a default WGS84
+#' (EPSG:4326) coordinate reference system.
 #'
 #' @param b_ext Numeric extent [xmin, xmax, ymin, ymax]
 #' @param buff_dist Distance in decimal degrees to expand the bounding box by in all directions.
 #' @param proj4s Either the proj4 string or EPSG number of the native projection of the bounds
-spat_bb <- function(b_ext, buff_dist, proj4s="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") {
+spat_bb <- function(b_ext, buff_dist, proj4s = wgs84) {
 
     # convert bounding box to simple features polygon collection
     geom <- sf::st_sfc(sf::st_polygon(list(rbind(c(b_ext[1], b_ext[3]),
@@ -419,7 +421,7 @@ spat_bb <- function(b_ext, buff_dist, proj4s="+proj=longlat +ellps=WGS84 +datum=
                                                  c(b_ext[1], b_ext[3])))))
 
     # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj
-    bb <- st_sf(a=1, geometry=geom) %>%
+    bb <- sf::st_sf(a = 1, geometry = geom) %>%
                sf::st_set_crs(proj4s)
 
     # buffer if user desires
@@ -467,7 +469,7 @@ reproject <- function(sdf, prj4s) {
 #' one of the queries cointained in the GCAM output.
 #' @param scen The name of the scenario.  Partial matches are allowed.
 #' @param filters A named vector of filtering criteria in the form
-#' \code{c(header1=value1, header2=value2,...)}.  Headers are the
+#' \code{c(header1 = value1, header2 = value2,...)}.  Headers are the
 #' names of columns in the data frame.  If aggregating data, use the
 #' value 'Aggregate'.  (XXX: Needs further explanation!)
 #' @param func Operation to apply to the aggregated data.  (XXX: Does
@@ -530,7 +532,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' applicable.
 #' @return Input table modified to include a GCAM ID for reach region.
 #' @export
-addRegionID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
+add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
     if (!is.null(provincefile)) {
         datatable <- translateProvince(datatable, provincefile)
     }
@@ -563,7 +565,7 @@ addRegionID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, 
 
     ## find NA values
     na.vals <- is.na(finaltable)
-    na.vals[finaltable$id==0,] <- FALSE    # exclude non-regions; they should stay NA
+    na.vals[finaltable$id == 0,] <- FALSE    # exclude non-regions; they should stay NA
     finaltable[na.vals] <- 0
     # finaltable$id <- as.character(finaltable$id)  # other functions used id to be a char
 
@@ -681,11 +683,11 @@ calc.limits.map <- function(mapdata, colname, nbreaks = 5, zero.min = TRUE) {
     max_dat <- max(vals, na.rm = TRUE)
 
     if (zero.min) {
-        if(min(vals, na.rm=TRUE) < 0) {
+        if(min(vals, na.rm = TRUE) < 0) {
             ## If there are negative values in the data set, then pinning to
             ## zero means putting the zero point in the middle of the color
             ## bar.
-            mag <- max(abs(vals), na.rm=TRUE)
+            mag <- max(abs(vals), na.rm = TRUE)
             max_dat <- mag
             min_dat <- -mag
         }
@@ -855,55 +857,55 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' ## Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
 #'   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32',
 #'                                                'GCAM_32_wo_Taiwan_clean.geojson',
-#'                                                package='gcammaptools'))
-#'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region='GCAM_ID')
+#'                                                package = 'gcammaptools'))
+#'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region = 'GCAM_ID')
 #'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3,
-#'                  colorfcn=qualPalette)
+#'                  colorfcn = qualPalette)
 #'
 #'   ## Plot oil consumption by region
 #'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',
-#'                           package='gcammaptools'))
-#'   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel='a oil'))
+#'                           package = 'gcammaptools'))
+#'   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel = 'a oil'))
 #'   prim_en<-addRegionID(prim_en, file.path(basedir.viz,
 #'                                 system.file('extdata/rgn32', 'lookup.txt',
-#'                                             package='gcammaptools'),
+#'                                             package = 'gcammaptools'),
 #'                                 system.file('extdata/rgn32',
-#'                                             'drop-regions.txt', package='gcammaptools')))
+#'                                             'drop-regions.txt', package = 'gcammaptools')))
 #'   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'),
-#'                  title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
+#'                  title = 'Robinson World', qtitle = 'Oil Consumption, 2050', legend = T)
 #' }
 #' @export
-plot_GCAM <- function(mapdata, col=NULL, proj=robin, proj_type=NULL, extent=EXTENT_WORLD,
-                      title="", legend=F, colors=NULL, qtitle=NULL, limits=NULL,
-                      colorfcn=NULL, nacolor=gray(0.75), gcam_df=NULL, gcam_key=NULL,
-                      mapdata_key=NULL, zoom=NULL, grid=NULL, grid_col=1, ...) {
+plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, extent = EXTENT_WORLD,
+                      title = "", legend = F, colors = NULL, qtitle = NULL, limits = NULL,
+                      colorfcn = NULL, nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
+                      mapdata_key = NULL, zoom = NULL, grid = NULL, grid_col = 1, ...) {
 
     # get proj4 string that corresponds to user selection
-    p4s <- assign_prj4s(proj_type=proj_type, proj=proj)
+    p4s <- assign_prj4s(proj_type = proj_type, proj = proj)
 
     # create sf obj bounding box from extent and define native proj; apply buffer if needed
-    b <- spat_bb(b_ext=extent, buff_dist=zoom)
+    b <- spat_bb(b_ext = extent, buff_dist = zoom)
 
     # import spatial data; join gcam data; get only features in bounds; transform projection
     m <- import_mapdata(mapdata) %>%
             join_gcam(mapdata_key, gcam_df, gcam_key) %>%
-            filter_spatial(bbox=b, extent=extent, col=col) %>%
-            reproject(prj4s=p4s)
+            filter_spatial(bbox = b, extent = extent, col = col) %>%
+            reproject(prj4s = p4s)
 
     # create object to control map zoom extent
     map_zoom <- zoom_bounds(m, b, extent, p4s)
 
     # create color scheme object
-    color_scheme <- set_color_scheme(m, col=col, qtitle=qtitle, nacolor=nacolor, colors=colors, colorfcn=colorfcn)
+    color_scheme <- set_color_scheme(m, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
 
     # generate plot object
     mp <- ggplot(m) +
-      ggplot2::geom_sf(aes_string(fill=col), color=LINE_COLOR) +
+      ggplot2::geom_sf(aes_string(fill = col), color = LINE_COLOR) +
       map_zoom +
       color_scheme +
       ggplot2::ggtitle(title) +
-      theme_GCAM(legend=legend) +
-      labs(title = title, x=XLAB, y=YLAB)
+      theme_GCAM(legend = legend) +
+      labs(title = title, x = XLAB, y = YLAB)
 
     return(mp)
 }
@@ -948,20 +950,20 @@ plot_GCAM <- function(mapdata, col=NULL, proj=robin, proj_type=NULL, extent=EXTE
 #' 0 and 1, where 0 is completely transparent and 1 is completely opaque.
 #' @inheritParams plot_GCAM
 #' @export
-plot_GCAM_grid <- function(plotdata, col, map=map.rgn32, proj=robin, extent=EXTENT_WORLD,
-                           orientation=NULL, title=NULL, legend=TRUE, nacolor=gray(0.9),
-                           alpha=0.8, zoom=NULL, proj_type=NULL, qtitle="") {
+plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent = EXTENT_WORLD,
+                           orientation = NULL, title = NULL, legend = TRUE, nacolor = gray(0.9),
+                           alpha = 0.8, zoom = NULL, proj_type = NULL, qtitle = "") {
 
     # get proj4 string that corresponds to user selection
-    p4s <- assign_prj4s(proj_type=proj_type, proj=proj)
+    p4s <- assign_prj4s(proj_type = proj_type, proj = proj)
 
     # create sf obj bounding box from extent and define native proj; apply buffer if needed
-    b <- spat_bb(b_ext=extent, buff_dist=zoom)
+    b <- spat_bb(b_ext = extent, buff_dist = zoom)
 
     # build sf object from plotdata
-    pts <- sf::st_as_sf(plotdata, coords=c("lon", "lat"), crs=sf::st_crs(p4s))[col] %>%
-              filter_spatial(bbox=b, extent=extent, col=col) # %>%
-              #reproject(prj4s=p4s)
+    pts <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(p4s))[col] %>%
+              filter_spatial(bbox = b, extent = extent, col = col) # %>%
+              #reproject(prj4s = p4s)
 
     # get coords and assign to sf object
     coords <- sf::st_coordinates(pts)
@@ -970,22 +972,22 @@ plot_GCAM_grid <- function(plotdata, col, map=map.rgn32, proj=robin, extent=EXTE
 
     # only get borders intersecting the bounding box
     brdr <- import_mapdata(map) %>%
-            filter_spatial(bbox=b, extent=extent, col=1) #%>%
-            #reproject(prj4s=p4s) %>%
+            filter_spatial(bbox = b, extent = extent, col = 1) #%>%
+            #reproject(prj4s = p4s) %>%
             #sf::st_cast('MULTILINESTRING')
 
     # create object to control map zoom extent
     map_zoom <- zoom_bounds(pts, b, extent, p4s)
 
     # create color scheme object
-    # color_scheme <- set_color_scheme(pts, col=col, qtitle=qtitle, nacolor=nacolor, colors=colors, colorfcn=colorfcn)
+    # color_scheme <- set_color_scheme(pts, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
 
     mp <- ggplot(brdr) +
-            geom_tile(pts, mapping=aes_string(x='lon', y='lat',  fill=col), alpha=0.8) +
+            geom_tile(pts, mapping = aes_string(x = 'lon', y = 'lat',  fill = col), alpha = 0.8) +
             geom_sf() +
             map_zoom # +
-            #theme_GCAM(legend=legend) +
-            #labs(title=title, x=XLAB, y=YLAB)
+            #theme_GCAM(legend = legend) +
+            #labs(title = title, x = XLAB, y = YLAB)
 
     return(mp)
 }

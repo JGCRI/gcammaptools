@@ -15,8 +15,8 @@ filter_spatial(mapdata, bbox, extent, col, topo = sf::st_intersects)
 
 \item{col}{Field name with target information to map.}
 
-\item{topo}{SF topologic function to define how the join will be conducted. Default is
-to join any feature that intersects the bounding box.}
+\item{topo}{SF topologic function to define how the join will be conducted. Default
+is to join any feature that intersects the bounding box.}
 }
 \description{
 Conducts a spatial join to retrieve spatial features that are topologically associated
