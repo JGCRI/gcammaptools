@@ -214,6 +214,14 @@ ch_aea <- "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ell
 #' @export
 ortho <- "orthographic"
 
+#' Projection string for orthographic projection over Africa
+#'
+#' String for specifying the orthographic projection over Africa.  You can pass
+#' this value to the \code{proj} argument of \code{\link{plot_GCAM}} to get the
+#' best result.
+#' @export
+af_ortho <- "+proj=ortho +lat_0=10 +lon_0=19 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
+
 #' Orientation vector for orthographic projection of Africa
 #'
 #' This vector can be used as the \code{orientation} argument to
@@ -273,7 +281,7 @@ EXTENT_AFRICA <- c(-20,60,-40,40)
 #' This vector can be used as the \code{extent} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-EXTENT_LA <- c(-120,-30,-60,32)
+EXTENT_LA <- c(-110, -40, -50, 30)
 
 
 # -----------------------------------------------------------------------------

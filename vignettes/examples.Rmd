@@ -15,28 +15,23 @@ vignette: >
 This vignette explains how to use the GCAM Mapping Tools package to display GCAM data in map form.  Using this package has a couple of advangages over rolling your own maps.  First, it's easy.  By the time you've worked through these examples, you will be able to make maps of GCAM data with just a few simple commands.  Second, we have defined some default projections and extents for common use cases.  This will ensure that the maps you make look professional and conform the the GCAM house style.
 
 ```{r checknamespace, echo=FALSE}
-if(!requireNamespace('rgcam',quietly=TRUE)) {
+if(!requireNamespace('rgcam', quietly=TRUE)) {
     stop('The rgcam package is required to build this vignette')
 }
 ```
 
 ## Setup
-To get started with the GCAM map tools, attach the `gcammaptools` package.  For now, you will also need to make the arcane-looking call to `gpclibPermit()` as shown below.
+To get started with the GCAM map tools, attach the `gcammaptools` package.
 ```{r setup}
 library('gcammaptools')
-## The function call below shouldn't be necessary, provided that we attach rgeos
-## prior to attaching maptools.  We need to figure out how to make sure that
-## happens in the library version.
-maptools::gpclibPermit()                # TODO:  This function is deprecated.  Figure out how to replace.
 ```
 
 ## Loading GCAM data
 
-You will need to load two types of data:  the map data (analogous to shape files in GIS tools) and the GCAM data.  The map data can be either loaded from the package (coming soon), or you can load your own.  Here is an example of how to do the latter.  The first line reads the map data, and the second turns it into a data frame indexed by region identifier.  This "map data frame" is what you will pass to the plotting functions.  Most of the map data frames you will need are provided as datasets in this package, but here is how you create one from a geojson file:
+You will need to load two types of data:  the map data (analogous to shape files in GIS tools) and the GCAM data.  The map data can be loaded from the package using `import_mapdata()`.  The first line creates the file path to the map data, and the second loads it as a Simple Feature (sf) object.  This sf object is what you will pass to the plotting functions.  Most of the data you will need are provided as datasets in this package, but you can easily provide your own from a Shapefile or geojson file:
 ```{r load.map}
-mapfile <- system.file('extdata/rgn32','GCAM_32_wo_Taiwan_clean.geojson', package = 'gcammaptools')
-map_32_wo_Taiwan<-rgdal::readOGR(mapfile, "OGRGeoJSON")
-map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region="GCAM_ID")
+mapfile <- system.file("extdata/rgn32", "reg32_spart.shp", package = "gcammaptools")
+mapdata <- import_mapdata(mapfile)
 ```
 This gives you the same structure you would have gotten with `data(map.rgn32)`.  Generally you should use one of the map datasets included in the package whenever possible because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32 regions plus China subregions map.
 
@@ -49,7 +44,7 @@ library('rgcam')
 ### Load the example scenario data.  We wrap it in suppressMessages() to hide an unhelpful notice
 ### about the file name of the sample data having changed.
 suppressMessages({
-    prj <- loadProject(system.file('sample-gcam-data','gcam-sample-project.dat', package='gcammaptools'))
+    prj <- loadProject(system.file('sample-gcam-data','gcam-longform-sample.dat', package='gcammaptools'))
 })
 listScenarios(prj)
 listQueries(prj, 'Reference')
@@ -58,11 +53,11 @@ listQueries(prj, 'Reference')
 The sample data has two scenarios and and a dozen queries for each scenario.  For demonstration purposes we will load the CO<sub>2</sub> emissions table.  
 
 ```{r get_query}
-co2 <- getQuery(prj, 'CO2 emissions by region', 'Reference')
+co2 <- rgcam::getQuery(prj, 'CO2 emissions by region', 'Reference')
 co2 <- add_region_ID(co2, lookupfile=rgn32, drops=rgn32)
-map_co2<-merge(map_32_wo_Taiwan.fort, co2, by="id")
+co2 <- dplyr::filter(co2, year==2050)
 ```
-At the end of all this, `map_co2` is a map data frame that has primary energy consumption by region.  Each model year is a separate column.  This structure can be passed to `plot_GCAM` to plot maps.
+At the end of this, `co2` is a data frame that has CO2 emissions by region for the year 2050.  The data is in long form, so you need to filter out all observations for the years you don't want to plot.  This structure can now be passed to `plot_GCAM` to plot maps.
 
 ## Sample Maps generated with plot_GCAM and GCAM32 shapefile
 
@@ -70,52 +65,54 @@ At the end of all this, `map_co2` is a map data frame that has primary energy co
 
 This example just plots the map data frame with the GCAM region id.  Thus, you get each region colored according to a discrete color palette.
 ```{r mp1, fig.width=6, fig.height=3}
-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3, colorfcn = qualPalette)
+plot_GCAM(mapfile, col = 'region_id', proj = eck3, colorfcn = qualPalette)
 ```
 
 ### Example 2: Robinson World Projection, Colored by Regional CO<sub>2</sub> Emissions
 In this example we plot the map data frame of CO<sub>2</sub> that we created above.  We select the column for model year 2050.  We also use a different projection than we used above.
 ```{r mp2, fig.width=6, fig.height=4}
-plot_GCAM(map_co2, col = "X2050", colors = c("white", "blue"),
-          title="Robinson World", qtitle="CO2 Emissions, 2050", legend=T)
+# Unless the package sf is explicitly loaded, calls to filter_spatial() (from plot_GCAM()) fail.
+# TODO: figure out how to fix this
+library('sf')
+plot_GCAM(mapdata=mapdata, col='value', proj=robin, extent=EXTENT_WORLD, title="Robinson World", legend=T,
+          colors=c('white', 'blue'), qtitle="CO2 Emissions, 2050", gcam_df=co2, gcam_key='id',
+          mapdata_key="region_id")
 ```
 
 ### Example 3: Winkel-Tripel Projection, Default Color and Style
 This is a plot of the region boundaries in the Winkel-Tripel projection.  Since we didn't specify a column to plot, all of the regions are filled in grey.
 ```{r mp3, fig.width=6, fig.height=3}
-plot_GCAM(map_32_wo_Taiwan.fort, proj=wintri, title="Winkel-Tripel World")
+print("Coming soon!")
 ```
 
 ### Example 4: U.S. Projection (Albers Equal Area)
 This map is specialized to the continental USA.  The `na_aea` and `EXTENT_USA` symbols are defined for convenience, but you can use any valid proj4 string (see `proj4::project` for how these strings are constructed) for the projection.  The extent should be the bounding box of the plot area in the form `c(lon.min, lon.max, lat.min, lat.max)`.
 ```{r mp4, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(map_32_wo_Taiwan.fort, proj=na_aea,  extent=EXTENT_USA, title="USA Albers Equal-Area")
+plot_GCAM(mapdata=mapdata, col='region_id', proj=na_aea, extent=EXTENT_USA, 
+          title="USA Albers Equal-Area", legend=T, qtitle='Region ID')
 ```
 
 ### Example 5: China Projection (Albers Equal Area)
 A map of China.  Although the projection is once again the Albers equal area projection, we have to have a different projection string because the string includes some information about the parallels the projection is based on.
 ```{r mp5, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(map_32_wo_Taiwan.fort, proj=ch_aea,extent=EXTENT_CHINA, title="China Albers Equal-Area")
+plot_GCAM(mapdata=mapdata, proj=ch_aea, extent=EXTENT_CHINA, title="China Albers Equal-Area")
 ```
 
 ### Example 6: Africa Projection (Orthographic)
 For superregions with a long north-south extent, the orthographic projection gives the best result.  We use a different back-end function to compute the projection for this case, so you should pass the symbol `ortho` to the `proj` argument.  You will also have to supply the `orientation` argument, for which we have defined several convenient values.  This one gives you a map of Africa.
 ```{r mp6, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_AFRICA,
-          orientation=ORIENTATION_AFRICA, proj=ortho,title= "Africa Orthographic")
+plot_GCAM(mapdata=mapdata, col='region_id', proj=af_ortho, extent=EXTENT_AFRICA,
+          colors=c("blue", "green"), zoom=10)
 ```
 
 ### Example 7: Latin America Projection (Orthographic)
 Orthographic projection of the Latin America superregion.
 ```{r mp7, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(map_32_wo_Taiwan.fort, extent=EXTENT_LA,
-        orientation= ORIENTATION_LA, proj=ortho, title="Latin America Orthographic")
+plot_GCAM(mapdata=mapdata, col='region_id', proj=7567, proj_type='SR-ORG', extent=EXTENT_LA, zoom=8)
 ```
 
 ### Example 8: Global Water basins
 Here's an example using the global water basin map.
 ```{r mp8, fig.width=6, fig.height=3}
-data(map.basin235)
-plot_GCAM(map.basin235, col='id', colorfcn=qualPalette, proj=eck3)
 ```
 

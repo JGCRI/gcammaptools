@@ -114,7 +114,6 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 #' @param topo SF topologic function to define how the join will be conducted. Default
 #' is to join any feature that intersects the bounding box.
 filter_spatial <- function(mapdata, bbox, extent, col, topo = sf::st_intersects) {
-
     # set NULL column to index
     clm <- set_col(col)
 
@@ -164,8 +163,7 @@ join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
 #' GeoJSON file. User defines which field is supposed to represent the ID for the data.
 #'
 #' @param file_pth Full path to shapefile with extention (.shp).  Shapefiles must contain at least
-#' .shp, .shx, and .dbf file to function properly.  For the purposes of this package, a .prj
-#' file is also required to identify the native projection of the shapefile.
+#' .shp, .shx, and .dbf file to function properly.
 load_shp <- function(file_pth) {
 
     # read into an sf object
@@ -220,6 +218,7 @@ df_to_sdf <- function(df, longfield = 'long', latfield = 'lat', region = NULL, p
 #' @param obj Input full path string or object
 #' @param fld Field name to use as identifier
 #' @param prj4s Proj4 string for projection (default WGS84)
+#' @export
 import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 
     # get object class
@@ -534,11 +533,11 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' @export
 add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
     if (!is.null(provincefile)) {
-        datatable <- translateProvince(datatable, provincefile)
+        datatable <- translate_province(datatable, provincefile)
     }
 
     if (!is.null(drops)) {
-        datatable <- dropRegions(datatable, drops)
+        datatable <- drop_regions(datatable, drops)
     }
 
     lookuptable <- if (is.symbol(lookupfile)) {
@@ -587,7 +586,7 @@ add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL
 #' @param datatable The table with the abbreviated names in it.
 #' @param provincefile Name of a defined mapset OR name of a file containing the
 #' lookup table.
-translateProvince <- function(datatable, provincefile) {
+translate_province <- function(datatable, provincefile) {
 
     provincetable <- if (is.symbol(provincefile)) {
         get.internal(provincefile, "prov")
@@ -612,7 +611,7 @@ translateProvince <- function(datatable, provincefile) {
     return(datatable)
 }
 
-dropRegions <- function(datatable, drops) {
+drop_regions <- function(datatable, drops) {
     ### Drop regions listed in drops file from data frame.
     ### Inputs:
     ###   datatable - a data frame of query from batch query CSV

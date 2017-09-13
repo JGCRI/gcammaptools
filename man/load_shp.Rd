@@ -8,8 +8,7 @@ load_shp(file_pth)
 }
 \arguments{
 \item{file_pth}{Full path to shapefile with extention (.shp).  Shapefiles must contain at least
-.shp, .shx, and .dbf file to function properly.  For the purposes of this package, a .prj
-file is also required to identify the native projection of the shapefile.}
+.shp, .shx, and .dbf file to function properly.}
 }
 \description{
 Creates a Simple Feature (sf) object from full path string to ESRI Shapefile or
