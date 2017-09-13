@@ -18,6 +18,9 @@ This vignette explains how to use the GCAM Mapping Tools package to display GCAM
 if(!requireNamespace('rgcam', quietly=TRUE)) {
     stop('The rgcam package is required to build this vignette')
 }
+if(!requireNamespace('sf', quietly=TRUE)) {
+    stop('The sf package is required to build this vignette') # Not sure why...
+}
 ```
 
 ## Setup
@@ -71,9 +74,6 @@ plot_GCAM(mapfile, col = 'region_id', proj = eck3, colorfcn = qualPalette)
 ### Example 2: Robinson World Projection, Colored by Regional CO<sub>2</sub> Emissions
 In this example we plot the map data frame of CO<sub>2</sub> that we created above.  We select the column for model year 2050.  We also use a different projection than we used above.
 ```{r mp2, fig.width=6, fig.height=4}
-# Unless the package sf is explicitly loaded, calls to filter_spatial() (from plot_GCAM()) fail.
-# TODO: figure out how to fix this
-library('sf')
 plot_GCAM(mapdata=mapdata, col='value', proj=robin, extent=EXTENT_WORLD, title="Robinson World", legend=T,
           colors=c('white', 'blue'), qtitle="CO2 Emissions, 2050", gcam_df=co2, gcam_key='id',
           mapdata_key="region_id")
@@ -112,7 +112,16 @@ plot_GCAM(mapdata=mapdata, col='region_id', proj=7567, proj_type='SR-ORG', exten
 ```
 
 ### Example 8: Global Water basins
-Here's an example using the global water basin map.
+Here's an example loading a json file of the global water basin map.
 ```{r mp8, fig.width=6, fig.height=3}
+json_file_path <- system.file("extdata/rgnbasin", "Global235_CLM_05_dissolve.geojson", package = "gcammaptools")
+json_map <- import_mapdata(json_file_path)
+plot_GCAM(json_map, col = 'GCAM_ID_1', proj = eck3, colorfcn = qualPalette)
 ```
 
+### Example 9: Global Water basins
+Here's an example loading a json file of the global water basin map.
+```{r mp8, fig.width=6, fig.height=3}
+json_file_path <- system.file("extdata/rgnbasin", "Global235_CLM_05_dissolve.geojson", package = "gcammaptools")
+json_map <- import_mapdata(json_file_path)
+plot_GCAM(json_map, col = 'GCAM_ID_1', proj = eck3, colorfcn = qualPalette)

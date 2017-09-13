@@ -300,13 +300,12 @@ load_txt <- function(txt, field) {
 #' http://proj4.org/parameters.html#parameter-list
 #'
 #' @param obj Use object instead that has a predefined proj4 string.
+#' @param prj_type The projection type is either 'esri', 'epsg', or 'sr-org' or 'prj4s_key'.
+#' @param prj_code The projection code as an integer for EPSG, ESRI, or SR-ORG.
 #' @param prj4s_key Lookup key string identifying the default projection.
-#' @param epsg The EPSG projection code as an integer.
-#' @param esri The ESRI projection code as an integer.
-#' @param srorg The SR-ORG projection code as an integer.
 #' @param lu A key = value list where key is a string and value is the
 #' associated proj4 string.
-get_prj4s <- function(obj = NULL, prj4s_key = NULL, epsg = NULL, esri = NULL, srorg = NULL, lu = NULL) {
+get_prj4s <- function(obj = NULL, prj_type = NULL, prj_code = NULL, prj4s_key = NULL, lu = NULL) {
 
     # default prj4 key: string lookup
     def_lu <- list('us' = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83",
@@ -329,39 +328,27 @@ get_prj4s <- function(obj = NULL, prj4s_key = NULL, epsg = NULL, esri = NULL, sr
         return(obj)
     }
 
-    # if prj4 key is provided and none other
-    if ((!is.null(prj4s_key)) && (is.null(epsg)) && (is.null(esri)) && (is.null(srorg))) {
+    # if a prj4 key is provided use it
+    if (prj_type == 'prj4s_key' && !is.null(prj4s_key)) {
         return(lu[[prj4s_key]])
     }
-    # if epsg is provided and none other
-    else if ((!is.null(epsg)) && (is.null(prj4s_key)) && (is.null(esri)) && (is.null(srorg))) {
+    # otherwise lookup proj4 string by url
+    else if (!is.null(prj_type) && !is.null(prj_code)) {
 
         # create url
-        url = paste0('http://spatialreference.org/ref/epsg/', epsg, '/proj4/')
+        url <- paste0('http://spatialreference.org/ref/', prj_type, '/', prj_code, '/proj4/')
+        prj4s <- tryCatch(readLines(url, warn = FALSE), error = function(e) NULL)
 
-        # get prj4s string from EPSG code url
-        return(readLines(url, warn = FALSE))
-    }
-    # if esri is provided and none other
-    else if ((!is.null(esri)) && (is.null(prj4s_key)) && (is.null(epsg)) && (is.null(srorg))) {
-
-        # create url
-        url = paste0('http://spatialreference.org/ref/esri/', esri, '/proj4/')
-
-        # get prj4s string from ESRI code url
-        return(readLines(url, warn = FALSE))
-    }
-    # if srorg is provided and none other
-    else if ((!is.null(srorg)) && (is.null(prj4s_key)) && (is.null(epsg)) && (is.null(esri))) {
-
-        # create url
-        url = paste0('http://spatialreference.org/ref/sr-org/', srorg, '/proj4/')
-
-        # get prj4s string from ESRI code url
-        return(readLines(url, warn = FALSE))
+        # make sure url got a string
+        if (length(prj4s) == 0) {
+            warning(paste('Cannot find valid proj4 string for', prj_type, 'with projection code', prj_code))
+            # Return wgs84 as default proj4 string
+            return(wgs84)
+        }
+        return(prj4s)
     }
     else {
-        return(FALSE)
+        return(wgs84)
     }
 }
 
@@ -389,16 +376,9 @@ assign_prj4s <- function(proj_type, proj) {
         return(get_prj4s(obj = proj))
     }
     else if (pt == 'prj4s_key') {
-        return(get_prj4s(prj4s_key = proj))
-    }
-    else if (pt == 'epsg') {
-        return(get_prj4s(epsg = proj))
-    }
-    else if (pt == 'esri') {
-        return(get_prj4s(esri = proj))
-    }
-    else if (pt == 'sr-org') {
-        return(get_prj4s(srorg = proj))
+        return(get_prj4s(prj_type = pt, prj4s_key = proj))
+    } else {
+        return(get_prj4s(prj_type = pt, prj_code = proj))
     }
 }
 
@@ -880,7 +860,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
                       mapdata_key = NULL, zoom = NULL, grid = NULL, grid_col = 1, ...) {
 
     # get proj4 string that corresponds to user selection
-    p4s <- assign_prj4s(proj_type = proj_type, proj = proj)
+    p4s <- assign_prj4s(proj_type, proj)
 
     # create sf obj bounding box from extent and define native proj; apply buffer if needed
     b <- spat_bb(b_ext = extent, buff_dist = zoom)
@@ -954,7 +934,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent 
                            alpha = 0.8, zoom = NULL, proj_type = NULL, qtitle = "") {
 
     # get proj4 string that corresponds to user selection
-    p4s <- assign_prj4s(proj_type = proj_type, proj = proj)
+    p4s <- assign_prj4s(proj_type, proj)
 
     # create sf obj bounding box from extent and define native proj; apply buffer if needed
     b <- spat_bb(b_ext = extent, buff_dist = zoom)
