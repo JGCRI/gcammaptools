@@ -4,19 +4,17 @@
 \alias{get_prj4s}
 \title{Retrieve proj4 projection string.}
 \usage{
-get_prj4s(obj = NULL, prj4s_key = NULL, epsg = NULL, esri = NULL,
-  srorg = NULL, lu = NULL)
+get_prj4s(obj = NULL, prj_type = NULL, prj_code = NULL,
+  prj4s_key = NULL, lu = NULL)
 }
 \arguments{
 \item{obj}{Use object instead that has a predefined proj4 string.}
 
+\item{prj_type}{The projection type is either 'esri', 'epsg', or 'sr-org' or 'prj4s_key'.}
+
+\item{prj_code}{The projection code as an integer for EPSG, ESRI, or SR-ORG.}
+
 \item{prj4s_key}{Lookup key string identifying the default projection.}
-
-\item{epsg}{The EPSG projection code as an integer.}
-
-\item{esri}{The ESRI projection code as an integer.}
-
-\item{srorg}{The SR-ORG projection code as an integer.}
 
 \item{lu}{A key = value list where key is a string and value is the
 associated proj4 string.}

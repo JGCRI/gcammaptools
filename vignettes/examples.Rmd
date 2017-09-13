@@ -106,7 +106,7 @@ plot_GCAM(mapdata=mapdata, col='region_id', proj=af_ortho, extent=EXTENT_AFRICA,
 ```
 
 ### Example 7: Latin America Projection (Orthographic)
-Orthographic projection of the Latin America superregion.
+Orthographic projection of the Latin America superregion. Notice that projection strings can also be defined by specifying an EPSG, ESRI, or SR-ORG projection code.
 ```{r mp7, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(mapdata=mapdata, col='region_id', proj=7567, proj_type='SR-ORG', extent=EXTENT_LA, zoom=8)
 ```
@@ -118,10 +118,3 @@ json_file_path <- system.file("extdata/rgnbasin", "Global235_CLM_05_dissolve.geo
 json_map <- import_mapdata(json_file_path)
 plot_GCAM(json_map, col = 'GCAM_ID_1', proj = eck3, colorfcn = qualPalette)
 ```
-
-### Example 9: Global Water basins
-Here's an example loading a json file of the global water basin map.
-```{r mp8, fig.width=6, fig.height=3}
-json_file_path <- system.file("extdata/rgnbasin", "Global235_CLM_05_dissolve.geojson", package = "gcammaptools")
-json_map <- import_mapdata(json_file_path)
-plot_GCAM(json_map, col = 'GCAM_ID_1', proj = eck3, colorfcn = qualPalette)
