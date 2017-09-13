@@ -4,10 +4,11 @@
 \alias{plot_GCAM}
 \title{Primary GCAM mapping function. Can handle categorical or continuous data.}
 \usage{
-plot_GCAM(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
-  orientation = NULL, title = NULL, legend = F, colors = NULL,
+plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
+  extent = EXTENT_WORLD, title = "", legend = F, colors = NULL,
   qtitle = NULL, limits = NULL, colorfcn = NULL, nacolor = gray(0.75),
-  ...)
+  gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL, zoom = NULL,
+  grid = NULL, grid_col = 1, ...)
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (lat, long, id)
@@ -23,11 +24,8 @@ string, except for a few special cases.  There are also symbols defined for
 some frequently used projections (e.g. \code{\link{robin}} or
 \code{\link{na_aea}}).}
 
-\item{extent}{Bounding box for the display map}
-
-\item{orientation}{The orientation vector.  This is only needed for
-projections that don't use proj4.  Projections using proj4 encode this
-information in their proj4 string.}
+\item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
+available reference types hosted by http://spatialreference.org/}
 
 \item{title}{Text to be displayed as the plot title}
 
@@ -51,7 +49,23 @@ argument will be ignored.}
 gray(0.75), which works well for thematic plots.  For plotting gridded data you
 probably want something a little more neutral, like gray(0.9).}
 
+\item{gcam_df}{A data frame generated from rgcam getQuery() that contains data
+that can be linked to the map geometry data using a unique identifier.}
+
+\item{mapdata_key}{The field name containing a join identifier in the mapdata.}
+
+\item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
+adjustments needed when fitting area to maps.}
+
 \item{...}{Other parameters passed on to \code{colorfcn}.}
+
+\item{ext}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to}
+
+\item{orientation}{The orientation vector.  This is only needed for
+projections that don't use proj4.  Projections using proj4 encode this
+information in their proj4 string.}
+
+\item{gcam_id}{The field name containing a join identifier in the gcam_df data frame.}
 }
 \description{
 This function produces a map visualization of a data set containing
@@ -60,10 +74,8 @@ results by region.  The functions \code{\link{parse_mi_output}} and
 \code{\link{process_batch_q}} produce suitable data frames.
 }
 \details{
-For specifying the projection you can use any Proj4 string.
-Projections specified this way are computed using
-\code{\link[ggalt]{coord_proj}}.  For convenience, this package
-defines the following proj4 strings:
+For specifying the projection you can use any Proj4 string.  For convenience,
+this package defines the following proj4 strings:
 \itemize{
   \item \code{\link{eck3}} - Eckert III
   \item \code{\link{wintri}} - Winkel-Tripel
@@ -91,7 +103,7 @@ lat.max)}.  For convenience we have defined the following
 frequently used map extents:
 \itemize{
    \item \code{\link{EXTENT_WORLD}} - Entire world
-   \item \code{\link{EXTENT_USA}} - Continental United States
+   \item \code{\link{EXTENT_USA}} - Continental United Statesƒp
    \item \code{\link{EXTENT_CHINA}} - China
    \item \code{\link{EXTENT_AFRICA}} - Africa
    \item \code{\link{EXTENT_LA}} - Latin America
