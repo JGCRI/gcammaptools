@@ -3,6 +3,7 @@
 \name{load_txt}
 \alias{load_txt}
 \title{Import text file as a data frame .}
+
 \usage{
 load_txt(txt, field)
 }

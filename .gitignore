@@ -1,6 +1,5 @@
 # Combine C++, Visual Studio, and Xcode gitignores from:
 # https://github.com/github/gitignore/tree/master/Global
-
 # Compiled Object files
 *.slo
 *.lo
@@ -66,3 +65,4 @@ xcuserdata
 .RData
 .Rproj.user
 inst/doc
+gcammaptools.Rproj

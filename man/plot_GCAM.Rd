@@ -66,6 +66,7 @@ adjustments needed when fitting area to maps.}
 \item{orientation}{The orientation vector.  This is only needed for
 projections that don't use proj4.  Projections using proj4 encode this
 information in their proj4 string.}
+
 }
 \description{
 This function produces a map visualization of a data set containing
@@ -74,10 +75,8 @@ results by region.  The functions \code{\link{parse_mi_output}} and
 \code{\link{process_batch_q}} produce suitable data frames.
 }
 \details{
-For specifying the projection you can use any Proj4 string.
-Projections specified this way are computed using
-\code{\link[ggalt]{coord_proj}}.  For convenience, this package
-defines the following proj4 strings:
+For specifying the projection you can use any Proj4 string.  For convenience,
+this package defines the following proj4 strings:
 \itemize{
   \item \code{\link{eck3}} - Eckert III
   \item \code{\link{wintri}} - Winkel-Tripel

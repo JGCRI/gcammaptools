@@ -22,7 +22,6 @@ some frequently used projections (e.g. \code{\link{robin}} or
 \code{\link{na_aea}}).}
 
 \item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to}
-
 \item{orientation}{The orientation vector.  This is only needed for
 projections that don't use proj4.  Projections using proj4 encode this
 information in their proj4 string.}

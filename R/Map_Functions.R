@@ -756,10 +756,8 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' results by region.  The functions \code{\link{parse_mi_output}} and
 #' \code{\link{process_batch_q}} produce suitable data frames.
 #'
-#' For specifying the projection you can use any Proj4 string.
-#' Projections specified this way are computed using
-#' \code{\link[ggalt]{coord_proj}}.  For convenience, this package
-#' defines the following proj4 strings:
+#' For specifying the projection you can use any Proj4 string.  For convenience,
+#' this package defines the following proj4 strings:
 #' \itemize{
 #'   \item \code{\link{eck3}} - Eckert III
 #'   \item \code{\link{wintri}} - Winkel-Tripel
