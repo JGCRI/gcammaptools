@@ -419,7 +419,7 @@ spat_bb <- function(b_ext, buff_dist, proj4s="+proj=longlat +ellps=WGS84 +datum=
                                                  c(b_ext[1], b_ext[3])))))
 
     # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj
-    bb <- st_sf(a=1, geometry=geom) %>%
+    bb <- sf::st_sf(a=1, geometry=geom) %>%
                sf::st_set_crs(proj4s)
 
     # buffer if user desires
