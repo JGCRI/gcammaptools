@@ -143,18 +143,21 @@ filter_spatial <- function(mapdata, bbox, extent, col, topo = sf::st_intersects)
 join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
 
     if (!is.null(gcam_df)) { # error_catch:  usage: gcam_df, gcam_key, and mapdata_key must not be null
-        # -- ADD function here to join region name and id from lookup file
-
-        # add pkey fields for join
-        mapdata['pkey'] <- mapdata[[mapdata_key]]
-        gcam_df['pkey'] <- gcam_df[gcam_key]
-
-        # replace with by = c(mapdata_key = gcam_key) eqivalent and drop the need to create extra pkey fields
-        return(dplyr::left_join(mapdata, gcam_df, by = c('pkey' = 'pkey')))  # error_catch: no records returned, join_id not found, others
+        
+        # Make sure join keys are valid
+        if (is.null(mapdata_key) || !(mapdata_key %in% names(mapdata))) {
+            stop("You must provide a valid key for joining the spatial data")
+        }
+        if (is.null(gcam_key) || !(gcam_key %in% names(gcam_df))) {
+            stop("You must provide a valid key for joining the GCAM data")
+        }
+        
+        # Join the map data and gcam data using the keys provided
+        # Note that using dplyr::left_join() here can cause the result to no
+        # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343
+        mapdata <- merge(x=mapdata, y=gcam_df, by.x = mapdata_key, by.y = gcam_key)
     }
-    else {
-        return(mapdata)
-    }
+    return(mapdata)
 }
 
 #' Import ESRI Shapefile or GeoJSON as sf object.

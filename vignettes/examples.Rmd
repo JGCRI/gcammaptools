@@ -18,16 +18,12 @@ This vignette explains how to use the GCAM Mapping Tools package to display GCAM
 if(!requireNamespace('rgcam', quietly=TRUE)) {
     stop('The rgcam package is required to build this vignette')
 }
-if(!requireNamespace('sf', quietly=TRUE)) {
-    stop('The sf package is required to build this vignette') # Not sure why...
-}
 ```
 
 ## Setup
 To get started with the GCAM map tools, attach the `gcammaptools` package.
 ```{r setup}
 library('gcammaptools')
-library('sf') # TODO: Figure out how to rebuild examples without loading this library
 ```
 
 ## Loading GCAM data
