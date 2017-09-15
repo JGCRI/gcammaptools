@@ -693,7 +693,7 @@ calc.limits.map <- function(mapdata, colname, nbreaks = 5, zero.min = TRUE) {
 #'
 #' Generate a palette with a specified number of entries.  This
 #' function uses a ramp function to extend the palettes from
-#' \code{\link{RColorBrewer}} so they can handle a larger number of
+#' \code{\link[=RColorBrewer::brewer]{RColorBrewer}} so they can handle a larger number of
 #' entries.
 #'
 #' @param n Number of entries desired for the palette
@@ -847,7 +847,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',
 #'                           package = 'gcammaptools'))
 #'   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel = 'a oil'))
-#'   prim_en<-addRegionID(prim_en, file.path(basedir.viz,
+#'   prim_en<-add_region_ID(prim_en, file.path(basedir.viz,
 #'                                 system.file('extdata/rgn32', 'lookup.txt',
 #'                                             package = 'gcammaptools'),
 #'                                 system.file('extdata/rgn32',

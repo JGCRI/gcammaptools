@@ -14,6 +14,7 @@ Depends:
 License: GPL-2
 LazyData: true
 Imports:
+    magrittr,
     rgdal,
     rgeos,
     ggplot2 (>= 2.2.0),

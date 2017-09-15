@@ -124,7 +124,7 @@ frequently used map extents:
   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',
                           package = 'gcammaptools'))
   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel = 'a oil'))
-  prim_en<-addRegionID(prim_en, file.path(basedir.viz,
+  prim_en<-add_region_ID(prim_en, file.path(basedir.viz,
                                 system.file('extdata/rgn32', 'lookup.txt',
                                             package = 'gcammaptools'),
                                 system.file('extdata/rgn32',
