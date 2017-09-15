@@ -12,6 +12,10 @@ os:
 dist: trusty
 sudo: false
 
+before-install:
+  - sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
+  - sudo apt update 
+
 r_binary_packages:
   - rgdal
   - rgeos
