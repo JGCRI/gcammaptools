@@ -5,9 +5,9 @@
 \title{Plot a gridded dataset over a base map}
 \usage{
 plot_GCAM_grid(plotdata, col, map = map.rgn32, proj = robin,
-  extent = EXTENT_WORLD, orientation = NULL, title = NULL,
-  legend = TRUE, nacolor = gray(0.9), alpha = 0.8, zoom = NULL,
-  proj_type = NULL, qtitle = "")
+  extent = EXTENT_WORLD, title = NULL, legend = TRUE,
+  nacolor = gray(0.9), alpha = 0.8, zoom = NULL, proj_type = NULL,
+  qtitle = "")
 }
 \arguments{
 \item{plotdata}{Data frame with the coordinates and values to be plotted.}
@@ -22,10 +22,6 @@ some frequently used projections (e.g. \code{\link{robin}} or
 \code{\link{na_aea}}).}
 
 \item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to}
-
-\item{orientation}{The orientation vector.  This is only needed for
-projections that don't use proj4.  Projections using proj4 encode this
-information in their proj4 string.}
 
 \item{title}{Text to be displayed as the plot title}
 

@@ -17,6 +17,6 @@ qualPalette(n = 31, pal = "Set3", na.val = "grey50")
 \description{
 Generate a palette with a specified number of entries.  This
 function uses a ramp function to extend the palettes from
-\code{\link[=RColorBrewer::brewer]{RColorBrewer}} so they can handle a larger number of
+\code{\link{RColorBrewer}} so they can handle a larger number of
 entries.
 }

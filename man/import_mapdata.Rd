@@ -14,6 +14,6 @@ import_mapdata(obj, fld = NULL, prj4s = wgs84)
 \item{prj4s}{Proj4 string for projection (default WGS84)}
 }
 \description{
-Imports available for sf objects, data frames, spatial data frames,
-ESRI Shapefiles, GeoJSON files, or text files.
+Imports available for sf objects, spatial data frames, ESRI Shapefiles, or 
+GeoJSON files.
 }

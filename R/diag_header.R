@@ -331,7 +331,7 @@ gcam14_colors<- c("Africa" = "navajowhite3",
                   "Former Soviet Union" = "plum2")
 
 
-rgb255 <- function(r, g, b) {rgb(r,g,b, maxColorValue=255)}
+rgb255 <- function(r, g, b) {grDevices::rgb(r,g,b, maxColorValue=255)}
 #' Color palette for 32-region GCAM
 #'
 #' This palette should be used for plots by region (whether maps, line plots, or

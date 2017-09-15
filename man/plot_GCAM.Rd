@@ -7,8 +7,7 @@
 plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
   extent = EXTENT_WORLD, title = "", legend = F, colors = NULL,
   qtitle = NULL, limits = NULL, colorfcn = NULL, nacolor = gray(0.75),
-  gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL, zoom = NULL,
-  grid = NULL, grid_col = 1, ...)
+  gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL, zoom = NULL, ...)
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (lat, long, id)
@@ -62,10 +61,6 @@ that can be linked to the map geometry data using a unique identifier.}
 adjustments needed when fitting area to maps.}
 
 \item{...}{Other parameters passed on to \code{colorfcn}.}
-
-\item{orientation}{The orientation vector.  This is only needed for
-projections that don't use proj4.  Projections using proj4 encode this
-information in their proj4 string.}
 }
 \description{
 This function produces a map visualization of a data set containing
@@ -103,7 +98,7 @@ lat.max)}.  For convenience we have defined the following
 frequently used map extents:
 \itemize{
    \item \code{\link{EXTENT_WORLD}} - Entire world
-   \item \code{\link{EXTENT_USA}} - Continental United Statesƒp
+   \item \code{\link{EXTENT_USA}} - Continental United States
    \item \code{\link{EXTENT_CHINA}} - China
    \item \code{\link{EXTENT_AFRICA}} - Africa
    \item \code{\link{EXTENT_LA}} - Latin America

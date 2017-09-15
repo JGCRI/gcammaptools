@@ -173,50 +173,10 @@ load_shp <- function(file_pth) {
     return(sf::st_read(file_pth, quiet = TRUE))
 }
 
-#' Convert a DataFrame to a SpatialPolygonsDataFrame
-#'
-#' Fill in
-#'
-#' @param Fill in
-df_to_sdf <- function(df, longfield = 'long', latfield = 'lat', region = NULL, pr4s = NULL) {
-
-    # only get needed data
-    edf <- df[,c(longfield, latfield, region)]
-
-    # split data frame by region
-    s <- split(edf, df[[region]])
-
-    # keep only coordinates as lists
-    c <- lapply(s, function(x) { x[[region]] <- NULL; x })
-
-    # create polygons of each list
-    p <- sapply(c, Polygon)
-
-    # group into polygons
-    ps <- lapply(seq_along(p), function(i) {
-                Polygons(list(p[[i]]), ID = names(c)[i])
-            })
-
-    # create spatial polygons
-    psp <- SpatialPolygons(ps, proj4string = CRS(pr4s))
-
-    # create SpatialPolygonsDataFrame
-    sdf <- SpatialPolygonsDataFrame(psp, data.frame(region = unique(edf[[region]]),
-                                                    row.names = unique(edf[[region]])))
-
-    # # add field back to data; convert from factor to numeric
-    # sdf@data[region] <- as.numeric(as.character(sdf@data['region']))
-    #
-    # print(sdf)
-    # print(class())
-
-    return(sdf)
-}
-
 #' Single import function for compatible data types.
 #'
-#' Imports available for sf objects, data frames, spatial data frames,
-#' ESRI Shapefiles, GeoJSON files, or text files.
+#' Imports available for sf objects, spatial data frames, ESRI Shapefiles, or 
+#' GeoJSON files.
 #'
 #' @param obj Input full path string or object
 #' @param fld Field name to use as identifier
@@ -244,29 +204,9 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
             # load Shapefile
             return(load_shp(file_pth = obj))
         }
-        # if text file
-        else if (extn %in% list('txt', 'csv')) {
-
-            # load text file
-            return(load_txt(txt = obj, field = fld))
-        }
         # catch unknown
         else {
             return(NULL)
-        }
-    }
-    # check for data frames
-    else if (is.data.frame(obj)) {
-
-        # convert non-sf data frame to sf object
-        if (cls[1] == "data.frame") {
-            return(df_to_sdf(df = map.rgn32, pr4s = prj4s, region = fld) %>% sf::st_as_sf())
-        }
-        else if (cls[1] == "sf") {
-            return(obj)
-        }
-        else {
-            return(NULL) # catch_error: data frame type not understood.
         }
     }
     # check for spatial data frames
@@ -280,18 +220,6 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
     }
 }
 
-
-#' Import text file as a data frame .
-#'
-#' Creates a DataFrame from full path string to file.
-#'
-#' @param txt Full path to file including extension
-load_txt <- function(txt, field) {
-
-    # read into a DataFrame
-    df <- read.csv(txt)
-    return(df_to_sdf(df))
-}
 
 #' Retrieve proj4 projection string.
 #'
@@ -479,7 +407,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
     # Filter to query of interest using filters
     for (name in names(filters)) {
         if (filters[[name]] == "Aggregate") {
-            qdata <- aggregate(qdata[years], by = qdata[nms], FUN = func)
+            qdata <- stats::aggregate(qdata[years], by = qdata[nms], FUN = func)
             qdata[[ag]] <- "All"
         } else {
             qdata <- qdata[qdata[[name]] == filters[[name]], ]
@@ -514,6 +442,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' a custom map set, the file containing a list of regions to drop, if
 #' applicable.
 #' @return Input table modified to include a GCAM ID for reach region.
+#' @importFrom utils read.csv
 #' @export
 add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
     if (!is.null(provincefile)) {
@@ -570,6 +499,7 @@ add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL
 #' @param datatable The table with the abbreviated names in it.
 #' @param provincefile Name of a defined mapset OR name of a file containing the
 #' lookup table.
+#' @importFrom utils read.csv
 translate_province <- function(datatable, provincefile) {
 
     provincetable <- if (is.symbol(provincefile)) {
@@ -616,7 +546,7 @@ drop_regions <- function(datatable, drops) {
     ## XXX: Do the next step with dplyr instead of this convoluted way
     datatable[regcols] <- lapply(datatable[regcols], function(x) replace(x, x %in% dr, NA))  #Replace drop col values with NA
 
-    datatable <- na.omit(datatable)  # Remove rows containing NA
+    datatable <- stats::na.omit(datatable)  # Remove rows containing NA
 
     return(datatable)
 }
@@ -693,13 +623,15 @@ calc.limits.map <- function(mapdata, colname, nbreaks = 5, zero.min = TRUE) {
 #'
 #' Generate a palette with a specified number of entries.  This
 #' function uses a ramp function to extend the palettes from
-#' \code{\link[=RColorBrewer::brewer]{RColorBrewer}} so they can handle a larger number of
+#' \code{\link{RColorBrewer}} so they can handle a larger number of
 #' entries.
 #'
 #' @param n Number of entries desired for the palette
 #' @param pal Name of the palette to base the new palette on. See
 #' \code{RColorBrewer} for the palettes available.
 #' @param na.val Color to use for the null region
+#' @importFrom stats setNames
+#' @importFrom grDevices colorRampPalette
 #' @export
 qualPalette <- function(n = 31, pal = "Set3", na.val = "grey50") {
 
@@ -789,7 +721,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' frequently used map extents:
 #' \itemize{
 #'    \item \code{\link{EXTENT_WORLD}} - Entire world
-#'    \item \code{\link{EXTENT_USA}} - Continental United Statesƒp
+#'    \item \code{\link{EXTENT_USA}} - Continental United States
 #'    \item \code{\link{EXTENT_CHINA}} - China
 #'    \item \code{\link{EXTENT_AFRICA}} - Africa
 #'    \item \code{\link{EXTENT_LA}} - Latin America
@@ -808,9 +740,6 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' @param proj_type Either esri, epsg, or sr-org as string.  These correspond to
 #' available reference types hosted by http://spatialreference.org/
 #' @param extent Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to
-#' @param orientation The orientation vector.  This is only needed for
-#' projections that don't use proj4.  Projections using proj4 encode this
-#' information in their proj4 string.
 #' @param title Text to be displayed as the plot title
 #' @param legend Boolean flag: True = display map legend; False = do not display
 #' legend
@@ -833,6 +762,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' @param zoom A distance to buffer the bounding box extent by for on-the-fly
 #' adjustments needed when fitting area to maps.
 #' @param ... Other parameters passed on to \code{colorfcn}.
+#' @importFrom grDevices gray
 #' @examples \dontrun{
 #'
 #' ## Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
@@ -859,7 +789,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, extent = EXTENT_WORLD,
                       title = "", legend = F, colors = NULL, qtitle = NULL, limits = NULL,
                       colorfcn = NULL, nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
-                      mapdata_key = NULL, zoom = NULL, grid = NULL, grid_col = 1, ...) {
+                      mapdata_key = NULL, zoom = NULL, ...) {
 
     # get proj4 string that corresponds to user selection
     p4s <- assign_prj4s(proj_type, proj)
@@ -932,7 +862,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent = EXTENT_WORLD,
-                           orientation = NULL, title = NULL, legend = TRUE, nacolor = gray(0.9),
+                           title = NULL, legend = TRUE, nacolor = gray(0.9),
                            alpha = 0.8, zoom = NULL, proj_type = NULL, qtitle = "") {
 
     # get proj4 string that corresponds to user selection
