@@ -119,7 +119,7 @@ filter_spatial <- function(mapdata, bbox, extent, col, topo = sf::st_intersects)
 
     # if extent is not world conduct spatial join; else, return all
     if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
-        return(sf::st_join(mapdata[clm], bbox, left = FALSE))
+        return(suppressMessages(sf::st_join(mapdata[clm], bbox, left = FALSE)))
     }
     else {
         return(sf::st_intersection(bbox, mapdata[clm])[clm])
@@ -142,7 +142,7 @@ filter_spatial <- function(mapdata, bbox, extent, col, topo = sf::st_intersects)
 #' mapdata data frame.
 join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
 
-    if (!is.null(gcam_df)) { # error_catch:  usage: gcam_df, gcam_key, and mapdata_key must not be null
+    if (!is.null(gcam_df)) {
         
         # Make sure join keys are valid
         if (is.null(mapdata_key) || !(mapdata_key %in% names(mapdata))) {
@@ -289,7 +289,8 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 load_txt <- function(txt, field) {
 
     # read into a DataFrame
-    return(read.csv(txt))
+    df <- read.csv(txt)
+    return(df_to_sdf(df))
 }
 
 #' Retrieve proj4 projection string.

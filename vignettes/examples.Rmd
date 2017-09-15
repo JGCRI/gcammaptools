@@ -12,7 +12,7 @@ vignette: >
 # GCAM Mapping Tools Examples
 
 ## Introduction
-This vignette explains how to use the GCAM Mapping Tools package to display GCAM data in map form.  Using this package has a couple of advangages over rolling your own maps.  First, it's easy.  By the time you've worked through these examples, you will be able to make maps of GCAM data with just a few simple commands.  Second, we have defined some default projections and extents for common use cases.  This will ensure that the maps you make look professional and conform the the GCAM house style.
+This vignette explains how to use the GCAM Mapping Tools package to display GCAM data in map form.  Using this package has a couple of advantages over rolling your own maps.  First, it's easy.  By the time you've worked through these examples, you will be able to make maps of GCAM data with just a few simple commands.  Second, we have defined some default projections and extents for common use cases.  This will ensure that the maps you make look professional and conform the the GCAM house style.
 
 ```{r checknamespace, echo=FALSE}
 if(!requireNamespace('rgcam', quietly=TRUE)) {
@@ -28,7 +28,7 @@ library('gcammaptools')
 
 ## Loading GCAM data
 
-You will need to load two types of data:  the map data (analogous to shape files in GIS tools) and the GCAM data.  The map data can be loaded from the package using `import_mapdata()`.  The first line creates the file path to the map data, and the second loads it as a Simple Feature (sf) object.  This sf object is what you will pass to the plotting functions.  Most of the data you will need are provided as datasets in this package, but you can easily provide your own from a Shapefile or geojson file:
+You will need to load two types of data:  the map data (analogous to shape files in GIS tools) and the GCAM data.  The map data can be loaded from the package using `import_mapdata()`.  The first line of this example creates the file path to the map data, and the second loads it as a Simple Feature (sf) object.  This sf object is what you will pass to the plotting functions.  Most of the data you will need are provided as datasets in this package, but you can easily provide your own from a Shapefile or geojson file:
 ```{r load.map}
 mapfile <- system.file("extdata/rgn32", "reg32_spart.shp", package = "gcammaptools")
 mapdata <- import_mapdata(mapfile)
@@ -36,8 +36,6 @@ mapdata <- import_mapdata(mapfile)
 This gives you the same structure you would have gotten with `data(map.rgn32)`.  Generally you should use one of the map datasets included in the package whenever possible because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32 regions plus China subregions map.
 
 The best way to import GCAM results is to use the `rgcam` package, which will create a project file with your data in it.  You can load the project data with `rgcam::loadProject()` and retrieve tables for individual queries using `rgcam::getQuery()`.  However, if you aren't using `rgcam`, you can start with any data frame that has a `region` column and one or more data columns.
-
-After loading the query you want to display, you must add the region identifiers used in the map data to the data frame using the `add_region_ID()` function.  Then you can join the data and the map using `merge()`.
 
 ```{r load_data}
 library('rgcam')
@@ -50,7 +48,7 @@ listScenarios(prj)
 listQueries(prj, 'Reference')
 ```
 
-The sample data has two scenarios and and a dozen queries for each scenario.  For demonstration purposes we will load the CO<sub>2</sub> emissions table.  
+The sample data has two scenarios and and a dozen queries for each scenario.  For demonstration purposes we will load the CO<sub>2</sub> emissions table. After loading the query you want to display, you must add the region identifiers used in the map data to the data frame using the `add_region_ID()` function.
 
 ```{r get_query}
 co2 <- rgcam::getQuery(prj, 'CO2 emissions by region', 'Reference')
