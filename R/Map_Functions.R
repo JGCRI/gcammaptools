@@ -158,10 +158,16 @@ join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
             stop("You must provide a valid key for joining the GCAM data")
         }
 
+        # add pkey fields for join
+        mapdata['pkey'] <- mapdata[[mapdata_key]]
+        gcam_df['pkey'] <- gcam_df[gcam_key]
+
         # Join the map data and gcam data using the keys provided
         # Note that using dplyr::left_join() here can cause the result to no
-        # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343
-        mapdata <- merge(x=mapdata, y=gcam_df, by.x = mapdata_key, by.y = gcam_key)
+        # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343 ;
+        # to remedy until dplyr creates an sf join function cast back to sf obj
+        mapdata <- dplyr::left_join(mapdata, gcam_df, by='pkey') %>%
+                      sf::st_as_sf()
     }
     return(mapdata)
 }
