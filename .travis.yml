@@ -10,6 +10,10 @@ r:
 
 cache: packages
 
+os:
+  - linux
+  - osx
+
 sudo: required
 
 dist: trusty
