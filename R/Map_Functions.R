@@ -1,4 +1,400 @@
 ## MAP FUNCTIONS
+
+#' Helper to set column name for NULL.
+#'
+#' Set column name to substitute position when NULL.
+#'
+#' @param col Field name with target information to map.
+#' @param sub_val Field position to substitue as column reference
+set_col <- function(col, sub_val = 1) {
+
+    if (is.null(col)) {
+        return(1)
+    }
+    else {
+        return(col)
+    }
+}
+
+#' Set color scheme for ggplot object.
+#'
+#' Build color scheme object for ggplot.
+#'
+#' @param mapdata The sf object containing the spatial data.
+#' @param col Field name with target information to map.
+#' @param qtitle User specified title for color bar
+#' @param nacolor Color for NA features
+#' @param colors Color vector
+#' @param colorfcn Function to create color scheme
+set_color_scheme <- function(mapdata, col, qtitle, nacolor, colors, colorfcn) {
+
+    # if column null set as index
+    clm <- set_col(col)
+
+    # use default color gradient if none specified
+    if (is.null(col)) {
+        clr <- nacolor
+    }
+    else if (!is.null(col) & (is.null(colors))) {
+        clr <- DEFAULT_CHOROPLETH
+    }
+    else {
+        clr <- colors
+    }
+
+    # use alternate title if user provided
+    if (!is.null(qtitle)) {
+        nm <- qtitle
+    }
+    else {
+        nm <- clm
+    }
+
+    # for continuous data
+    if (is.numeric(mapdata[[clm]])) {
+
+        return(ggplot2::scale_fill_gradientn(name = nm, colors = clr,
+                                        values = NULL, guide = GUIDE,
+                                        space = SPACE, na.value = nacolor))
+    }
+    # for discrete
+    else {
+
+        # set color scheme using function
+        if (is.null(colorfcn)) {
+            clr <- qualPalette(n = length(unique(mapdata[[clm]])))
+        }
+        else {
+            clr <- colorfcn(n = length(unique(mapdata[[clm]])))
+        }
+
+        return(ggplot2::scale_fill_manual(values = clr, name = nm))
+    }
+}
+
+#' Build the coordinate zooming bounds for ggplot object.
+#'
+#' Either take the bounding box or the map coordinates depending on extent.
+#'
+#' @param mapdata The sf object containing the spatial data.
+#' @param bbox Bounding box.
+#' @param extent Extent provided by the user or as default.
+#' @param p4s Proj4 string set by user
+zoom_bounds <- function(mapdata, bbox, extent, p4s) {
+
+    if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
+
+        # reproject bounding box and get bounds
+        bx <- reproject(bbox, prj4s = p4s) %>%
+            sf::st_bbox()
+
+        return(ggplot2::coord_sf(crs = p4s, datum = sf::st_crs(p4s),
+                                 xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]),
+                                 expand = TRUE))
+    }
+    else {
+
+        # use map bounds instead of bounding box for zoom
+        bx <- sf::st_bbox(mapdata)
+
+        return(ggplot2::coord_sf(xlim = c(bx[1], bx[3]),
+                                 ylim = c(bx[2], bx[4])))
+    }
+}
+
+#' Get features topologically associated with extent bounds.
+#'
+#' Conducts a spatial join to retrieve spatial features that are topologically associated
+#' (intersects, contains, within, etc.) with the provided bounds.
+#'
+#' @param mapdata The sf object containing the spatial data.
+#' @param bbox Bounding box.
+#' @param extent Extent provided by the user or as default.
+#' @param col Field name with target information to map.
+#' @param agr_type Inherited attribute-geometry-relationship type from plot_GCAM function params.
+#' @param topo SF topologic function to define how the join will be conducted. Default
+#' is to join any feature that intersects the bounding box.
+filter_spatial <- function(mapdata, bbox, extent, col, agr_type=agr_type, topo=sf::st_intersects) {
+  # set NULL column to index
+  clm <- set_col(col)
+
+  # set attribute-geometry-relationship for input mapdata column and bounding box feature attribute
+  st_agr(mapdata) = agr_type
+  st_agr(bbox) = agr_type
+
+  # Message for st_join suppressed:  "although coordinates are longitude/latitude, it is
+  #  assumed that they are planar."  This comes from the input projection being a
+  #  geographic coordinate system and not a projected one when conducting topological
+  #  operations such as st_intersects used in the st_join.  if 'longlat' appears in the
+  #  proj string ("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") then this message
+  #  will present itself due to the operation being intersect according to the source code.
+  #  There is no option to quiet this.  We are getting the expected return from the
+  #  operation due to harmonizing the map and bounding box projection pre-join.
+
+  # if extent is not world conduct spatial join; else, return all
+  if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
+    return(suppressMessages({sf::st_join(mapdata[clm], bbox, left = FALSE)}))
+  }
+  # conducting the intersection here eliminates erroneous-filled poly generated at the global extent
+  else {
+    return(sf::st_intersection(bbox, mapdata[clm])[clm])
+  }
+}
+
+#' Join GCAM data with spatial data.
+#'
+#' Joins GCAM data from rgam query and inner joins it to spatial data provided by the user.
+#' Note:  due to conducting an inner join, only the keys that are present in both datasets
+#' will be represented.
+#'
+#' @param mapdata The sf object containing the spatial data and a tuple identifier that
+#' can be referenced in the gcam_df data frame.
+#' @param mapdata_key Name of the field having a tuple identifier that can be referenced
+#' in the gcam_df data frame.
+#' @param gcam_df The GCAM data frame provided from the user.  This is usually generated from
+#' an rgcam query.
+#' @param gcam_key Name of field having a tuple identifier that can be referenced in the
+#' mapdata data frame.
+join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
+
+    if (!is.null(gcam_df)) {
+
+        # Make sure join keys are valid
+        if (is.null(mapdata_key) || !(mapdata_key %in% names(mapdata))) {
+            stop("You must provide a valid key for joining the spatial data")
+        }
+        if (is.null(gcam_key) || !(gcam_key %in% names(gcam_df))) {
+            stop("You must provide a valid key for joining the GCAM data")
+        }
+
+        # add pkey fields for join
+        mapdata['pkey'] <- mapdata[[mapdata_key]]
+        gcam_df['pkey'] <- gcam_df[gcam_key]
+
+        # Join the map data and gcam data using the keys provided
+        # Note that using dplyr::left_join() here can cause the result to no
+        # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343 ;
+        # to remedy until dplyr creates an sf join function cast back to sf obj
+        mapdata <- dplyr::left_join(mapdata, gcam_df, by='pkey') %>%
+                      sf::st_as_sf()
+    }
+    return(mapdata)
+}
+
+#' Import ESRI Shapefile or GeoJSON as sf object.
+#'
+#' Creates a Simple Feature (sf) object from full path string to ESRI Shapefile or
+#' GeoJSON file. User defines which field is supposed to represent the ID for the data.
+#'
+#' @param file_pth Full path to shapefile with extention (.shp).  Shapefiles must contain at least
+#' .shp, .shx, and .dbf file to function properly.
+load_shp <- function(file_pth) {
+
+    # read into an sf object
+    return(sf::st_read(file_pth, quiet = TRUE))
+}
+
+#' Single import function for compatible data types.
+#'
+#' Imports available for sf objects, spatial data frames, ESRI Shapefiles, or
+#' GeoJSON files.
+#'
+#' @param obj Input full path string or object
+#' @param fld Field name to use as identifier
+#' @param prj4s Proj4 string for projection (default WGS84)
+#' @export
+import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
+
+    # get object class
+    cls <- class(obj)
+
+    # check for sf data frame object
+    if (cls[1] == "sf") {
+        return(obj)
+    }
+
+    # check for file path
+    else if (is.character(obj)) {
+
+        # get file extension
+        extn <- tolower(c(tools::file_ext(obj)))
+
+        # if ESRI Shapefile or GeoJSON file
+        if (extn %in% list('shp', 'geojson')) {
+
+            # load Shapefile
+            return(load_shp(file_pth = obj))
+        }
+        # catch unknown
+        else {
+            return(NULL)
+        }
+    }
+    # check for spatial data frames
+    else if (cls %in% list("SpatialPolygonsDataFrame", "SpatialPointsDataFrame",
+                           "SpatialLinesDataFrame")) {
+
+        return(sf::st_as_sf(obj))
+    }
+    else {
+        return(NULL) # catch_error: object type not understood.
+    }
+}
+
+
+#' Retrieve proj4 projection string.
+#'
+#' Provides a lookup list for default proj4 strings utilized.  Users
+#' may also specify their own lookup list.  Options also include
+#' providing either the EPSG, ESRI, or SR-ORG projection codes to
+#' retrieve the associated proj4 string from a web query from
+#' http://spatialreference.org.  Definitions for proj4 string
+#' parmeters can be referenced here:
+#' http://proj4.org/parameters.html#parameter-list
+#'
+#' @param obj Use object instead that has a predefined proj4 string.
+#' @param prj_type The projection type is either 'esri', 'epsg', or 'sr-org' or 'prj4s_key'.
+#' @param prj_code The projection code as an integer for EPSG, ESRI, or SR-ORG.
+#' @param prj4s_key Lookup key string identifying the default projection.
+#' @param lu A key = value list where key is a string and value is the
+#' associated proj4 string.
+get_prj4s <- function(obj = NULL, prj_type = NULL, prj_code = NULL, prj4s_key = NULL, lu = NULL) {
+
+    # default prj4 key: string lookup
+    def_lu <- list('us' = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83",
+                   'africa' = "+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0 ",
+                   'world' = "+proj=longlat +datum=WGS84 +no_defs",
+                   'ch_aea' = "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84",
+                   'eck3' = "+proj=eck3 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+                   )
+
+    # use default lookup if none provided
+    if (is.null(lu)) {
+        lu <- def_lu
+    }
+
+    # use object if defined
+    if (!is.null(obj) && (obj %in% names(lu))) {
+        return(lu[[obj]])
+    }
+    else if (!is.null(obj)) {
+        return(obj)
+    }
+
+    # if a prj4 key is provided use it
+    if (prj_type == 'prj4s_key' && !is.null(prj4s_key)) {
+        return(lu[[prj4s_key]])
+    }
+    # otherwise lookup proj4 string by url
+    else if (!is.null(prj_type) && !is.null(prj_code)) {
+
+        # create url
+        url <- paste0('http://spatialreference.org/ref/', prj_type, '/', prj_code, '/proj4/')
+        prj4s <- tryCatch(readLines(url, warn = FALSE), error = function(e) NULL)
+
+        # make sure url got a string
+        if (length(prj4s) == 0) {
+            warning(paste('Cannot find valid proj4 string for', prj_type, 'with projection code', prj_code))
+            # Return wgs84 as default proj4 string
+            return(wgs84)
+        }
+        return(prj4s)
+    }
+    else {
+        return(wgs84)
+    }
+}
+
+#' Helper function for to assign return Proj4 string.
+#'
+#' Uses user-input for projection type to identify what
+#' type of URL fetch needs to be conducted to retrieve
+#' a Proj4 string from http://spatialreference.org
+#'
+#' @param proj_type Either esri, epsg, or sr-org as string.  These correspond to
+#' available reference types hosted by http://spatialreference.org/
+#' @param proj The coordinate reference system number or object provided by the user
+assign_prj4s <- function(proj_type, proj) {
+
+    # change proj_type to lower case
+    if (is.null(proj_type)) {
+        pt <- NULL
+    }
+    else {
+        pt <- tolower(c(proj_type))
+    }
+
+    # get proj4 string that corresponds to user selection
+    if (is.null(pt)) {
+        return(get_prj4s(obj = proj))
+    }
+    else if (pt == 'prj4s_key') {
+        return(get_prj4s(prj_type = pt, prj4s_key = proj))
+    } else {
+        return(get_prj4s(prj_type = pt, prj_code = proj))
+    }
+}
+
+#' Create sf object from numeric extent.
+#'
+#' Creates a sf object from numeric extent vector and applies a default WGS84
+#' (EPSG:4326) coordinate reference system.
+#'
+#' @param b_ext Numeric extent [xmin, xmax, ymin, ymax]
+#' @param buff_dist Distance in decimal degrees to expand the bounding box by in all directions.
+#' @param proj4s Either the proj4 string or EPSG number of the native projection of the bounds
+spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") {
+
+  # convert bounding box to simple features polygon collection
+  geom <- sf::st_sfc(sf::st_polygon(list(rbind(c(b_ext[1], b_ext[3]),
+                                               c(b_ext[1], b_ext[4]),
+                                               c(b_ext[2], b_ext[4]),
+                                               c(b_ext[2], b_ext[3]),
+                                               c(b_ext[1], b_ext[3])))))
+
+  # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj;
+  #  transform projection the that of the input mapdata
+  bb <- sf::st_sf(a = 1, geometry = geom) %>%
+    sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
+    sf::st_transform(proj4s)
+
+  # Suppress Warning: In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) :
+  #   st_buffer does not correctly buffer longitude/latitude data, dist needs
+  #   to be in decimal degrees.
+  #   This warning occurs from buffering a feature that is in a geographic
+  #   coordinate system (lat/long) rather than a projection one.  This makes the
+  #   the buffer not be exact due to the distance being calculated in decimal
+  #   degrees rather than meters or kilometers. This is fine with us since we are
+  #   simply using buffer as a way of zooming to include or exclude portions of
+  #   the bounding extent in this call.
+
+  # buffer if user desires
+  if (!is.null(buff_dist)) {
+    return(suppressWarnings({sf::st_buffer(bb, buff_dist)}))
+  }
+  else {
+    return(bb)
+  }
+}
+
+#' Transform the projection of an sf object
+#'
+#' Recalculates the projection of the input sf object to
+#' the user-defined one using a Proj4 string.
+#'
+#' @param sdf sf object
+#' @param prj4s Proj4 string
+reproject <- function(sdf, prj4s) {
+
+    # if proj is native do not transform; else transform to user defined coord sys
+    if (prj4s == sf::st_crs(sdf)[2]) {
+        return(sdf)
+    }
+    else {
+        return(sf::st_transform(sdf, sf::st_crs(prj4s)))
+    }
+}
+
 #---------------------------------------------------------------------------
 # DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
@@ -17,7 +413,7 @@
 #' one of the queries cointained in the GCAM output.
 #' @param scen The name of the scenario.  Partial matches are allowed.
 #' @param filters A named vector of filtering criteria in the form
-#' \code{c(header1=value1, header2=value2,...)}.  Headers are the
+#' \code{c(header1 = value1, header2 = value2,...)}.  Headers are the
 #' names of columns in the data frame.  If aggregating data, use the
 #' value 'Aggregate'.  (XXX: Needs further explanation!)
 #' @param func Operation to apply to the aggregated data.  (XXX: Does
@@ -44,7 +440,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
     # Filter to query of interest using filters
     for (name in names(filters)) {
         if (filters[[name]] == "Aggregate") {
-            qdata <- aggregate(qdata[years], by = qdata[nms], FUN = func)
+            qdata <- stats::aggregate(qdata[years], by = qdata[nms], FUN = func)
             qdata[[ag]] <- "All"
         } else {
             qdata <- qdata[qdata[[name]] == filters[[name]], ]
@@ -79,14 +475,15 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' a custom map set, the file containing a list of regions to drop, if
 #' applicable.
 #' @return Input table modified to include a GCAM ID for reach region.
+#' @importFrom utils read.csv
 #' @export
-addRegionID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
+add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
     if (!is.null(provincefile)) {
-        datatable <- translateProvince(datatable, provincefile)
+        datatable <- translate_province(datatable, provincefile)
     }
 
     if (!is.null(drops)) {
-        datatable <- dropRegions(datatable, drops)
+        datatable <- drop_regions(datatable, drops)
     }
 
     lookuptable <- if (is.symbol(lookupfile)) {
@@ -113,16 +510,16 @@ addRegionID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, 
 
     ## find NA values
     na.vals <- is.na(finaltable)
-    na.vals[finaltable$id==0,] <- FALSE    # exclude non-regions; they should stay NA
+    na.vals[finaltable$id == 0,] <- FALSE    # exclude non-regions; they should stay NA
     finaltable[na.vals] <- 0
-    finaltable$id <- as.character(finaltable$id)  # other functions are expecting id to be a char
+    # finaltable$id <- as.character(finaltable$id)  # other functions used id to be a char
 
     # Add null vector row to end to account for GCAM region 0
     nullvec <- rep(NA, ncol(finaltable))
 
     finaltable <- rbind(finaltable, nullvec)
     finaltable[nrow(finaltable), rgn] <- "0"  # region 0 name (should be something more descriptive?)
-    finaltable$id[nrow(finaltable)] <- "0"
+    finaltable$id[nrow(finaltable)] <- 0
 
     return(finaltable)
 }
@@ -135,7 +532,8 @@ addRegionID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, 
 #' @param datatable The table with the abbreviated names in it.
 #' @param provincefile Name of a defined mapset OR name of a file containing the
 #' lookup table.
-translateProvince <- function(datatable, provincefile) {
+#' @importFrom utils read.csv
+translate_province <- function(datatable, provincefile) {
 
     provincetable <- if (is.symbol(provincefile)) {
         get.internal(provincefile, "prov")
@@ -155,12 +553,12 @@ translateProvince <- function(datatable, provincefile) {
     provincetable$province.name <- as.character(provincetable$province.name)
 
     datatable$rgn <- ifelse(is.na(provincetable$province.name[match(datatable$rgn, provincetable$province)]),
-        datatable$rgn, provincetable$province.name[match(datatable$rgn, provincetable$province)])
+                            datatable$rgn, provincetable$province.name[match(datatable$rgn, provincetable$province)])
 
     return(datatable)
 }
 
-dropRegions <- function(datatable, drops) {
+drop_regions <- function(datatable, drops) {
     ### Drop regions listed in drops file from data frame.
     ### Inputs:
     ###   datatable - a data frame of query from batch query CSV
@@ -181,7 +579,7 @@ dropRegions <- function(datatable, drops) {
     ## XXX: Do the next step with dplyr instead of this convoluted way
     datatable[regcols] <- lapply(datatable[regcols], function(x) replace(x, x %in% dr, NA))  #Replace drop col values with NA
 
-    datatable <- na.omit(datatable)  # Remove rows containing NA
+    datatable <- stats::na.omit(datatable)  # Remove rows containing NA
 
     return(datatable)
 }
@@ -189,53 +587,6 @@ dropRegions <- function(datatable, drops) {
 #---------------------------------------------------------------------------
 # MAPPING UTILS
 #---------------------------------------------------------------------------
-get_bbox_polys <- function(dataset, bbox = EXTENT_WORLD) {
-    ### Modifies map data to include only polygons that lie partially within
-    ### bounding box.
-    ### Inputs:
-    ###   dataset - data frame of map geometry
-    ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
-    ### Outputs:
-    ###   newdata - data with only polygons that are at least partially in
-    ###           bounding box
-
-    dplyr::filter(dataset, in_range(long, bbox[1], bbox[2]), in_range(lat, bbox[3], bbox[4]))
-}
-
-## in_range - Test a vector to see which values are in the interval [a,b]
-## params: x:  vector to test
-##       a,b:  interval bounds. can be int or numeric; a<=b
-in_range <- function(x, a, b) {
-    x >= a & x <= b
-}
-
-gen_grat <- function(bbox = EXTENT_WORLD, longint = 20, latint = 30) {
-    ### Generate graticule (long/lat lines) given bbox
-    ### Inputs:
-    ###   bbox - numeric vector (long_min, long_max, lat_min, lat_max)
-    ###   longint - interval between longitude lines
-    ###   latint - interval between latitude lines
-    ### Outputs:
-    ###   grat - dataframe describing of latitude and longitude lines
-    ###         spaced at specified intervals
-
-    ### TODO: We could probably realize some savings here by
-    ### precalculating and caching graticules for some commonly-used
-    ### configurations.
-
-    # Generate graticule as sp matrix object
-    lons = seq(bbox[1], bbox[2], by = longint)
-    lats = seq(bbox[3], bbox[4], by = latint)
-
-    grat <- graticule::graticule(lons, lats, xlim = range(lons), ylim = range(lats))
-
-    # Convert to ggplot2-friendly format
-    grat <- ggplot2::fortify(grat)
-
-    return(grat)
-
-}
-
 #' Calculate legend breaks (intervals to put labels on legend scale)
 #'
 #' Given a minimum and maximum value, and number of breaks, calculate
@@ -276,12 +627,13 @@ calc.limits.map <- function(mapdata, colname, nbreaks = 5, zero.min = TRUE) {
     vals <- as.numeric(mapdata[[colname]])
 
     max_dat <- max(vals, na.rm = TRUE)
+
     if (zero.min) {
-        if(min(vals, na.rm=TRUE) < 0) {
+        if(min(vals, na.rm = TRUE) < 0) {
             ## If there are negative values in the data set, then pinning to
             ## zero means putting the zero point in the middle of the color
             ## bar.
-            mag <- max(abs(vals), na.rm=TRUE)
+            mag <- max(abs(vals), na.rm = TRUE)
             max_dat <- mag
             min_dat <- -mag
         }
@@ -311,74 +663,22 @@ calc.limits.map <- function(mapdata, colname, nbreaks = 5, zero.min = TRUE) {
 #' @param pal Name of the palette to base the new palette on. See
 #' \code{RColorBrewer} for the palettes available.
 #' @param na.val Color to use for the null region
+#' @importFrom stats setNames
+#' @importFrom grDevices colorRampPalette
 #' @export
 qualPalette <- function(n = 31, pal = "Set3", na.val = "grey50") {
-    colors <- colorRampPalette(RColorBrewer::brewer.pal(8, pal))(n)
-    colors <- setNames(colors, as.character(1:n))
+
+    colors <- colorRampPalette(RColorBrewer::brewer.pal(8, pal))(n) %>%
+        setNames(as.character(1:n))
+
     colors["0"] <- na.val
 
     return(colors)
 }
 
-
 #-----------------------------------------------------------------
 # MAPPING FUNCTIONS
 #-----------------------------------------------------------------
-# coord_GCAM: This function unifies the ggplot2 and ggalt coordinate systems to make use
-#   of both of them, depending on the projection needed. Can be used with any ggplot2 map object.
-#   If projection is orthographic, will use ggplot2 coord_map functionality. If projection is not
-#   orthographic, will use ggalt coord_proj functionality.
-#
-# Arguments
-#   proj - the projection. proj4 string or pre-defined variable in diag_header.R
-#   orientation - Use if using orthographic projection
-#   extent - Vector of lat/lon limits c(lat0,lat1,lon0,lon1)
-#   parameters - additional parameters corresponding to coord_map ggplot2 function
-#   inverse ?
-#   degrees - Units for lat/longitude ?
-#   ellps.default - default ellipse to use with projection ?
-#
-# Usage: as add-on function to a ggplot2 object. Example:
-#  ggplot()+
-#   geom_polygon(data, aes(x,y,group))+
-#   coord_GCAM(proj)
-coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., parameters = NULL,
-    inverse = FALSE, degrees = TRUE, ellps.default = "sphere") {
-
-    if (is.null(proj)) {
-        # Default proj4 pstring for default GCAM projection (Robinson)
-        proj <- paste0(c("+proj=robin +lon_0=0 +x_0=0 +y_0=0", "+ellps=WGS84 +datum=WGS84 +units=m +nodefs"),
-            collapse = " ")
-    }
-
-    if (is.null(parameters)) {
-        params <- list(...)
-    } else {
-        params <- parameters
-    }
-
-    # Default extent is EXTENT_WORLD (-180,180,-90,90)
-    if (is.null(extent)) {
-        xlim <- c(-180, 180)
-        ylim <- c(-90, 90)
-    } else {
-        xlim <- c(extent[1], extent[2])
-        ylim <- c(extent[3], extent[4])
-    }
-
-    # Use ggproto object defined in ggplot2 package if using orthographic map projection
-    if (grepl("ortho", proj)) {
-        ggproto(NULL, ggplot2::CoordMap, projection = proj, orientation = orientation, limits = list(x = xlim,
-            y = ylim), params = params)
-    } else {
-        # Otherwise use ggproto object defined in ggalt package for default GCAM projections
-        ggproto(NULL, ggalt::CoordProj, proj = proj, inverse = inverse, ellps.default = ellps.default,
-            degrees = degrees, limits = list(x = xlim, y = ylim), params = list())
-    }
-
-}
-
-
 # theme_GCAM: Default GCAM theme function. Can be used with any ggplot2 object.
 #   Derives from ggplot2 black and white theme function (theme_bw)
 #
@@ -391,17 +691,24 @@ coord_GCAM <- function(proj = NULL, orientation = NULL, extent = NULL, ..., para
 theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 
     if (legend == F) {
-        theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR,
-            fill = NA), panel.background = PANEL_BACKGROUND, panel.grid = PANEL_GRID, axis.ticks = AXIS_TICKS,
-            axis.text = AXIS_TEXT, legend.position = "none")
+        theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
+                                                                                    panel.background = PANEL_BACKGROUND,
+                                                                                    panel.grid.major = PANEL_GRID,
+                                                                                    axis.ticks = AXIS_TICKS,
+                                                                                    axis.text = AXIS_TEXT,
+                                                                                    legend.position = "none")
     } else if (legend == T) {
-        theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR,
-            fill = NA), panel.background = PANEL_BACKGROUND, panel.grid = PANEL_GRID, axis.ticks = AXIS_TICKS,
-            axis.text = AXIS_TEXT, legend.key.size = unit(0.75, "cm"), legend.text = element_text(size = 10),
-            legend.title = element_text(size = 12, face = "bold"), legend.position = LEGEND_POSITION,
-            legend.key = element_rect(color = "black"))
+        theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
+                                                                                    panel.background = PANEL_BACKGROUND,
+                                                                                    panel.grid.major = PANEL_GRID,
+                                                                                    axis.ticks = AXIS_TICKS,
+                                                                                    axis.text = AXIS_TEXT,
+                                                                                    legend.key.size = unit(0.75, "cm"),
+                                                                                    legend.text = element_text(size = 10),
+                                                                                    legend.title = element_text(size = 12, face = "bold"),
+                                                                                    legend.position = LEGEND_POSITION,
+                                                                                    legend.key = element_rect(color = "black"))
     }
-
 }
 
 
@@ -418,10 +725,8 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' results by region.  The functions \code{\link{parse_mi_output}} and
 #' \code{\link{process_batch_q}} produce suitable data frames.
 #'
-#' For specifying the projection you can use any Proj4 string.
-#' Projections specified this way are computed using
-#' \code{\link[ggalt]{coord_proj}}.  For convenience, this package
-#' defines the following proj4 strings:
+#' For specifying the projection you can use any Proj4 string.  For convenience,
+#' this package defines the following proj4 strings:
 #' \itemize{
 #'   \item \code{\link{eck3}} - Eckert III
 #'   \item \code{\link{wintri}} - Winkel-Tripel
@@ -465,10 +770,9 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' string, except for a few special cases.  There are also symbols defined for
 #' some frequently used projections (e.g. \code{\link{robin}} or
 #' \code{\link{na_aea}}).
-#' @param extent Bounding box for the display map
-#' @param orientation The orientation vector.  This is only needed for
-#' projections that don't use proj4.  Projections using proj4 encode this
-#' information in their proj4 string.
+#' @param proj_type Either esri, epsg, or sr-org as string.  These correspond to
+#' available reference types hosted by http://spatialreference.org/
+#' @param extent Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to
 #' @param title Text to be displayed as the plot title
 #' @param legend Boolean flag: True = display map legend; False = do not display
 #' legend
@@ -484,88 +788,78 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' @param nacolor Color to use for polygons with no data.  The default is
 #' gray(0.75), which works well for thematic plots.  For plotting gridded data you
 #' probably want something a little more neutral, like gray(0.9).
+#' @param gcam_df A data frame generated from rgcam getQuery() that contains data
+#' that can be linked to the map geometry data using a unique identifier.
+#' @param gcam_key The field name containing a join identifier in the gcam_df data frame.
+#' @param mapdata_key The field name containing a join identifier in the mapdata.
+#' @param zoom A distance to buffer the bounding box extent by for on-the-fly
+#' adjustments needed when fitting area to maps.
+#' @param agr_type Aggregate-geometry-relationship type.  Either 'constant' (default),
+#' 'aggregate', or 'identity' classified as follows:  [constant] a variable that has a
+#' constant value at every location over a spatial extent; examples: soil type, climate zone, land use.
+#' [aggregate]	values are summary values (aggregates) over the geometry, e.g. population density,
+#' dominant land use.  [identity]	values identify the geometry: they refer to (the whole of)
+#' this and only this geometry.
+#' See https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries
+#' for futher explanation.
 #' @param ... Other parameters passed on to \code{colorfcn}.
+#' @importFrom grDevices gray
 #' @examples \dontrun{
 #'
 #' ## Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
 #'   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32',
 #'                                                'GCAM_32_wo_Taiwan_clean.geojson',
-#'                                                package='gcammaptools'))
-#'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region='GCAM_ID')
+#'                                                package = 'gcammaptools'))
+#'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region = 'GCAM_ID')
 #'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3,
-#'                  colorfcn=qualPalette)
+#'                  colorfcn = qualPalette)
 #'
 #'   ## Plot oil consumption by region
 #'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',
-#'                           package='gcammaptools'))
-#'   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel='a oil'))
-#'   prim_en<-addRegionID(prim_en, file.path(basedir.viz,
+#'                           package = 'gcammaptools'))
+#'   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel = 'a oil'))
+#'   prim_en<-add_region_ID(prim_en, file.path(basedir.viz,
 #'                                 system.file('extdata/rgn32', 'lookup.txt',
-#'                                             package='gcammaptools'),
+#'                                             package = 'gcammaptools'),
 #'                                 system.file('extdata/rgn32',
-#'                                             'drop-regions.txt', package='gcammaptools')))
+#'                                             'drop-regions.txt', package = 'gcammaptools')))
 #'   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'),
-#'                  title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
+#'                  title = 'Robinson World', qtitle = 'Oil Consumption, 2050', legend = T)
 #' }
 #' @export
-plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
-                      orientation = NULL, title = NULL, legend = F, colors =
-                          NULL, qtitle = NULL, limits = NULL, colorfcn = NULL,
-                      nacolor=gray(0.75),  ...) {
+plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, extent = EXTENT_WORLD,
+                      title = "", legend = F, colors = NULL, qtitle = NULL, limits = NULL,
+                      colorfcn = NULL, nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
+                      mapdata_key = NULL, zoom = NULL, agr_type='constant', ...) {
 
-    # Generate graticule (latitude/longitude lines) and clip map to extent specified.
-    grat <- gen_grat()
-    mappolys <- get_bbox_polys(dataset = mapdata)
+  # get proj4 string that corresponds to user selection
+  p4s <- assign_prj4s(proj_type, proj)
 
+  # create sf obj bounding box from extent and define native proj; apply buffer if needed
+  b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(mapdata))
 
-    # Plot graticule and polygons
-    mp <- ggplot() + geom_path(data = grat, aes(long, lat, group = group), color = LINE_GRAT) +
-        geom_polygon(data = mappolys, aes_string("long", "lat", group = "group", fill = col),
-            color = LINE_COLOR)
+  # import spatial data; join gcam data; get only features in bounds; transform projection
+  m <- import_mapdata(mapdata) %>%
+    join_gcam(mapdata_key, gcam_df, gcam_key) %>%
+    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
+    reproject(prj4s = p4s)
 
-    # If a column name is specified, add a color gradient or categorical colors
-    if (!is.null(col)) {
+  # create object to control map zoom extent
+  map_zoom <- zoom_bounds(m, b, extent, p4s)
 
-        if (is.numeric(mappolys[[col]])) {
-            # Instructions for color gradient Calculate legend label increments ('breaks')
-            if (is.null(limits)) {
-                limits <- calc.limits.map(mappolys, col)
-            }
-            breaks <- calc.breaks(limits[2], limits[1])
+  # create color scheme object
+  color_scheme <- set_color_scheme(m, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
 
-            # Use default colors if none specified
-            if (is.null(colors))
-                colors <- DEFAULT_CHOROPLETH
+  # generate plot object
+  mp <- ggplot(m) +
+    ggplot2::geom_sf(aes_string(fill = col), color = LINE_COLOR) +
+    map_zoom +
+    color_scheme +
+    ggplot2::ggtitle(title) +
+    theme_GCAM(legend = legend) +
+    labs(title = title, x = XLAB, y = YLAB)
 
-            # Add color scale to map
-            mp <- mp + scale_fill_gradientn(name = qtitle, colors = colors, values = NULL, guide = GUIDE,
-                space = SPACE, na.value = nacolor, breaks = breaks, limits = limits, labels = breaks)
-
-        } else {
-            # Instructions for categorical map Use default color scheme and color function if none
-            # specified
-            if (is.null(colors)) {
-                if (is.null(colorfcn)) {
-                  colorfcn <- qualPalette
-                }
-                colors <- colorfcn(n = length(unique(mappolys[[col]])), ...)
-            }
-
-            # Add color scale to map
-            mp <- mp + scale_fill_manual(values = colors, name = qtitle)
-        }
-    } else {
-          ## If no data is being plotted, use default color scale
-          mp <- mp + geom_polygon(data = mappolys, aes_string("long", "lat",
-                                  group = "group"), fill = nacolor, color =
-                                      LINE_COLOR)
-    }
-
-    # Project map and add theme and labels
-    mp <- mp + coord_GCAM(proj = proj, orientation = orientation, extent = extent) + theme_GCAM(legend = legend) +
-        labs(title = title, x = XLAB, y = YLAB)
-
-    return(mp)
+  return(mp)
 }
 
 #' Plot a gridded dataset over a base map
@@ -608,20 +902,47 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
 #' 0 and 1, where 0 is completely transparent and 1 is completely opaque.
 #' @inheritParams plot_GCAM
 #' @export
-plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent
-                           = EXTENT_WORLD, orientation = NULL, title = NULL,
-                           legend = TRUE, nacolor = gray(0.9),
-                           alpha=0.8)
-{
-    ## start by plotting the base map
-    plt <- plot_GCAM(map, proj = proj, extent = extent,
-                     orientation = orientation, title = title, legend = legend,
-                     nacolor = nacolor)
-    ## add the raster layer and return
-    plt + geom_tile(data=plotdata, mapping=aes_string(x='lon', y='lat',
-                                   fill=col), alpha=alpha)
-}
+plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent = EXTENT_WORLD,
+                           title = NULL, legend = TRUE, nacolor = gray(0.9),
+                           alpha = 0.8, zoom = NULL, proj_type = NULL, qtitle = "") {
 
+    # get proj4 string that corresponds to user selection
+    p4s <- assign_prj4s(proj_type, proj)
+
+    # create sf obj bounding box from extent and define native proj; apply buffer if needed
+    b <- spat_bb(b_ext = extent, buff_dist = zoom)
+
+    # build sf object from plotdata
+    pts <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(p4s))[col] %>%
+              filter_spatial(bbox = b, extent = extent, col = col) # %>%
+              #reproject(prj4s = p4s)
+
+    # get coords and assign to sf object
+    coords <- sf::st_coordinates(pts)
+    pts['lon'] <- coords[, 1]
+    pts['lat'] <- coords[, 2]
+
+    # only get borders intersecting the bounding box
+    brdr <- import_mapdata(map) %>%
+            filter_spatial(bbox = b, extent = extent, col = 1) #%>%
+            #reproject(prj4s = p4s) %>%
+            #sf::st_cast('MULTILINESTRING')
+
+    # create object to control map zoom extent
+    map_zoom <- zoom_bounds(pts, b, extent, p4s)
+
+    # create color scheme object
+    # color_scheme <- set_color_scheme(pts, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
+
+    mp <- ggplot(brdr) +
+            geom_tile(pts, mapping = aes_string(x = 'lon', y = 'lat',  fill = col), alpha = 0.8) +
+            geom_sf() +
+            map_zoom # +
+            #theme_GCAM(legend = legend) +
+            #labs(title = title, x = XLAB, y = YLAB)
+
+    return(mp)
+}
 
 #' Get auxiliary data for a named mapset.
 #'

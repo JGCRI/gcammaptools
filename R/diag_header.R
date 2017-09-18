@@ -161,16 +161,22 @@ logstop <- function() {
 #Default Projections (as PROJ4 strings)
 
 ### Predefined PROJ4 projection strings
+#' Proj4 string for default WGS84 (EPSG:4326) coordinate reference system
+#'
+#' String for specifying the default WGS84 projection in mapping functions
+#' Its value is \code{'+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs'}
+#' @export
+wgs84 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 #' Proj4 string for the Eckert III World projection
 #'
-#' String for specifying the Eckert III projection in mapping
-#' functions.  Its value is \code{'+proj=eck3'}
+#' String for specifying the Eckert III projection in mapping functions.
+#' Its value is \code{'+proj=eck3'}
 #' @export
 eck3 <- "+proj=eck3"
 #' Proj4 string for the Winkel-Tripel World projection
 #'
-#' String for specifying the Winkel-Tripel projection in mapping
-#' functions.  Its value is \code{'+proj=wintri'}
+#' String for specifying the Winkel-Tripel projection in mapping functions.
+#' Its value is \code{'+proj=wintri'}
 #' @export
 wintri <- "+proj=wintri"
 #' Proj4 string for the Robinson World projection
@@ -207,6 +213,14 @@ ch_aea <- "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ell
 #' to get an orthographic projection.
 #' @export
 ortho <- "orthographic"
+
+#' Projection string for orthographic projection over Africa
+#'
+#' String for specifying the orthographic projection over Africa.  You can pass
+#' this value to the \code{proj} argument of \code{\link{plot_GCAM}} to get the
+#' best result.
+#' @export
+af_ortho <- "+proj=ortho +lat_0=10 +lon_0=19 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
 
 #' Orientation vector for orthographic projection of Africa
 #'
@@ -267,7 +281,7 @@ EXTENT_AFRICA <- c(-20,60,-40,40)
 #' This vector can be used as the \code{extent} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-EXTENT_LA <- c(-120,-30,-60,32)
+EXTENT_LA <- c(-110, -40, -50, 30)
 
 
 # -----------------------------------------------------------------------------
@@ -317,7 +331,7 @@ gcam14_colors<- c("Africa" = "navajowhite3",
                   "Former Soviet Union" = "plum2")
 
 
-rgb255 <- function(r, g, b) {rgb(r,g,b, maxColorValue=255)}
+rgb255 <- function(r, g, b) {grDevices::rgb(r,g,b, maxColorValue=255)}
 #' Color palette for 32-region GCAM
 #'
 #' This palette should be used for plots by region (whether maps, line plots, or

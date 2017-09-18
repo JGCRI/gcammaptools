@@ -4,10 +4,10 @@
 \alias{plot_GCAM}
 \title{Primary GCAM mapping function. Can handle categorical or continuous data.}
 \usage{
-plot_GCAM(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
-  orientation = NULL, title = NULL, legend = F, colors = NULL,
+plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
+  extent = EXTENT_WORLD, title = "", legend = F, colors = NULL,
   qtitle = NULL, limits = NULL, colorfcn = NULL, nacolor = gray(0.75),
-  ...)
+  gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL, zoom = NULL, ...)
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (lat, long, id)
@@ -23,11 +23,10 @@ string, except for a few special cases.  There are also symbols defined for
 some frequently used projections (e.g. \code{\link{robin}} or
 \code{\link{na_aea}}).}
 
-\item{extent}{Bounding box for the display map}
+\item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
+available reference types hosted by http://spatialreference.org/}
 
-\item{orientation}{The orientation vector.  This is only needed for
-projections that don't use proj4.  Projections using proj4 encode this
-information in their proj4 string.}
+\item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to}
 
 \item{title}{Text to be displayed as the plot title}
 
@@ -51,6 +50,16 @@ argument will be ignored.}
 gray(0.75), which works well for thematic plots.  For plotting gridded data you
 probably want something a little more neutral, like gray(0.9).}
 
+\item{gcam_df}{A data frame generated from rgcam getQuery() that contains data
+that can be linked to the map geometry data using a unique identifier.}
+
+\item{gcam_key}{The field name containing a join identifier in the gcam_df data frame.}
+
+\item{mapdata_key}{The field name containing a join identifier in the mapdata.}
+
+\item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
+adjustments needed when fitting area to maps.}
+
 \item{...}{Other parameters passed on to \code{colorfcn}.}
 }
 \description{
@@ -60,10 +69,8 @@ results by region.  The functions \code{\link{parse_mi_output}} and
 \code{\link{process_batch_q}} produce suitable data frames.
 }
 \details{
-For specifying the projection you can use any Proj4 string.
-Projections specified this way are computed using
-\code{\link[ggalt]{coord_proj}}.  For convenience, this package
-defines the following proj4 strings:
+For specifying the projection you can use any Proj4 string.  For convenience,
+this package defines the following proj4 strings:
 \itemize{
   \item \code{\link{eck3}} - Eckert III
   \item \code{\link{wintri}} - Winkel-Tripel
@@ -103,21 +110,21 @@ frequently used map extents:
 ## Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32',
                                                'GCAM_32_wo_Taiwan_clean.geojson',
-                                               package='gcammaptools'))
-  map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region='GCAM_ID')
+                                               package = 'gcammaptools'))
+  map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region = 'GCAM_ID')
   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3,
-                 colorfcn=qualPalette)
+                 colorfcn = qualPalette)
 
   ## Plot oil consumption by region
   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',
-                          package='gcammaptools'))
-  prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel='a oil'))
-  prim_en<-addRegionID(prim_en, file.path(basedir.viz,
+                          package = 'gcammaptools'))
+  prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel = 'a oil'))
+  prim_en<-add_region_ID(prim_en, file.path(basedir.viz,
                                 system.file('extdata/rgn32', 'lookup.txt',
-                                            package='gcammaptools'),
+                                            package = 'gcammaptools'),
                                 system.file('extdata/rgn32',
-                                            'drop-regions.txt', package='gcammaptools')))
+                                            'drop-regions.txt', package = 'gcammaptools')))
   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'),
-                 title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
+                 title = 'Robinson World', qtitle = 'Oil Consumption, 2050', legend = T)
 }
 }

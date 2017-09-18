@@ -19,7 +19,7 @@
 #' filtering and aggregation in this function as well
 #'
 #' Once you have a table of results, you must add a region id column using
-#' \code{\link{addRegionID}}.  This function allows you to provide an alternate
+#' \code{\link{add_region_ID}}.  This function allows you to provide an alternate
 #' GCAM region mapping, along with optional subregional (i.e., state or
 #' province) mappings and a table of regions to drop.
 #'

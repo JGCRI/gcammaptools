@@ -16,7 +16,7 @@ one of the queries cointained in the GCAM output.}
 \item{scen}{The name of the scenario.  Partial matches are allowed.}
 
 \item{filters}{A named vector of filtering criteria in the form
-\code{c(header1=value1, header2=value2,...)}.  Headers are the
+\code{c(header1 = value1, header2 = value2,...)}.  Headers are the
 names of columns in the data frame.  If aggregating data, use the
 value 'Aggregate'.  (XXX: Needs further explanation!)}
 

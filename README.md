@@ -75,7 +75,7 @@ In operation it looks like this:
 tables <- parse_mi_output(fn = 'batch-output.csv')
 oil.cons <- process_batch_q(tables, 'primary_energy',
                                   'Reference', c(fuel='a oil'))
-oil.cons <- addRegionID(oil.cons, lookupfile=rgn32, drops=rgn32)
+oil.cons <- add_region_ID(oil.cons, lookupfile=rgn32, drops=rgn32)
 ```
 
 ### Plotting maps

@@ -94,7 +94,7 @@ parse_mi_output <- function(fn) {
         }
 
         printlog("Reading table", i, "in", fn, "( skip =", nskip, " nrows =", nrows, ")")
-        tempdata <- read.table(fn, row.names = NULL, skip = nskip, nrows = nrows, header = T,
+        tempdata <- utils::read.table(fn, row.names = NULL, skip = nskip, nrows = nrows, header = T,
                                sep = ",", comment.char = GCAM_DATA_COMMENT, stringsAsFactors = F)
 
         # Remove extra columns on end - this is often present in the MI output

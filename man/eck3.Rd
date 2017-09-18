@@ -9,7 +9,7 @@
 eck3
 }
 \description{
-String for specifying the Eckert III projection in mapping
-functions.  Its value is \code{'+proj=eck3'}
+String for specifying the Eckert III projection in mapping functions.
+Its value is \code{'+proj=eck3'}
 }
 \keyword{datasets}
