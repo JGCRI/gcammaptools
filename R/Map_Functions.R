@@ -352,16 +352,25 @@ spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datu
                                                c(b_ext[2], b_ext[3]),
                                                c(b_ext[1], b_ext[3])))))
 
-  # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj
+  # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj;
+  #  transform projection the that of the input mapdata
   bb <- sf::st_sf(a = 1, geometry = geom) %>%
-    sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+    sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
+    sf::st_transform(proj4s)
 
-  # transform projection to the projection of the input mapdata
-  bb <- sf::st_transform(bb, proj4s)
+  # Suppress Warning: In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) :
+  #   st_buffer does not correctly buffer longitude/latitude data, dist needs
+  #   to be in decimal degrees.
+  #   This warning occurs from buffering a feature that is in a geographic
+  #   coordinate system (lat/long) rather than a projection one.  This makes the
+  #   the buffer not be exact due to the distance being calculated in decimal
+  #   degrees rather than meters or kilometers. This is fine with us since we are
+  #   simply using buffer as a way of zooming to include or exclude portions of
+  #   the bounding extent in this call.
 
   # buffer if user desires
   if (!is.null(buff_dist)) {
-    return(sf::st_buffer(bb, buff_dist))
+    return(suppressWarnings({sf::st_buffer(bb, buff_dist)}))
   }
   else {
     return(bb)
