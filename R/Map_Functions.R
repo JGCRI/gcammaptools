@@ -111,19 +111,25 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 #' @param bbox Bounding box.
 #' @param extent Extent provided by the user or as default.
 #' @param col Field name with target information to map.
+#' @param agr_type Inherited attribute-geometry-relationship type from plot_GCAM function params.
 #' @param topo SF topologic function to define how the join will be conducted. Default
 #' is to join any feature that intersects the bounding box.
-filter_spatial <- function(mapdata, bbox, extent, col, topo = sf::st_intersects) {
-    # set NULL column to index
-    clm <- set_col(col)
+filter_spatial <- function(mapdata, bbox, extent, col, agr_type=agr_type, topo=sf::st_intersects) {
+  # set NULL column to index
+  clm <- set_col(col)
 
-    # if extent is not world conduct spatial join; else, return all
-    if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
-        return(suppressMessages(sf::st_join(mapdata[clm], bbox, left = FALSE)))
-    }
-    else {
-        return(sf::st_intersection(bbox, mapdata[clm])[clm])
-    }
+  # set attribute-geometry-relationship for input mapdata column and bounding box feature attribute
+  st_agr(mapdata) = agr_type
+  st_agr(bbox) = agr_type
+
+  # if extent is not world conduct spatial join; else, return all
+  if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
+    return(sf::st_join(mapdata[clm], bbox, left = FALSE))
+  }
+  # conducting the intersection here eliminates erroneous-filled poly generated at the global extent
+  else {
+    return(sf::st_intersection(bbox, mapdata[clm])[clm])
+  }
 }
 
 #' Join GCAM data with spatial data.
@@ -143,7 +149,7 @@ filter_spatial <- function(mapdata, bbox, extent, col, topo = sf::st_intersects)
 join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
 
     if (!is.null(gcam_df)) {
-        
+
         # Make sure join keys are valid
         if (is.null(mapdata_key) || !(mapdata_key %in% names(mapdata))) {
             stop("You must provide a valid key for joining the spatial data")
@@ -151,7 +157,7 @@ join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
         if (is.null(gcam_key) || !(gcam_key %in% names(gcam_df))) {
             stop("You must provide a valid key for joining the GCAM data")
         }
-        
+
         # Join the map data and gcam data using the keys provided
         # Note that using dplyr::left_join() here can cause the result to no
         # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343
@@ -175,7 +181,7 @@ load_shp <- function(file_pth) {
 
 #' Single import function for compatible data types.
 #'
-#' Imports available for sf objects, spatial data frames, ESRI Shapefiles, or 
+#' Imports available for sf objects, spatial data frames, ESRI Shapefiles, or
 #' GeoJSON files.
 #'
 #' @param obj Input full path string or object
@@ -761,6 +767,14 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' @param mapdata_key The field name containing a join identifier in the mapdata.
 #' @param zoom A distance to buffer the bounding box extent by for on-the-fly
 #' adjustments needed when fitting area to maps.
+#' @param agr_type Aggregate-geometry-relationship type.  Either 'constant' (default),
+#' 'aggregate', or 'identity' classified as follows:  [constant] a variable that has a
+#' constant value at every location over a spatial extent; examples: soil type, climate zone, land use.
+#' [aggregate]	values are summary values (aggregates) over the geometry, e.g. population density,
+#' dominant land use.  [identity]	values identify the geometry: they refer to (the whole of)
+#' this and only this geometry.
+#' See https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries
+#' for futher explanation.
 #' @param ... Other parameters passed on to \code{colorfcn}.
 #' @importFrom grDevices gray
 #' @examples \dontrun{
@@ -789,36 +803,36 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, extent = EXTENT_WORLD,
                       title = "", legend = F, colors = NULL, qtitle = NULL, limits = NULL,
                       colorfcn = NULL, nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
-                      mapdata_key = NULL, zoom = NULL, ...) {
+                      mapdata_key = NULL, zoom = NULL, agr_type='constant', ...) {
 
-    # get proj4 string that corresponds to user selection
-    p4s <- assign_prj4s(proj_type, proj)
+  # get proj4 string that corresponds to user selection
+  p4s <- assign_prj4s(proj_type, proj)
 
-    # create sf obj bounding box from extent and define native proj; apply buffer if needed
-    b <- spat_bb(b_ext = extent, buff_dist = zoom)
+  # create sf obj bounding box from extent and define native proj; apply buffer if needed
+  b <- spat_bb(b_ext = extent, buff_dist = zoom)
 
-    # import spatial data; join gcam data; get only features in bounds; transform projection
-    m <- import_mapdata(mapdata) %>%
-            join_gcam(mapdata_key, gcam_df, gcam_key) %>%
-            filter_spatial(bbox = b, extent = extent, col = col) %>%
-            reproject(prj4s = p4s)
+  # import spatial data; join gcam data; get only features in bounds; transform projection
+  m <- import_mapdata(mapdata) %>%
+    join_gcam(mapdata_key, gcam_df, gcam_key) %>%
+    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
+    reproject(prj4s = p4s)
 
-    # create object to control map zoom extent
-    map_zoom <- zoom_bounds(m, b, extent, p4s)
+  # create object to control map zoom extent
+  map_zoom <- zoom_bounds(m, b, extent, p4s)
 
-    # create color scheme object
-    color_scheme <- set_color_scheme(m, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
+  # create color scheme object
+  color_scheme <- set_color_scheme(m, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
 
-    # generate plot object
-    mp <- ggplot(m) +
-      ggplot2::geom_sf(aes_string(fill = col), color = LINE_COLOR) +
-      map_zoom +
-      color_scheme +
-      ggplot2::ggtitle(title) +
-      theme_GCAM(legend = legend) +
-      labs(title = title, x = XLAB, y = YLAB)
+  # generate plot object
+  mp <- ggplot(m) +
+    ggplot2::geom_sf(aes_string(fill = col), color = LINE_COLOR) +
+    map_zoom +
+    color_scheme +
+    ggplot2::ggtitle(title) +
+    theme_GCAM(legend = legend) +
+    labs(title = title, x = XLAB, y = YLAB)
 
-    return(mp)
+  return(mp)
 }
 
 #' Plot a gridded dataset over a base map
