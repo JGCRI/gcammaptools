@@ -122,9 +122,18 @@ filter_spatial <- function(mapdata, bbox, extent, col, agr_type=agr_type, topo=s
   st_agr(mapdata) = agr_type
   st_agr(bbox) = agr_type
 
+  # Message for st_join suppressed:  "although coordinates are longitude/latitude, it is
+  #  assumed that they are planar."  This comes from the input projection being a
+  #  geographic coordinate system and not a projected one when conducting topological
+  #  operations such as st_intersects used in the st_join.  if 'longlat' appears in the
+  #  proj string ("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") then this message
+  #  will present itself due to the operation being intersect according to the source code.
+  #  There is no option to quiet this.  We are getting the expected return from the
+  #  operation due to harmonizing the map and bounding box projection pre-join.
+
   # if extent is not world conduct spatial join; else, return all
   if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
-    return(sf::st_join(mapdata[clm], bbox, left = FALSE))
+    return(suppressMessages({sf::st_join(mapdata[clm], bbox, left = FALSE)}))
   }
   # conducting the intersection here eliminates erroneous-filled poly generated at the global extent
   else {
@@ -334,26 +343,29 @@ assign_prj4s <- function(proj_type, proj) {
 #' @param b_ext Numeric extent [xmin, xmax, ymin, ymax]
 #' @param buff_dist Distance in decimal degrees to expand the bounding box by in all directions.
 #' @param proj4s Either the proj4 string or EPSG number of the native projection of the bounds
-spat_bb <- function(b_ext, buff_dist, proj4s = wgs84) {
+spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") {
 
-    # convert bounding box to simple features polygon collection
-    geom <- sf::st_sfc(sf::st_polygon(list(rbind(c(b_ext[1], b_ext[3]),
-                                                 c(b_ext[1], b_ext[4]),
-                                                 c(b_ext[2], b_ext[4]),
-                                                 c(b_ext[2], b_ext[3]),
-                                                 c(b_ext[1], b_ext[3])))))
+  # convert bounding box to simple features polygon collection
+  geom <- sf::st_sfc(sf::st_polygon(list(rbind(c(b_ext[1], b_ext[3]),
+                                               c(b_ext[1], b_ext[4]),
+                                               c(b_ext[2], b_ext[4]),
+                                               c(b_ext[2], b_ext[3]),
+                                               c(b_ext[1], b_ext[3])))))
 
-    # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj
-    bb <- sf::st_sf(a = 1, geometry = geom) %>%
-               sf::st_set_crs(proj4s)
+  # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj
+  bb <- sf::st_sf(a = 1, geometry = geom) %>%
+    sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
-    # buffer if user desires
-    if (!is.null(buff_dist)) {
-        return(sf::st_buffer(bb, buff_dist))
-    }
-    else {
-        return(bb)
-    }
+  # transform projection to the projection of the input mapdata
+  bb <- sf::st_transform(bb, proj4s)
+
+  # buffer if user desires
+  if (!is.null(buff_dist)) {
+    return(sf::st_buffer(bb, buff_dist))
+  }
+  else {
+    return(bb)
+  }
 }
 
 #' Transform the projection of an sf object
@@ -815,7 +827,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
   p4s <- assign_prj4s(proj_type, proj)
 
   # create sf obj bounding box from extent and define native proj; apply buffer if needed
-  b <- spat_bb(b_ext = extent, buff_dist = zoom)
+  b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(mapdata))
 
   # import spatial data; join gcam data; get only features in bounds; transform projection
   m <- import_mapdata(mapdata) %>%
