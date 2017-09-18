@@ -114,13 +114,13 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 #' @param agr_type Inherited attribute-geometry-relationship type from plot_GCAM function params.
 #' @param topo SF topologic function to define how the join will be conducted. Default
 #' is to join any feature that intersects the bounding box.
-filter_spatial <- function(mapdata, bbox, extent, col, agr_type=agr_type, topo=sf::st_intersects) {
+filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo=sf::st_intersects) {
   # set NULL column to index
   clm <- set_col(col)
 
   # set attribute-geometry-relationship for input mapdata column and bounding box feature attribute
-  st_agr(mapdata) = agr_type
-  st_agr(bbox) = agr_type
+  sf::st_agr(mapdata) <- agr_type
+  sf::st_agr(bbox) <- agr_type
 
   # if extent is not world conduct spatial join; else, return all
   if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
@@ -349,7 +349,7 @@ spat_bb <- function(b_ext, buff_dist, proj4s = wgs84) {
 
     # buffer if user desires
     if (!is.null(buff_dist)) {
-        return(sf::st_buffer(bb, buff_dist))
+        return(suppressWarnings(sf::st_buffer(bb, buff_dist)))
     }
     else {
         return(bb)
@@ -893,7 +893,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent 
 
     # build sf object from plotdata
     pts <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(p4s))[col] %>%
-              filter_spatial(bbox = b, extent = extent, col = col) # %>%
+              filter_spatial(b, extent, col) # %>%
               #reproject(prj4s = p4s)
 
     # get coords and assign to sf object

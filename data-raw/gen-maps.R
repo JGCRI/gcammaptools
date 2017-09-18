@@ -4,15 +4,12 @@
 
 library('magrittr')
 
-load.geojson <- function(file, property) {
-    map <- rgdal::readOGR(file) %>% ggplot2::fortify(region=property)
-}
 
 gen.data <- function() {
-    map.rgn14 <- load.geojson('inst/extdata/rgn14/GCAM_region.geojson', 'GCAM_regio')
-    map.rgn32 <- load.geojson('inst/extdata/rgn32/GCAM_32_wo_Taiwan_clean.geojson', 'GCAM_ID')
-    map.basin235 <- load.geojson('inst/extdata/rgnbasin/Global235_CLM_05_dissolve.geojson', 'GCAM_ID_1')
-    map.chn <- load.geojson('inst/extdata/rgnchn/GCAM_China.geojson', 'GCAM_ID')
+    map.rgn14 <- import_mapdata('inst/extdata/rgn14/GCAM_region.geojson', 'GCAM_regio')
+    map.rgn32 <- import_mapdata('inst/extdata/rgn32/GCAM_32_wo_Taiwan_clean.geojson', 'GCAM_ID')
+    map.basin235 <- import_mapdata('inst/extdata/rgnbasin/Global235_CLM_05_dissolve.geojson', 'GCAM_ID_1')
+    map.chn <- import_mapdata('inst/extdata/rgnchn/GCAM_China.geojson', 'GCAM_ID')
     ## TODO:  add GCAM-USA dataset here
 
     devtools::use_data(map.rgn14, map.rgn32, map.basin235, map.chn, overwrite=TRUE)
