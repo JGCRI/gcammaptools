@@ -4,7 +4,8 @@
 \alias{filter_spatial}
 \title{Get features topologically associated with extent bounds.}
 \usage{
-filter_spatial(mapdata, bbox, extent, col, topo = sf::st_intersects)
+filter_spatial(mapdata, bbox, extent, col, agr_type = "constant",
+  topo = sf::st_intersects)
 }
 \arguments{
 \item{mapdata}{The sf object containing the spatial data.}
@@ -14,6 +15,8 @@ filter_spatial(mapdata, bbox, extent, col, topo = sf::st_intersects)
 \item{extent}{Extent provided by the user or as default.}
 
 \item{col}{Field name with target information to map.}
+
+\item{agr_type}{Inherited attribute-geometry-relationship type from plot_GCAM function params.}
 
 \item{topo}{SF topologic function to define how the join will be conducted. Default
 is to join any feature that intersects the bounding box.}

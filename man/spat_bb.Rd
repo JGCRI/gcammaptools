@@ -4,7 +4,8 @@
 \alias{spat_bb}
 \title{Create sf object from numeric extent.}
 \usage{
-spat_bb(b_ext, buff_dist, proj4s = wgs84)
+spat_bb(b_ext, buff_dist,
+  proj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 }
 \arguments{
 \item{b_ext}{Numeric extent [xmin, xmax, ymin, ymax]}

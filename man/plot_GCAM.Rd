@@ -7,7 +7,8 @@
 plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
   extent = EXTENT_WORLD, title = "", legend = F, colors = NULL,
   qtitle = NULL, limits = NULL, colorfcn = NULL, nacolor = gray(0.75),
-  gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL, zoom = NULL, ...)
+  gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL, zoom = NULL,
+  agr_type = "constant", ...)
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (lat, long, id)
@@ -59,6 +60,15 @@ that can be linked to the map geometry data using a unique identifier.}
 
 \item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
 adjustments needed when fitting area to maps.}
+
+\item{agr_type}{Aggregate-geometry-relationship type.  Either 'constant' (default),
+'aggregate', or 'identity' classified as follows:  [constant] a variable that has a
+constant value at every location over a spatial extent; examples: soil type, climate zone, land use.
+[aggregate]    values are summary values (aggregates) over the geometry, e.g. population density,
+dominant land use.  [identity]    values identify the geometry: they refer to (the whole of)
+this and only this geometry.
+See https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries
+for futher explanation.}
 
 \item{...}{Other parameters passed on to \code{colorfcn}.}
 }

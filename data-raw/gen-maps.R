@@ -6,10 +6,10 @@ library('magrittr')
 
 
 gen.data <- function() {
-    map.rgn14 <- import_mapdata('inst/extdata/rgn14/GCAM_region.geojson', 'GCAM_regio')
-    map.rgn32 <- import_mapdata('inst/extdata/rgn32/GCAM_32_wo_Taiwan_clean.geojson', 'GCAM_ID')
-    map.basin235 <- import_mapdata('inst/extdata/rgnbasin/Global235_CLM_05_dissolve.geojson', 'GCAM_ID_1')
-    map.chn <- import_mapdata('inst/extdata/rgnchn/GCAM_China.geojson', 'GCAM_ID')
+    load("inst/extdata/rgn14/map_reg14.rda")
+    load("inst/extdata/rgn32/map_reg32.rda")
+    load('inst/extdata/rgnbasin/map_basin235.rda')
+    load('inst/extdata/rgnchn/map_chn.rda')
     ## TODO:  add GCAM-USA dataset here
 
     devtools::use_data(map.rgn14, map.rgn32, map.basin235, map.chn, overwrite=TRUE)

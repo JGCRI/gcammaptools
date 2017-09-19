@@ -28,7 +28,7 @@ library('gcammaptools')
 
 ## Loading GCAM data
 
-You will need to load two types of data:  the map data (analogous to shape files in GIS tools) and the GCAM data.  The map data can be loaded from the package using `import_mapdata()`.  The first line of this example creates the file path to the map data, and the second loads it as a Simple Feature (sf) object.  This sf object is what you will pass to the plotting functions.  Most of the data you will need are provided as datasets in this package, but you can easily provide your own from a Shapefile or geojson file:
+You will need to load your GCAM data to plot, however you also have the option to load your own map data (as a Shapefile or geojson).  The map data can be loaded from the package using `import_mapdata()`.  The first line of this example creates the file path to the map data, and the second loads it as a Simple Feature (sf) object.  This sf object is what you will pass to the plotting functions.  Most of the data you will need are provided as datasets in this package, but you can easily provide your own from a Shapefile or geojson file:
 ```{r load.map}
 mapfile <- system.file("extdata/rgn32", "reg32_spart.shp", package = "gcammaptools")
 mapdata <- import_mapdata(mapfile)
@@ -63,7 +63,7 @@ At the end of this, `co2` is a data frame that has CO2 emissions by region for t
 
 This example just plots the map data frame with the GCAM region id.  Thus, you get each region colored according to a discrete color palette.
 ```{r mp1, fig.width=6, fig.height=3}
-plot_GCAM(mapfile, col = 'region_id', proj = eck3, colorfcn = qualPalette)
+plot_GCAM(mapdata, col = 'region_id', proj = eck3, colorfcn = qualPalette)
 ```
 
 ### Example 2: Robinson World Projection, Colored by Regional CO<sub>2</sub> Emissions
