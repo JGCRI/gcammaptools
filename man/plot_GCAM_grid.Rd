@@ -6,8 +6,7 @@
 \usage{
 plot_GCAM_grid(plotdata, col, map = map.rgn32, proj = robin,
   extent = EXTENT_WORLD, title = NULL, legend = TRUE,
-  nacolor = gray(0.9), alpha = 0.8, zoom = NULL, proj_type = NULL,
-  qtitle = "")
+  nacolor = gray(0.9), alpha = 0.8, zoom = NULL, proj_type = NULL)
 }
 \arguments{
 \item{plotdata}{Data frame with the coordinates and values to be plotted.}
@@ -40,8 +39,6 @@ adjustments needed when fitting area to maps.}
 
 \item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
 available reference types hosted by http://spatialreference.org/}
-
-\item{qtitle}{Text to be displayed as the legend title.}
 }
 \description{
 This function produces a map visualization of a gridded (i.e., values

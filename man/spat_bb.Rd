@@ -10,9 +10,11 @@ spat_bb(b_ext, buff_dist,
 \arguments{
 \item{b_ext}{Numeric extent [xmin, xmax, ymin, ymax]}
 
-\item{buff_dist}{Distance in decimal degrees to expand the bounding box by in all directions.}
+\item{buff_dist}{Distance in decimal degrees to expand the bounding box by in
+all directions.}
 
-\item{proj4s}{Either the proj4 string or EPSG number of the native projection of the bounds}
+\item{proj4s}{Either the proj4 string or EPSG number of the native projection
+of the bounds}
 }
 \description{
 Creates a sf object from numeric extent vector and applies a default WGS84

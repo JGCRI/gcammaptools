@@ -11,7 +11,8 @@ zoom_bounds(mapdata, bbox, extent, p4s)
 
 \item{bbox}{Bounding box.}
 
-\item{extent}{Extent provided by the user or as default.}
+\item{extent}{Extent provided by the user. If NULL defaults to the bounds of
+the data.}
 
 \item{p4s}{Proj4 string set by user}
 }

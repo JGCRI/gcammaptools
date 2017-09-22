@@ -173,12 +173,6 @@ wgs84 <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 #' Its value is \code{'+proj=eck3'}
 #' @export
 eck3 <- "+proj=eck3"
-#' Proj4 string for the Winkel-Tripel World projection
-#'
-#' String for specifying the Winkel-Tripel projection in mapping functions.
-#' Its value is \code{'+proj=wintri'}
-#' @export
-wintri <- "+proj=wintri"
 #' Proj4 string for the Robinson World projection
 #'
 #' String for specifying the Robinson projection in mapping functions.

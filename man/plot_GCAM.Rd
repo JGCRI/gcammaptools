@@ -83,7 +83,6 @@ For specifying the projection you can use any Proj4 string.  For convenience,
 this package defines the following proj4 strings:
 \itemize{
   \item \code{\link{eck3}} - Eckert III
-  \item \code{\link{wintri}} - Winkel-Tripel
   \item \code{\link{robin}} - Robinson
   \item \code{\link{na_aea}} - Albers equal area (North America)
   \item \code{\link{ch_aea}} - Albers equal area (China)

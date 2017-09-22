@@ -73,32 +73,33 @@ set_color_scheme <- function(mapdata, col, qtitle, nacolor, colors, colorfcn) {
 }
 
 #' Build the coordinate zooming bounds for ggplot object.
-#'
+#' 
 #' Either take the bounding box or the map coordinates depending on extent.
-#'
+#' 
 #' @param mapdata The sf object containing the spatial data.
 #' @param bbox Bounding box.
-#' @param extent Extent provided by the user or as default.
 #' @param p4s Proj4 string set by user
+#' @param extent Extent provided by the user. If NULL defaults to the bounds of
+#'   the data.
 zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 
-    if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
-
-        # reproject bounding box and get bounds
-        bx <- reproject(bbox, prj4s = p4s) %>%
-            sf::st_bbox()
-
-        return(ggplot2::coord_sf(crs = p4s, datum = sf::st_crs(p4s),
-                                 xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]),
-                                 expand = TRUE))
+    # if the extent given is NULL
+    if (isTRUE(all.equal(extent, EXTENT_WORLD))) {
+      
+      # use map bounds instead of bounding box for zoom
+      bx <- sf::st_bbox(mapdata)
+      
+      return(ggplot2::coord_sf(xlim = c(bx[1], bx[3]),
+                               ylim = c(bx[2], bx[4])))
     }
     else {
 
-        # use map bounds instead of bounding box for zoom
-        bx <- sf::st_bbox(mapdata)
-
-        return(ggplot2::coord_sf(xlim = c(bx[1], bx[3]),
-                                 ylim = c(bx[2], bx[4])))
+      bx <- reproject(bbox, prj4s = sf::st_crs(p4s)[[2]]) %>%
+        sf::st_bbox()
+      
+      return(ggplot2::coord_sf(crs = p4s, datum = sf::st_crs(p4s),
+                               xlim = c(bx[1], bx[3]), 
+                               ylim = c(bx[2], bx[4]), expand = TRUE))
     }
 }
 
@@ -180,6 +181,7 @@ join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
     }
     return(mapdata)
 }
+
 
 #' Import ESRI Shapefile or GeoJSON as sf object.
 #'
@@ -341,8 +343,10 @@ assign_prj4s <- function(proj_type, proj) {
 #' (EPSG:4326) coordinate reference system.
 #'
 #' @param b_ext Numeric extent [xmin, xmax, ymin, ymax]
-#' @param buff_dist Distance in decimal degrees to expand the bounding box by in all directions.
-#' @param proj4s Either the proj4 string or EPSG number of the native projection of the bounds
+#' @param buff_dist Distance in decimal degrees to expand the bounding box by in
+#'   all directions.
+#' @param proj4s Either the proj4 string or EPSG number of the native projection
+#'   of the bounds
 spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") {
 
   # convert bounding box to simple features polygon collection
@@ -387,11 +391,11 @@ spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datu
 reproject <- function(sdf, prj4s) {
 
     # if proj is native do not transform; else transform to user defined coord sys
-    if (prj4s == sf::st_crs(sdf)[2]) {
+    if (sf::st_crs(sdf)[[2]] == prj4s) {
         return(sdf)
     }
     else {
-        return(sf::st_transform(sdf, sf::st_crs(prj4s)))
+        return(sf::st_transform(sdf, prj4s))
     }
 }
 
@@ -729,7 +733,6 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' this package defines the following proj4 strings:
 #' \itemize{
 #'   \item \code{\link{eck3}} - Eckert III
-#'   \item \code{\link{wintri}} - Winkel-Tripel
 #'   \item \code{\link{robin}} - Robinson
 #'   \item \code{\link{na_aea}} - Albers equal area (North America)
 #'   \item \code{\link{ch_aea}} - Albers equal area (China)
@@ -832,6 +835,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
                       colorfcn = NULL, nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
                       mapdata_key = NULL, zoom = NULL, agr_type='constant', ...) {
 
+  tic('joining and filtering')
   # get proj4 string that corresponds to user selection
   p4s <- assign_prj4s(proj_type, proj)
 
@@ -841,9 +845,11 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
   # import spatial data; join gcam data; get only features in bounds; transform projection
   m <- import_mapdata(mapdata) %>%
     join_gcam(mapdata_key, gcam_df, gcam_key) %>%
-    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
-    reproject(prj4s = p4s)
+    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type)# %>%
+    #reproject(prj4s = p4s)
 
+  toc()
+  tic('zooming and plotting')
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
@@ -859,6 +865,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
     theme_GCAM(legend = legend) +
     labs(title = title, x = XLAB, y = YLAB)
 
+  toc()
   return(mp)
 }
 
@@ -902,46 +909,60 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
 #' 0 and 1, where 0 is completely transparent and 1 is completely opaque.
 #' @inheritParams plot_GCAM
 #' @export
-plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin, extent = EXTENT_WORLD,
-                           title = NULL, legend = TRUE, nacolor = gray(0.9),
-                           alpha = 0.8, zoom = NULL, proj_type = NULL, qtitle = "") {
+plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
+                           extent = EXTENT_WORLD, title = NULL, legend = TRUE,
+                           nacolor = gray(0.9), alpha = 0.8, zoom = NULL, 
+                           proj_type = NULL) {
 
+    tic("Building map")
+    
     # get proj4 string that corresponds to user selection
     p4s <- assign_prj4s(proj_type, proj)
+    
+    brdr <- import_mapdata(map)
+    
+    # if we are in a projected crs
+    if (!sf::st_is_longlat(sf::st_crs(p4s))) {
+      
+        # convert data into sf object and reproject into user specified crs
+        plotdata.sf <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(wgs84))[col] %>% 
+                       reproject(p4s)
+        
+        # get coords and assign to sf object
+        coords <- sf::st_coordinates(plotdata.sf)
+        plotdata.sf <- data.frame(lon = coords[,1], 
+                               lat = coords[,2], 
+                               plotdata.sf['value'])
+        
+        # Create Spatial Points Data Frame because that's what raster expects
+        spdf <- sp::SpatialPointsDataFrame(data.frame(lon = plotdata.sf$lon, 
+                                                      lat = plotdata.sf$lat), 
+                                           data.frame(value = plotdata.sf$value))
+        
+        e = raster::extent(spdf)
+
+        ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
+        nr <- plotdata['lat'] %>% unique() %>% nrow
+        
+        plotdata <- raster::raster(nrows = nr, ncols = floor( nr * ratio ), ext = e) %>%
+                    raster::rasterize(spdf, ., field = "value", fun = mean ) %>%
+                    raster::rasterToPoints() %>%
+                    data.frame() %>%
+                    magrittr::set_names(c("lon", "lat", "value"))
+    }
+    
 
     # create sf obj bounding box from extent and define native proj; apply buffer if needed
-    b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = p4s)
+    b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(map))
+    map_zoom <- zoom_bounds(brdr, b, extent, p4s)
 
-    # build sf object from plotdata
-    pts <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(p4s))[col] %>%
-              filter_spatial(b, extent, col) # %>%
-              #reproject(prj4s = p4s)
-
-    # get coords and assign to sf object
-    coords <- sf::st_coordinates(pts)
-    pts['lon'] <- coords[, 1]
-    pts['lat'] <- coords[, 2]
-
-    # only get borders intersecting the bounding box
-    b <- spat_bb(b_ext = extent, buff_dist = zoom)
-    brdr <- import_mapdata(map) %>%
-            filter_spatial(bbox = b, extent = extent, col = 1) #%>%
-            #reproject(prj4s = p4s) %>%
-            #sf::st_cast('MULTILINESTRING')
-
-    # create object to control map zoom extent
-    map_zoom <- zoom_bounds(pts, b, extent, p4s)
-
-    # create color scheme object
-    # color_scheme <- set_color_scheme(pts, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
-
-    mp <- ggplot(brdr) +
-            geom_tile(pts, mapping = aes_string(x = 'lon', y = 'lat',  fill = col), alpha = 0.8) +
-            geom_sf() +
-            map_zoom # +
-            #theme_GCAM(legend = legend) +
-            #labs(title = title, x = XLAB, y = YLAB)
-
+    mp <- ggplot() +
+            geom_sf(data = brdr) +
+            map_zoom +
+            geom_tile(data = plotdata, mapping = aes_string('lon', 'lat', fill = 'value'), alpha = 0.8) +
+            theme_GCAM(legend = legend)
+            ggtitle("map")
+    toc()
     return(mp)
 }
 
