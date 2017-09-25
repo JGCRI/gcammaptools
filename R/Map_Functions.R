@@ -85,10 +85,10 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 
     # if the extent given is NULL
     if (isTRUE(all.equal(extent, EXTENT_WORLD))) {
-      
+
       # use map bounds instead of bounding box for zoom
       bx <- sf::st_bbox(mapdata)
-      
+
       return(ggplot2::coord_sf(xlim = c(bx[1], bx[3]),
                                ylim = c(bx[2], bx[4])))
     }
@@ -922,7 +922,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     brdr <- import_mapdata(map)
     
     # if we are in a projected crs
-    if (!sf::st_is_longlat(sf::st_crs(p4s))) {
+    if (!sf::st_is_longlat(sf::st_crs(p4s)) && !isTRUE(all.equal(extent, EXTENT_WORLD))) {
       
         # convert data into sf object and reproject into user specified crs
         plotdata.sf <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(wgs84))[col] %>% 
@@ -944,6 +944,8 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
         nr <- plotdata['lat'] %>% unique() %>% nrow
         
+        # the reprojected data is no longer in a grid, so we need to raster it back into a
+        # grid so that geom_tile can work with it
         plotdata <- raster::raster(nrows = nr, ncols = floor( nr * ratio ), ext = e) %>%
                     raster::rasterize(spdf, ., field = "value", fun = mean ) %>%
                     raster::rasterToPoints() %>%
@@ -951,7 +953,6 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
                     magrittr::set_names(c("lon", "lat", "value"))
     }
     
-
     # create sf obj bounding box from extent and define native proj; apply buffer if needed
     b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(map))
     map_zoom <- zoom_bounds(brdr, b, extent, p4s)
