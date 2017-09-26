@@ -244,6 +244,54 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 }
 
 
+simplify_mapdata <- function(mapdata, min_area = 2.5) {
+  
+  if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
+    mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
+  
+  # filter out all polygons in the data under the minimum area
+  areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
+  filtermap <- which(areafilter) %>% 
+    mapdata[.,1]
+  
+  # if nothing was filtered just return original map
+  if (sf::st_geometry(filtermap) %>% length == sf::st_geometry(mapdata) %>% length)
+    return(mapdata)
+  
+  # When removing polygons we might be shifting the bounds of the map, which
+  # would make it off-center when plotting. To account for this, we put tiny
+  # polygons on the edges.
+  xmin <- sf::st_bbox(mapdata)[1] %>% round
+  xmax <- sf::st_bbox(mapdata)[3] %>% round
+  height <- 0.0001 # small enough so it's not visible on plot
+  
+  left_edge <- matrix(c(xmin, 0, xmin, height, xmin - height, 0, xmin, 0),
+                      byrow = TRUE, ncol = 2) %>%
+    list() %>%
+    sf::st_polygon()
+  
+  right_edge <- matrix(c(xmax, 0, xmax, height, xmax + height, 0, xmax, 0),
+                      byrow = TRUE, ncol = 2) %>%
+    list() %>%
+    sf::st_polygon()
+  
+  # create geometry with the two edges
+  edges <- sf::st_sfc(left_edge, right_edge, crs = sf::st_crs(mapdata))
+  
+  # create data for edges
+  borders <- data.frame(c(0, 0))
+  
+  # combine data and geometry
+  sf::st_geometry(borders) <- edges
+  
+  # name data column the same as in original map, so that the two can combine
+  colnames(borders)[1] <- colnames(mapdata)[1]
+  
+  # add new polygons to filtered map and return
+  return(rbind(filtermap, borders))
+}
+
+
 #' Retrieve proj4 projection string.
 #'
 #' Provides a lookup list for default proj4 strings utilized.  Users
@@ -846,26 +894,25 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
   m <- import_mapdata(mapdata) %>%
     join_gcam(mapdata_key, gcam_df, gcam_key) %>%
     filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type)# %>%
-    #reproject(prj4s = p4s)
 
-  toc()
-  tic('zooming and plotting')
+  m <- reproject(m, prj4s = p4s)
+
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
   # create color scheme object
   color_scheme <- set_color_scheme(m, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
 
+  toc()
   # generate plot object
-  mp <- ggplot(m) +
-    ggplot2::geom_sf(aes_string(fill = col), color = LINE_COLOR) +
+  mp <- ggplot() +
+    ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
     map_zoom +
     color_scheme +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend) +
     labs(title = title, x = XLAB, y = YLAB)
 
-  toc()
   return(mp)
 }
 
@@ -914,15 +961,19 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
                            nacolor = gray(0.9), alpha = 0.8, zoom = NULL, 
                            proj_type = NULL) {
 
-    tic("Building map")
+    
+  tic("Building map")
     
     # get proj4 string that corresponds to user selection
-    p4s <- assign_prj4s(proj_type, proj)
+    # p4s <- assign_prj4s(proj_type, proj)
     
-    brdr <- import_mapdata(map)
+    # brdr <- import_mapdata(map)  %>%
+        # filter_spatial(bbox = b, extent = extent, col = col) %>%
+        # reproject(prj4s = p4s)
     
     # if we are in a projected crs
-    if (!sf::st_is_longlat(sf::st_crs(p4s)) && !isTRUE(all.equal(extent, EXTENT_WORLD))) {
+    if (!sf::st_is_longlat(proj)) {
+        p4s <- assign_prj4s(proj_type, proj)
       
         # convert data into sf object and reproject into user specified crs
         plotdata.sf <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(wgs84))[col] %>% 
@@ -954,17 +1005,21 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     }
     
     # create sf obj bounding box from extent and define native proj; apply buffer if needed
-    b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(map))
-    map_zoom <- zoom_bounds(brdr, b, extent, p4s)
+    # b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(map))
+    # map_zoom <- zoom_bounds(brdr, b, extent, p4s)
+    
+  #SEND IN COLOR SCHEME
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent, zoom = zoom)
+    grid <- geom_tile(data = plotdata, mapping = aes_string('lon', 'lat', fill = 'value'), alpha = 0.8)
 
-    mp <- ggplot() +
-            geom_sf(data = brdr) +
-            map_zoom +
-            geom_tile(data = plotdata, mapping = aes_string('lon', 'lat', fill = 'value'), alpha = 0.8) +
-            theme_GCAM(legend = legend)
-            ggtitle("map")
+    # mp <- ggplot() +
+    #         geom_sf(data = brdr) +
+    #         map_zoom +
+    #         geom_tile(data = plotdata, mapping = aes_string('lon', 'lat', fill = 'value'), alpha = 0.8) +
+    #         theme_GCAM(legend = legend)
+    #         ggtitle("map")
     toc()
-    return(mp)
+    return(mp + grid)
 }
 
 #' Get auxiliary data for a named mapset.
