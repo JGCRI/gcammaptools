@@ -827,15 +827,6 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' @param title Text to be displayed as the plot title
 #' @param legend Boolean flag: True = display map legend; False = do not display
 #' legend
-#' @param colors Vector of colors to use in the color scale.  If NULL, then
-#' default color scheme will be used.
-#' @param qtitle Text to be displayed as the legend title.
-#' @param limits Vector of two values giving the range of the color bar in the
-#' legend.  c(min,max)
-#' @param colorfcn If plotting categorical data, the function used to generate a
-#' colorscheme when colors are not provided (if NULL, use qualPalette).  If
-#' \code{colors} is specified, or if the data being plotted is numerical, this
-#' argument will be ignored.
 #' @param nacolor Color to use for polygons with no data.  The default is
 #' gray(0.75), which works well for thematic plots.  For plotting gridded data you
 #' probably want something a little more neutral, like gray(0.9).
@@ -883,7 +874,6 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
                       colorfcn = NULL, nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
                       mapdata_key = NULL, zoom = NULL, agr_type='constant', ...) {
 
-  tic('joining and filtering')
   # get proj4 string that corresponds to user selection
   p4s <- assign_prj4s(proj_type, proj)
 
@@ -900,18 +890,12 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
-  # create color scheme object
-  color_scheme <- set_color_scheme(m, col = col, qtitle = qtitle, nacolor = nacolor, colors = colors, colorfcn = colorfcn)
-
-  toc()
   # generate plot object
   mp <- ggplot() +
     ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
     map_zoom +
-    color_scheme +
     ggplot2::ggtitle(title) +
-    theme_GCAM(legend = legend) +
-    labs(title = title, x = XLAB, y = YLAB)
+    theme_GCAM(legend = legend)
 
   return(mp)
 }
@@ -957,19 +941,10 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
-                           extent = EXTENT_WORLD, title = NULL, legend = TRUE,
-                           nacolor = gray(0.9), alpha = 0.8, zoom = NULL, 
-                           proj_type = NULL) {
+                           proj_type = NULL, extent = EXTENT_WORLD, 
+                           title = NULL, legend = TRUE, alpha = 0.8,
+                           zoom = NULL) {
 
-    
-  tic("Building map")
-    
-    # get proj4 string that corresponds to user selection
-    # p4s <- assign_prj4s(proj_type, proj)
-    
-    # brdr <- import_mapdata(map)  %>%
-        # filter_spatial(bbox = b, extent = extent, col = col) %>%
-        # reproject(prj4s = p4s)
     
     # if we are in a projected crs
     if (!sf::st_is_longlat(proj)) {
@@ -983,7 +958,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         coords <- sf::st_coordinates(plotdata.sf)
         plotdata.sf <- data.frame(lon = coords[,1], 
                                lat = coords[,2], 
-                               plotdata.sf['value'])
+                               plotdata.sf[col])
         
         # Create Spatial Points Data Frame because that's what raster expects
         spdf <- sp::SpatialPointsDataFrame(data.frame(lon = plotdata.sf$lon, 
@@ -998,27 +973,16 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         # the reprojected data is no longer in a grid, so we need to raster it back into a
         # grid so that geom_tile can work with it
         plotdata <- raster::raster(nrows = nr, ncols = floor( nr * ratio ), ext = e) %>%
-                    raster::rasterize(spdf, ., field = "value", fun = mean ) %>%
+                    raster::rasterize(spdf, ., field = col, fun = mean ) %>%
                     raster::rasterToPoints() %>%
                     data.frame() %>%
-                    magrittr::set_names(c("lon", "lat", "value"))
+                    magrittr::set_names(c("lon", "lat", col))
     }
     
-    # create sf obj bounding box from extent and define native proj; apply buffer if needed
-    # b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(map))
-    # map_zoom <- zoom_bounds(brdr, b, extent, p4s)
-    
-  #SEND IN COLOR SCHEME
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent, zoom = zoom)
-    grid <- geom_tile(data = plotdata, mapping = aes_string('lon', 'lat', fill = 'value'), alpha = 0.8)
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent,
+                    title = title, legend = legend, qtitle = col, zoom = zoom)
+    grid <- geom_raster(data = plotdata, mapping = aes_string('lon', 'lat', fill = col), alpha = alpha)
 
-    # mp <- ggplot() +
-    #         geom_sf(data = brdr) +
-    #         map_zoom +
-    #         geom_tile(data = plotdata, mapping = aes_string('lon', 'lat', fill = 'value'), alpha = 0.8) +
-    #         theme_GCAM(legend = legend)
-    #         ggtitle("map")
-    toc()
     return(mp + grid)
 }
 

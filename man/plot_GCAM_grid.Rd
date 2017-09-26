@@ -5,8 +5,8 @@
 \title{Plot a gridded dataset over a base map}
 \usage{
 plot_GCAM_grid(plotdata, col, map = map.rgn32, proj = robin,
-  extent = EXTENT_WORLD, title = NULL, legend = TRUE,
-  nacolor = gray(0.9), alpha = 0.8, zoom = NULL, proj_type = NULL)
+  proj_type = NULL, extent = EXTENT_WORLD, title = NULL, legend = TRUE,
+  alpha = 0.8, zoom = NULL)
 }
 \arguments{
 \item{plotdata}{Data frame with the coordinates and values to be plotted.}
@@ -20,6 +20,9 @@ string, except for a few special cases.  There are also symbols defined for
 some frequently used projections (e.g. \code{\link{robin}} or
 \code{\link{na_aea}}).}
 
+\item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
+available reference types hosted by http://spatialreference.org/}
+
 \item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to}
 
 \item{title}{Text to be displayed as the plot title}
@@ -27,18 +30,11 @@ some frequently used projections (e.g. \code{\link{robin}} or
 \item{legend}{Boolean flag: True = display map legend; False = do not display
 legend}
 
-\item{nacolor}{Color to use for polygons with no data.  The default is
-gray(0.75), which works well for thematic plots.  For plotting gridded data you
-probably want something a little more neutral, like gray(0.9).}
-
 \item{alpha}{Transparency of the grid data layer.  Given as a number between
 0 and 1, where 0 is completely transparent and 1 is completely opaque.}
 
 \item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
 adjustments needed when fitting area to maps.}
-
-\item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
-available reference types hosted by http://spatialreference.org/}
 }
 \description{
 This function produces a map visualization of a gridded (i.e., values

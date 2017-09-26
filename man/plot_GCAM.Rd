@@ -34,19 +34,6 @@ available reference types hosted by http://spatialreference.org/}
 \item{legend}{Boolean flag: True = display map legend; False = do not display
 legend}
 
-\item{colors}{Vector of colors to use in the color scale.  If NULL, then
-default color scheme will be used.}
-
-\item{qtitle}{Text to be displayed as the legend title.}
-
-\item{limits}{Vector of two values giving the range of the color bar in the
-legend.  c(min,max)}
-
-\item{colorfcn}{If plotting categorical data, the function used to generate a
-colorscheme when colors are not provided (if NULL, use qualPalette).  If
-\code{colors} is specified, or if the data being plotted is numerical, this
-argument will be ignored.}
-
 \item{nacolor}{Color to use for polygons with no data.  The default is
 gray(0.75), which works well for thematic plots.  For plotting gridded data you
 probably want something a little more neutral, like gray(0.9).}
