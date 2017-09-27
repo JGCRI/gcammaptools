@@ -243,7 +243,16 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
     }
 }
 
-
+#' Reduce number of polygons and size of polygons for map Shapefiles
+#'
+#' Takes a sf object representation of a map and simplifys it by removing
+#' polygons that are under a certain size. 
+#'
+#' @param mapdata sf object containing polygons or multipolygons to simplify.
+#' @param min_area Minimum area of polygons to keep.
+#' @param degree_tolerance Tolerance parameter for simplifying polygons.
+#' @return The simplified sf object.
+#' @export
 simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
   
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
