@@ -34,7 +34,7 @@ province) mappings and a table of regions to drop.
 \section{Mapping GCAM data}{
 
 
-To map GCAM data, you will need a spatial data frame with your region
+To map GCAM data, you will need a simple feature collection with your region
 boundaries.  The package provides the following commonly-used base maps:
 \itemize{
   \item \code{\link{map.rgn14}}: 14 region map used prior to GCAM 4.0.

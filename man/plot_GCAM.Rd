@@ -5,8 +5,7 @@
 \title{Primary GCAM mapping function. Can handle categorical or continuous data.}
 \usage{
 plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
-  extent = EXTENT_WORLD, title = "", legend = F, colors = NULL,
-  qtitle = NULL, limits = NULL, colorfcn = NULL, nacolor = gray(0.75),
+  extent = EXTENT_WORLD, title = "", legend = F, nacolor = gray(0.75),
   gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL, zoom = NULL,
   agr_type = "constant", ...)
 }

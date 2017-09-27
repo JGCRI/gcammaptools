@@ -73,9 +73,9 @@ set_color_scheme <- function(mapdata, col, qtitle, nacolor, colors, colorfcn) {
 }
 
 #' Build the coordinate zooming bounds for ggplot object.
-#' 
+#'
 #' Either take the bounding box or the map coordinates depending on extent.
-#' 
+#'
 #' @param mapdata The sf object containing the spatial data.
 #' @param bbox Bounding box.
 #' @param p4s Proj4 string set by user
@@ -96,9 +96,9 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 
       bx <- reproject(bbox, prj4s = sf::st_crs(p4s)[[2]]) %>%
         sf::st_bbox()
-      
+
       return(ggplot2::coord_sf(crs = p4s, datum = sf::st_crs(p4s),
-                               xlim = c(bx[1], bx[3]), 
+                               xlim = c(bx[1], bx[3]),
                                ylim = c(bx[2], bx[4]), expand = TRUE))
     }
 }
@@ -246,7 +246,7 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #' Reduce number of polygons and size of polygons for map Shapefiles
 #'
 #' Takes a sf object representation of a map and simplifys it by removing
-#' polygons that are under a certain size. 
+#' polygons that are under a certain size.
 #'
 #' @param mapdata sf object containing polygons or multipolygons to simplify.
 #' @param min_area Minimum area of polygons to keep.
@@ -254,50 +254,50 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #' @return The simplified sf object.
 #' @export
 simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
-  
+
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
     mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
-  
+
   # filter out all polygons in the data under the minimum area
   areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
-  filtermap <- which(areafilter) %>% 
+  filtermap <- which(areafilter) %>%
     mapdata[.,1]
-  
+
   filtermap <- suppressWarnings({sf::st_simplify(filtermap, preserveTopology=TRUE, dTolerance=degree_tolerance)})
-  
+
   # if nothing was filtered just return original map
   if (sf::st_geometry(filtermap) %>% length == sf::st_geometry(mapdata) %>% length)
     return(mapdata)
-  
+
   # When removing polygons we might be shifting the bounds of the map, which
   # would make it off-center when plotting. To account for this, we put tiny
   # polygons on the edges.
   xmin <- sf::st_bbox(mapdata)[1] %>% round
   xmax <- sf::st_bbox(mapdata)[3] %>% round
   height <- 0.0001 # small enough so it's not visible on plot
-  
+
   left_edge <- matrix(c(xmin, 0, xmin, height, xmin - height, 0, xmin, 0),
                       byrow = TRUE, ncol = 2) %>%
     list() %>%
     sf::st_polygon()
-  
+
   right_edge <- matrix(c(xmax, 0, xmax, height, xmax + height, 0, xmax, 0),
                       byrow = TRUE, ncol = 2) %>%
     list() %>%
     sf::st_polygon()
-  
+
   # create geometry with the two edges
   edges <- sf::st_sfc(left_edge, right_edge, crs = sf::st_crs(mapdata))
-  
+
   # create data for edges
   borders <- data.frame(c(0, 0))
-  
+
   # combine data and geometry
   sf::st_geometry(borders) <- edges
-  
+
   # name data column the same as in original map, so that the two can combine
   colnames(borders)[1] <- colnames(mapdata)[1]
-  
+
   # add new polygons to filtered map and return
   return(rbind(borders, filtermap))
 }
@@ -414,13 +414,13 @@ spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datu
                                                c(b_ext[2], b_ext[4]),
                                                c(b_ext[2], b_ext[3]),
                                                c(b_ext[1], b_ext[3])))))
-  
+
   # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj;
   # transform projection to that of the input mapdata
   bb <- sf::st_sf(a = 1, geometry = geom) %>%
-    sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>% 
+    sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
     sf::st_transform(proj4s)
-    
+
   # Suppress Warning: In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) :
   #   st_buffer does not correctly buffer longitude/latitude data, dist needs
   #   to be in decimal degrees.
@@ -880,9 +880,9 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #'                  title = 'Robinson World', qtitle = 'Oil Consumption, 2050', legend = T)
 #' }
 #' @export
-plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, extent = EXTENT_WORLD,
-                      title = "", legend = F, colors = NULL, qtitle = NULL, limits = NULL,
-                      colorfcn = NULL, nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
+plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
+                      extent = EXTENT_WORLD, title = "", legend = F,
+                      nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
                       mapdata_key = NULL, zoom = NULL, agr_type='constant', ...) {
 
   # get proj4 string that corresponds to user selection
@@ -890,13 +890,12 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
 
   # create sf obj bounding box from extent and define native proj; apply buffer if needed
   b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(mapdata))
-  
+
     # import spatial data; join gcam data; get only features in bounds; transform projection
   m <- import_mapdata(mapdata) %>%
     join_gcam(mapdata_key, gcam_df, gcam_key) %>%
-    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type)# %>%
-
-  m <- reproject(m, prj4s = p4s)
+    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
+    reproject(prj4s = p4s)
 
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
@@ -952,35 +951,37 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
-                           proj_type = NULL, extent = EXTENT_WORLD, 
+                           proj_type = NULL, extent = EXTENT_WORLD,
                            title = NULL, legend = TRUE, alpha = 0.8,
                            zoom = NULL) {
 
-    
     # if we are in a projected crs
     if (!sf::st_is_longlat(proj)) {
         p4s <- assign_prj4s(proj_type, proj)
-      
+
         # convert data into sf object and reproject into user specified crs
-        plotdata.sf <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(wgs84))[col] %>% 
+        plotdata.sf <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(wgs84))[col] %>%
                        reproject(p4s)
-        
+
         # get coords and assign to sf object
         coords <- sf::st_coordinates(plotdata.sf)
-        plotdata.sf <- data.frame(lon = coords[,1], 
-                               lat = coords[,2], 
-                               plotdata.sf[col])
+        plotdata.sf <- data.frame(lon = coords[,1],
+                                  lat = coords[,2],
+                                  plotdata.sf[col])
         
+        # remove points that could not be reprojected
+        plotdata.sf <- plotdata.sf[complete.cases(plotdata.sf[1]),]
+
         # Create Spatial Points Data Frame because that's what raster expects
-        spdf <- sp::SpatialPointsDataFrame(data.frame(lon = plotdata.sf$lon, 
-                                                      lat = plotdata.sf$lat), 
+        spdf <- sp::SpatialPointsDataFrame(data.frame(lon = plotdata.sf$lon,
+                                                      lat = plotdata.sf$lat),
                                            data.frame(value = plotdata.sf$value))
-        
+
         e = raster::extent(spdf)
 
         ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
         nr <- plotdata['lat'] %>% unique() %>% nrow
-        
+
         # the reprojected data is no longer in a grid, so we need to raster it back into a
         # grid so that geom_tile can work with it
         plotdata <- raster::raster(nrows = nr, ncols = floor( nr * ratio ), ext = e) %>%
@@ -989,7 +990,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
                     data.frame() %>%
                     magrittr::set_names(c("lon", "lat", col))
     }
-    
+
     mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent,
                     title = title, legend = legend, qtitle = col, zoom = zoom)
     grid <- geom_raster(data = plotdata, mapping = aes_string('lon', 'lat', fill = col), alpha = alpha)

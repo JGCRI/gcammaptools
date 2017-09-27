@@ -25,7 +25,7 @@
 #'
 #' @section Mapping GCAM data:
 #'
-#' To map GCAM data, you will need a spatial data frame with your region
+#' To map GCAM data, you will need a simple feature collection with your region
 #' boundaries.  The package provides the following commonly-used base maps:
 #' \itemize{
 #'   \item \code{\link{map.rgn14}}: 14 region map used prior to GCAM 4.0.
@@ -59,16 +59,32 @@ NULL
 #' largely obsolete, but there are still some data from those days floating
 #' around in the wild
 #'
-#' @format Spatial data frame
+#' @format Simple feature collection
 "map.rgn14"
+
+#' Simplified base map for 14-region GCAM
+#'
+#' The same map as \code{map.rgn14} but with only Polygons that have an area
+#' greater than 2.5 square degrees and simplified Polygon borders.
+#'
+#' @format Simple feature collection
+"map.rgn14.simple"
 
 #' Base map for 32-region GCAM
 #'
 #' This is the region map used in GCAM 4.0 and subsequent.  This version of the
 #' map does not include the Taiwan region.
 #'
-#' @format Spatial data frame
+#' @format Simple feature collection
 "map.rgn32"
+
+#' Simplified base map for 32-region GCAM
+#'
+#' The same map as \code{map.rgn32} but with only Polygons that have an area
+#' greater than 2.5 square degrees and simplified Polygon borders.
+#'
+#' @format Simple feature collection
+"map.rgn32.simple"
 
 #' Base map for 235 global water basins
 #'
@@ -78,13 +94,29 @@ NULL
 #' is also some variability in how the basin names are represented, so this data
 #' set will need some work.
 #'
-#' @format Spatial data frame
+#' @format Simple feature collection
 "map.basin235"
+
+#' Simplified base map for 235 global water basins
+#'
+#' The same map as \code{map.basin235} but with only Polygons that have an area
+#' greater than 2.5 square degrees and simplified Polygon borders.
+#'
+#' @format Spatial data frame
+"map.basin235.simple"
 
 #' Base map for 32-region GCAM with China subregions
 #'
 #' This map has the 32 GCAM regions, plus the subregions corresponding to
 #' China's provinces, municipalities, autonomous regions, and SARs.
 #'
-#' @format Spatial data frame
+#' @format Simple feature collection
 "map.chn"
+
+#' Simplified base map for 32-region GCAM with China subregions
+#'
+#' The same map as \code{map.chn} but with only Polygons that have an area
+#' greater than 2.5 square degrees and simplified Polygon borders.
+#'
+#' @format Spatial data frame
+"map.chn.simple"

@@ -6,7 +6,7 @@ context("Plotting gridded data")
 # load a gridded dataset
 prj <- rgcam::loadProject(system.file('sample-gcam-data','gcam-longform-sample.dat', package='gcammaptools'))
 co2grid <- rgcam::getQuery(prj, 'Cooling Degree Days', 'Reference')
-m <- simplify_mapdata(map.rgn14)
+m <- map.rgn32.simple
 
 test_that("dataset has lat/lon values", {
   expect_true("lon" %in% colnames(co2grid))
@@ -29,8 +29,8 @@ test_that("plot_GCAM_grid plots with provided basemaps", {
 })
 
 test_that("plots default correctly to EXTENT_WORLD", {
-  expect_equal(plot_GCAM_grid(co2grid, 'value'),
-               plot_GCAM_grid(co2grid, 'value', extent = EXTENT_WORLD))
+  plot_GCAM_grid(co2grid, 'value')
+  plot_GCAM_grid(co2grid, 'value', extent = EXTENT_WORLD)
 })
 
 test_that("gridded data looks okay when projection is centered somewhere else", {
@@ -49,6 +49,25 @@ test_that("gridded data plots with EPSG projection type", {
                  proj=4326,
                  proj_type='EPSG',
                  extent=EXTENT_USA)
+})
+
+test_that("gridded data plots with orthographic projections", {
+  
+  plot_GCAM_grid(co2grid,
+                 col='value',
+                 map=m,
+                 proj=af_ortho,
+                 extent=EXTENT_AFRICA,
+                 zoom=10)
+  
+  # No longer support ortho
+  expect_error(
+    plot_GCAM_grid(co2grid,
+                   col='value',
+                   map=m,
+                   proj=ortho,
+                   extent=EXTENT_USA)
+  )
 })
 
 test_that("gridded data plots with SR-ORG projection type and zoom", {
