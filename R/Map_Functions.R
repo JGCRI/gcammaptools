@@ -244,7 +244,7 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 }
 
 
-simplify_mapdata <- function(mapdata, min_area = 2.5) {
+simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
   
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
     mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
@@ -253,6 +253,8 @@ simplify_mapdata <- function(mapdata, min_area = 2.5) {
   areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
   filtermap <- which(areafilter) %>% 
     mapdata[.,1]
+  
+  filtermap <- suppressWarnings({sf::st_simplify(filtermap, preserveTopology=TRUE, dTolerance=degree_tolerance)})
   
   # if nothing was filtered just return original map
   if (sf::st_geometry(filtermap) %>% length == sf::st_geometry(mapdata) %>% length)
@@ -288,7 +290,7 @@ simplify_mapdata <- function(mapdata, min_area = 2.5) {
   colnames(borders)[1] <- colnames(mapdata)[1]
   
   # add new polygons to filtered map and return
-  return(rbind(filtermap, borders))
+  return(rbind(borders, filtermap))
 }
 
 
@@ -403,13 +405,13 @@ spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datu
                                                c(b_ext[2], b_ext[4]),
                                                c(b_ext[2], b_ext[3]),
                                                c(b_ext[1], b_ext[3])))))
-
+  
   # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj;
   # transform projection to that of the input mapdata
   bb <- sf::st_sf(a = 1, geometry = geom) %>%
-    sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
+    sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>% 
     sf::st_transform(proj4s)
-
+    
   # Suppress Warning: In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) :
   #   st_buffer does not correctly buffer longitude/latitude data, dist needs
   #   to be in decimal degrees.
@@ -879,8 +881,8 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL, exten
 
   # create sf obj bounding box from extent and define native proj; apply buffer if needed
   b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(mapdata))
-
-  # import spatial data; join gcam data; get only features in bounds; transform projection
+  
+    # import spatial data; join gcam data; get only features in bounds; transform projection
   m <- import_mapdata(mapdata) %>%
     join_gcam(mapdata_key, gcam_df, gcam_key) %>%
     filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type)# %>%

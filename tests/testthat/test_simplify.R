@@ -29,6 +29,12 @@ test_that("simplified map has fewer polygons", {
   expect_true(length(sf::st_geometry(map.rgn32)) > 
               length(sf::st_geometry(simplify_mapdata(map.rgn32))))
   
+  # map.basin235 is built up of Multipolygons, which get split out into
+  # Polygons before simplifying, meaning there will be more of them
+  # unless doing high levels of simplification
   expect_true(length(sf::st_geometry(map.basin235)) > 
+              length(sf::st_geometry(simplify_mapdata(map.basin235, min_area = 10))))
+  
+  expect_false(length(sf::st_geometry(map.basin235)) > 
               length(sf::st_geometry(simplify_mapdata(map.basin235))))
 })
