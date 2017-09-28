@@ -51,7 +51,7 @@ test_that("gridded data plots with EPSG projection type", {
                  extent=EXTENT_USA)
 })
 
-test_that("gridded data plots with orthographic projections", {
+test_that("gridded data plots with orthographic projection", {
   
   plot_GCAM_grid(co2grid,
                  col='value',
@@ -59,15 +59,6 @@ test_that("gridded data plots with orthographic projections", {
                  proj=af_ortho,
                  extent=EXTENT_AFRICA,
                  zoom=10)
-  
-  # No longer support ortho
-  expect_error(
-    plot_GCAM_grid(co2grid,
-                   col='value',
-                   map=m,
-                   proj=ortho,
-                   extent=EXTENT_USA)
-  )
 })
 
 test_that("gridded data plots with SR-ORG projection type and zoom", {

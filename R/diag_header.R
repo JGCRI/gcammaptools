@@ -196,50 +196,13 @@ na_aea <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ell
 #' +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83'}
 #' @export
 ch_aea <- "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84"
-
-### Special cases using coord_map
-
-#' Projection string for orthographic projections
-#'
-#' Unlike most projections, the orthographic does not use proj4; it
-#' uses the \code{\link[ggplot2]{coord_map}} function.  You can pass
-#' this value to the \code{proj} argument of \code{\link{plot_GCAM}}
-#' to get an orthographic projection.
-#' @export
-ortho <- "orthographic"
-
-#' Projection string for orthographic projection over Africa
+#' Proj4 string for orthographic projection over Africa
 #'
 #' String for specifying the orthographic projection over Africa.  You can pass
 #' this value to the \code{proj} argument of \code{\link{plot_GCAM}} to get the
 #' best result.
 #' @export
 af_ortho <- "+proj=ortho +lat_0=10 +lon_0=19 +x_0=0 +y_0=0 +ellps=WGS84 +units=m +no_defs"
-
-#' Orientation vector for orthographic projection of Africa
-#'
-#' This vector can be used as the \code{orientation} argument to
-#' \code{\link{plot_GCAM}}.
-#' @export
-ORIENTATION_AFRICA <- c(0,15,0)
-#' Orientation vector for orthographic projection of the Latin America superregion
-#'
-#' This vector can be used as the \code{orientation} argument to
-#' \code{\link{plot_GCAM}}.
-#' @export
-ORIENTATION_LA <- c(-10,-70,0)
-#' Orientation vector for orthographic projection of the south pole
-#'
-#' This vector can be used as the \code{orientation} argument to
-#' \code{\link{plot_GCAM}}.
-#' @export
-ORIENTATION_SPOLE <- c(-90,0,0)
-#' Orientation vector for orthographic projection of the north pole
-#'
-#' This vector can be used as the \code{orientation} argument to
-#' \code{\link{plot_GCAM}}.
-#' @export
-ORIENTATION_NPOLE <- c(90,0,0)
 
 
 # -----------------------------------------------------------------------------
