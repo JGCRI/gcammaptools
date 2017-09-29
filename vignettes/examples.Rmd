@@ -37,13 +37,10 @@ This gives you the same structure you would have gotten with `data(map.rgn32)`. 
 
 The best way to import GCAM results is to use the `rgcam` package, which will create a project file with your data in it.  You can load the project data with `rgcam::loadProject()` and retrieve tables for individual queries using `rgcam::getQuery()`.  However, if you aren't using `rgcam`, you can start with any data frame that has a `region` column and one or more data columns.
 
-```{r load_data}
+```{r load_data, warning=FALSE}
 library('rgcam')
-### Load the example scenario data.  We wrap it in suppressMessages() to hide an unhelpful notice
-### about the file name of the sample data having changed.
-suppressMessages({
-    prj <- loadProject(system.file('sample-gcam-data','gcam-longform-sample.dat', package='gcammaptools'))
-})
+### Load the example scenario data.
+prj <- loadProject(system.file('sample-gcam-data','gcam-longform-sample.dat', package='gcammaptools'))
 listScenarios(prj)
 listQueries(prj, 'Reference')
 ```
