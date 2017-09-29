@@ -33,15 +33,6 @@ test_that("plots default correctly to EXTENT_WORLD", {
   plot_GCAM_grid(co2grid, 'value', extent = EXTENT_WORLD)
 })
 
-test_that("gridded data looks okay when projection is centered somewhere else", {
-  plot_GCAM_grid(co2grid,
-            col='value',
-            map=m,
-            proj=na_aea,
-            extent=EXTENT_USA,
-            zoom=15)
-})
-
 test_that("gridded data plots with EPSG projection type", {
   plot_GCAM_grid(co2grid,
                  col='value',
@@ -52,13 +43,16 @@ test_that("gridded data plots with EPSG projection type", {
 })
 
 test_that("gridded data plots with orthographic projection", {
-  
-  plot_GCAM_grid(co2grid,
-                 col='value',
-                 map=m,
-                 proj=af_ortho,
-                 extent=EXTENT_AFRICA,
-                 zoom=10)
+  # I expect that this fails because raster::projectRaster attempts to
+  # transform into a projection where the data is invalid
+  expect_error(
+    plot_GCAM_grid(co2grid,
+                   col='value',
+                   map=m,
+                   proj=af_ortho,
+                   extent=EXTENT_AFRICA,
+                   zoom=10)
+  )
 })
 
 test_that("gridded data plots with SR-ORG projection type and zoom", {
@@ -71,7 +65,7 @@ test_that("gridded data plots with SR-ORG projection type and zoom", {
                  zoom=8)
 })
   
-test_that("gridded data plots with robinson projection", {
+test_that("gridded data plots with Robinson projection", {
   plot_GCAM_grid(co2grid,
                  col='value',
                  map=m,
@@ -86,11 +80,22 @@ test_that("gridded data plots with eck3 projection", {
 })
 
 
-test_that("grid plots even with incorrectly matched projections and extents", {
-  plot_GCAM_grid(co2grid,
-            col="value",
-            proj=na_aea,
-            extent=EXTENT_WORLD)
+test_that("grid plots and warns with incorrectly matched projections and extents", {
+  expect_warning(plot_GCAM_grid(co2grid,
+                                col="value",
+                                proj=na_aea,
+                                extent=EXTENT_WORLD)
+  )
+})
+
+
+test_that("grid plots and warns when projection is centered somewhere else", {
+  expect_warning(plot_GCAM_grid(co2grid,
+                                col='value',
+                                map=m,
+                                proj=na_aea,
+                                extent=EXTENT_USA)
+  )
 })
 
 

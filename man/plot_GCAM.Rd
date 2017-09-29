@@ -7,7 +7,7 @@
 plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
   extent = EXTENT_WORLD, title = "", legend = F, nacolor = gray(0.75),
   gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL, zoom = NULL,
-  agr_type = "constant", ...)
+  agr_type = "constant")
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (lat, long, id)
@@ -55,8 +55,6 @@ dominant land use.  [identity]    values identify the geometry: they refer to (t
 this and only this geometry.
 See https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries
 for futher explanation.}
-
-\item{...}{Other parameters passed on to \code{colorfcn}.}
 }
 \description{
 This function produces a map visualization of a data set containing
@@ -68,23 +66,12 @@ results by region.  The functions \code{\link{parse_mi_output}} and
 For specifying the projection you can use any Proj4 string.  For convenience,
 this package defines the following proj4 strings:
 \itemize{
+  \item \code{\link{wgs84}} - WGS84 (EPSG:4326)
   \item \code{\link{eck3}} - Eckert III
   \item \code{\link{robin}} - Robinson
   \item \code{\link{na_aea}} - Albers equal area (North America)
   \item \code{\link{ch_aea}} - Albers equal area (China)
-}
-
-For orthographic projections, we compute the projection using the
-\code{\link[ggplot2]{coord_map}} function.  To get this projection
-pass the \code{\link{ortho}} symbol as the \code{proj} argument.
-You will then need to pass a vector in the \code{orientation}
-argument.  We have defined the following fequently used orientation
-vectors:
-\itemize{
-  \item \code{\link{ORIENTATION_AFRICA}} - Africa
-  \item \code{\link{ORIENTATION_LA}} - Latin America
-  \item \code{\link{ORIENTATION_SPOLE}} - South Pole
-  \item \code{\link{ORIENTATION_NPOLE}} - North Pole
+  \item \code{\link{af_ortho}} - Orthographic projection over Africa
 }
 
 The \code{extent} argument gives the bounding box of the area to be

@@ -204,7 +204,6 @@ load_shp <- function(file_pth) {
 #' @param obj Input full path string or object
 #' @param fld Field name to use as identifier
 #' @param prj4s Proj4 string for projection (default WGS84)
-#' @export
 import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 
     # get object class
@@ -791,24 +790,14 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' For specifying the projection you can use any Proj4 string.  For convenience,
 #' this package defines the following proj4 strings:
 #' \itemize{
+#'   \item \code{\link{wgs84}} - WGS84 (EPSG:4326)
 #'   \item \code{\link{eck3}} - Eckert III
 #'   \item \code{\link{robin}} - Robinson
 #'   \item \code{\link{na_aea}} - Albers equal area (North America)
 #'   \item \code{\link{ch_aea}} - Albers equal area (China)
+#'   \item \code{\link{af_ortho}} - Orthographic projection over Africa
 #' }
 #'
-#' For orthographic projections, we compute the projection using the
-#' \code{\link[ggplot2]{coord_map}} function.  To get this projection
-#' pass the \code{\link{ortho}} symbol as the \code{proj} argument.
-#' You will then need to pass a vector in the \code{orientation}
-#' argument.  We have defined the following fequently used orientation
-#' vectors:
-#' \itemize{
-#'   \item \code{\link{ORIENTATION_AFRICA}} - Africa
-#'   \item \code{\link{ORIENTATION_LA}} - Latin America
-#'   \item \code{\link{ORIENTATION_SPOLE}} - South Pole
-#'   \item \code{\link{ORIENTATION_NPOLE}} - North Pole
-#' }
 #'
 #' The \code{extent} argument gives the bounding box of the area to be
 #' plotted.  Its format is \code{c(lon.min, lon.max, lat.min,
@@ -855,7 +844,6 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 #' this and only this geometry.
 #' See https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries
 #' for futher explanation.
-#' @param ... Other parameters passed on to \code{colorfcn}.
 #' @importFrom grDevices gray
 #' @examples \dontrun{
 #'
@@ -883,17 +871,18 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
                       nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
-                      mapdata_key = NULL, zoom = NULL, agr_type='constant', ...) {
+                      mapdata_key = NULL, zoom = NULL, agr_type='constant') {
 
   # get proj4 string that corresponds to user selection
   p4s <- assign_prj4s(proj_type, proj)
 
+  m <- import_mapdata(mapdata)
+
   # create sf obj bounding box from extent and define native proj; apply buffer if needed
-  b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(mapdata))
+  b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(m))
 
     # import spatial data; join gcam data; get only features in bounds; transform projection
-  m <- import_mapdata(mapdata) %>%
-    join_gcam(mapdata_key, gcam_df, gcam_key) %>%
+  m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
     filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
     reproject(prj4s = p4s)
 
@@ -911,89 +900,91 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 }
 
 #' Plot a gridded dataset over a base map
-#'
-#' This function produces a map visualization of a gridded (i.e., values
+#' 
+#' This function produces a map visualization of a gridded (i.e., values 
 #' specified by latitude and longitude) data set.  The data will be plotted over
 #' the base map supplied
-#'
-#' The plot data should be in the form of a table of latitude (lat), longitude
-#' (lon), and data values.  The name of the data column is given as an argument
+#' 
+#' The plot data should be in the form of a table of latitude (lat), longitude 
+#' (lon), and data values.  The name of the data column is given as an argument 
 #' to the function, so you can have, for example, latitude and longitude columns
 #' followed by columns for time slices.  Columns besides the coordinate and data
 #' columns will be ignored.
-#'
-#' Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping,
-#' legend title, etc. as arguments to this function.  The ggplot2 way of
+#' 
+#' Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping, 
+#' legend title, etc. as arguments to this function.  The ggplot2 way of 
 #' specifying this information is way more flexible. Eventually \code{plot_GCAM}
 #' will use this method too.
-#'
-#' To customize your color mapping, use one of
-#' \itemize{
-#'   \item \code{\link[ggplot2]{scale_fill_gradient}} : A gradient from one
-#' color to another.
-#'   \item \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging gradient
-#' from one color to another, passing through white in the middle.  You can set
-#' the data value that gets assigned to white with the \code{midpoint}
-#' argument.
-#'  \item \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth gradient
-#' between an arbitrary selection of colors.
-#' }
-#' If you choose to display a legend for the color mapping, you will have to
-#' give it a title using the \code{title} argument to any of the above gradient
-#' functions.  You have to do this even if you want a legend with no title at
-#' all.  Use an empty string in that case.
-#'
+#' 
+#' To customize your color mapping, use one of \itemize{ \item
+#' \code{\link[ggplot2]{scale_fill_gradient}} : A gradient from one color to
+#' another. \item \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging
+#' gradient from one color to another, passing through white in the middle.  You
+#' can set the data value that gets assigned to white with the \code{midpoint} 
+#' argument. \item \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth
+#' gradient between an arbitrary selection of colors. } If you choose to display
+#' a legend for the color mapping, you will have to give it a title using the
+#' \code{title} argument to any of the above gradient functions.  You have to do
+#' this even if you want a legend with no title at all.  Use an empty string in
+#' that case.
+#' 
 #' @param plotdata Data frame with the coordinates and values to be plotted.
+#'   Must contain 'lat' and 'lon' columns.
 #' @param col Name of the column holding the data values to plot
 #' @param map Base map data.  Default is GCAM 32-region
-#' @param alpha Transparency of the grid data layer.  Given as a number between
-#' 0 and 1, where 0 is completely transparent and 1 is completely opaque.
+#' @param alpha Transparency of the grid data layer.  Given as a number between 
+#'   0 and 1, where 0 is completely transparent and 1 is completely opaque.
+#' @param ... Other parameters passed on to \code{plot_GCAM}.
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
-                           proj_type = NULL, extent = EXTENT_WORLD,
-                           title = NULL, legend = TRUE, alpha = 0.8,
-                           zoom = NULL) {
+                           proj_type = NULL, alpha = 0.8, ...) {
+
+    # make sure data has valid gridded data
+    if (!('lon' %in% names(plotdata) && 'lat' %in% names(plotdata)))
+        stop("gridded data must have a 'lon' column and a 'lat' column")
 
     # if we are in a projected crs
     if (!sf::st_is_longlat(proj)) {
         p4s <- assign_prj4s(proj_type, proj)
 
-        # convert data into sf object and reproject into user specified crs
-        plotdata.sf <- sf::st_as_sf(plotdata, coords = c("lon", "lat"), crs = sf::st_crs(wgs84))[col] %>%
-                       reproject(p4s)
+        # make SpatialPointsDataFrame because raster can't work with sf objects
+        crs <- sp::CRS(wgs84)
+        spdf <- sp::SpatialPointsDataFrame(plotdata[c('lon', 'lat')], plotdata[col], proj4string = crs)
 
-        # get coords and assign to sf object
-        coords <- sf::st_coordinates(plotdata.sf)
-        plotdata.sf <- data.frame(lon = coords[,1],
-                                  lat = coords[,2],
-                                  plotdata.sf[col])
-        
-        # remove points that could not be reprojected
-        plotdata.sf <- plotdata.sf[complete.cases(plotdata.sf[1]),]
-
-        # Create Spatial Points Data Frame because that's what raster expects
-        spdf <- sp::SpatialPointsDataFrame(data.frame(lon = plotdata.sf$lon,
-                                                      lat = plotdata.sf$lat),
-                                           data.frame(value = plotdata.sf$value))
-
+        # get raster extent and use that to calculate the x to y ratio
         e = raster::extent(spdf)
-
         ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
+        
+        # set the number of rows in the raster equal to the number of unique
+        # latitudes in the original data
         nr <- plotdata['lat'] %>% unique() %>% nrow
 
-        # the reprojected data is no longer in a grid, so we need to raster it back into a
-        # grid so that geom_tile can work with it
-        plotdata <- raster::raster(nrows = nr, ncols = floor( nr * ratio ), ext = e) %>%
-                    raster::rasterize(spdf, ., field = col, fun = mean ) %>%
-                    raster::rasterToPoints() %>%
-                    data.frame() %>%
+        # build a raster that fits the data
+        plotraster <- raster::raster(nrows = nr, ncols = floor( nr * ratio ),
+                                     ext = e, crs = crs)
+  
+        # 1. Add SpatialPointsDataFrame values to raster cells
+        # 2. Reproject the raster into the user-defined crs
+        # 3. Turn the raster back into points in the new crs
+        # 4. Convert back to a data.frame with the correct names so that 
+        #    geom_raster can plot it
+        plotdata <- spdf %>% 
+                    raster::rasterize(plotraster, field = col, fun = mean) %>% 
+                    raster::projectRaster(crs=p4s) %>% 
+                    raster::rasterToPoints() %>% 
+                    data.frame() %>% 
                     magrittr::set_names(c("lon", "lat", col))
+        
     }
 
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent,
-                    title = title, legend = legend, qtitle = col, zoom = zoom)
-    grid <- geom_raster(data = plotdata, mapping = aes_string('lon', 'lat', fill = col), alpha = alpha)
+    # get the base map using plot_GCAM
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, ...)
+    
+    # add the gridded data to the base map
+    grid <- geom_raster(data = plotdata, 
+                        mapping = aes_string('lon', 'lat', fill = col),
+                        alpha = alpha)
 
     return(mp + grid)
 }

@@ -5,11 +5,11 @@
 \title{Plot a gridded dataset over a base map}
 \usage{
 plot_GCAM_grid(plotdata, col, map = map.rgn32, proj = robin,
-  proj_type = NULL, extent = EXTENT_WORLD, title = NULL, legend = TRUE,
-  alpha = 0.8, zoom = NULL)
+  proj_type = NULL, alpha = 0.8, ...)
 }
 \arguments{
-\item{plotdata}{Data frame with the coordinates and values to be plotted.}
+\item{plotdata}{Data frame with the coordinates and values to be plotted.
+Must contain 'lat' and 'lon' columns.}
 
 \item{col}{Name of the column holding the data values to plot}
 
@@ -23,49 +23,37 @@ some frequently used projections (e.g. \code{\link{robin}} or
 \item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
 available reference types hosted by http://spatialreference.org/}
 
-\item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to}
-
-\item{title}{Text to be displayed as the plot title}
-
-\item{legend}{Boolean flag: True = display map legend; False = do not display
-legend}
-
-\item{alpha}{Transparency of the grid data layer.  Given as a number between
+\item{alpha}{Transparency of the grid data layer.  Given as a number between 
 0 and 1, where 0 is completely transparent and 1 is completely opaque.}
 
-\item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
-adjustments needed when fitting area to maps.}
+\item{...}{Other parameters passed on to \code{plot_GCAM}.}
 }
 \description{
-This function produces a map visualization of a gridded (i.e., values
+This function produces a map visualization of a gridded (i.e., values 
 specified by latitude and longitude) data set.  The data will be plotted over
 the base map supplied
 }
 \details{
-The plot data should be in the form of a table of latitude (lat), longitude
-(lon), and data values.  The name of the data column is given as an argument
+The plot data should be in the form of a table of latitude (lat), longitude 
+(lon), and data values.  The name of the data column is given as an argument 
 to the function, so you can have, for example, latitude and longitude columns
 followed by columns for time slices.  Columns besides the coordinate and data
 columns will be ignored.
 
-Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping,
-legend title, etc. as arguments to this function.  The ggplot2 way of
+Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping, 
+legend title, etc. as arguments to this function.  The ggplot2 way of 
 specifying this information is way more flexible. Eventually \code{plot_GCAM}
 will use this method too.
 
-To customize your color mapping, use one of
-\itemize{
-  \item \code{\link[ggplot2]{scale_fill_gradient}} : A gradient from one
-color to another.
-  \item \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging gradient
-from one color to another, passing through white in the middle.  You can set
-the data value that gets assigned to white with the \code{midpoint}
-argument.
- \item \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth gradient
-between an arbitrary selection of colors.
-}
-If you choose to display a legend for the color mapping, you will have to
-give it a title using the \code{title} argument to any of the above gradient
-functions.  You have to do this even if you want a legend with no title at
-all.  Use an empty string in that case.
+To customize your color mapping, use one of \itemize{ \item
+\code{\link[ggplot2]{scale_fill_gradient}} : A gradient from one color to
+another. \item \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging
+gradient from one color to another, passing through white in the middle.  You
+can set the data value that gets assigned to white with the \code{midpoint} 
+argument. \item \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth
+gradient between an arbitrary selection of colors. } If you choose to display
+a legend for the color mapping, you will have to give it a title using the
+\code{title} argument to any of the above gradient functions.  You have to do
+this even if you want a legend with no title at all.  Use an empty string in
+that case.
 }
