@@ -30,5 +30,5 @@ Suggests: knitr,
     testthat
 VignetteBuilder: knitr
 Remotes:
-    tidyverse/ggplot2
+    tidyverse/ggplot2,
     JGCRI/rgcam

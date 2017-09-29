@@ -29,7 +29,7 @@ library('gcammaptools')
 ## Loading GCAM data
 You will need to load your own GCAM data to work with.  The best way to import GCAM results is to use the `rgcam` package, which will create a project file with your data in it.  You can then load the project data with `rgcam::loadProject()` and retrieve tables for individual queries using `rgcam::getQuery()`.  However, if you aren't using `rgcam`, you can start with any data frame that has a `region` column and one or more data columns.
 
-```{r load_data}
+```{r load_data, warning=FALSE}
 library('rgcam')
 ### Load the example scenario data.
 prj <- loadProject(system.file('sample-gcam-data','gcam-longform-sample.dat', package='gcammaptools'))
