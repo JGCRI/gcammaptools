@@ -254,6 +254,8 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #' @export
 simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
 
+  . <- NULL                             # silence package notes for NSE.
+
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
     mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
 
@@ -900,39 +902,39 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 }
 
 #' Plot a gridded dataset over a base map
-#' 
-#' This function produces a map visualization of a gridded (i.e., values 
+#'
+#' This function produces a map visualization of a gridded (i.e., values
 #' specified by latitude and longitude) data set.  The data will be plotted over
 #' the base map supplied
-#' 
-#' The plot data should be in the form of a table of latitude (lat), longitude 
-#' (lon), and data values.  The name of the data column is given as an argument 
+#'
+#' The plot data should be in the form of a table of latitude (lat), longitude
+#' (lon), and data values.  The name of the data column is given as an argument
 #' to the function, so you can have, for example, latitude and longitude columns
 #' followed by columns for time slices.  Columns besides the coordinate and data
 #' columns will be ignored.
-#' 
-#' Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping, 
-#' legend title, etc. as arguments to this function.  The ggplot2 way of 
+#'
+#' Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping,
+#' legend title, etc. as arguments to this function.  The ggplot2 way of
 #' specifying this information is way more flexible. Eventually \code{plot_GCAM}
 #' will use this method too.
-#' 
+#'
 #' To customize your color mapping, use one of \itemize{ \item
 #' \code{\link[ggplot2]{scale_fill_gradient}} : A gradient from one color to
 #' another. \item \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging
 #' gradient from one color to another, passing through white in the middle.  You
-#' can set the data value that gets assigned to white with the \code{midpoint} 
+#' can set the data value that gets assigned to white with the \code{midpoint}
 #' argument. \item \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth
 #' gradient between an arbitrary selection of colors. } If you choose to display
 #' a legend for the color mapping, you will have to give it a title using the
 #' \code{title} argument to any of the above gradient functions.  You have to do
 #' this even if you want a legend with no title at all.  Use an empty string in
 #' that case.
-#' 
+#'
 #' @param plotdata Data frame with the coordinates and values to be plotted.
 #'   Must contain 'lat' and 'lon' columns.
 #' @param col Name of the column holding the data values to plot
 #' @param map Base map data.  Default is GCAM 32-region
-#' @param alpha Transparency of the grid data layer.  Given as a number between 
+#' @param alpha Transparency of the grid data layer.  Given as a number between
 #'   0 and 1, where 0 is completely transparent and 1 is completely opaque.
 #' @param ... Other parameters passed on to \code{plot_GCAM}.
 #' @inheritParams plot_GCAM
@@ -955,7 +957,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         # get raster extent and use that to calculate the x to y ratio
         e = raster::extent(spdf)
         ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
-        
+
         # set the number of rows in the raster equal to the number of unique
         # latitudes in the original data
         nr <- plotdata['lat'] %>% unique() %>% nrow
@@ -963,26 +965,26 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         # build a raster that fits the data
         plotraster <- raster::raster(nrows = nr, ncols = floor( nr * ratio ),
                                      ext = e, crs = crs)
-  
+
         # 1. Add SpatialPointsDataFrame values to raster cells
         # 2. Reproject the raster into the user-defined crs
         # 3. Turn the raster back into points in the new crs
-        # 4. Convert back to a data.frame with the correct names so that 
+        # 4. Convert back to a data.frame with the correct names so that
         #    geom_raster can plot it
-        plotdata <- spdf %>% 
-                    raster::rasterize(plotraster, field = col, fun = mean) %>% 
-                    raster::projectRaster(crs=p4s) %>% 
-                    raster::rasterToPoints() %>% 
-                    data.frame() %>% 
+        plotdata <- spdf %>%
+                    raster::rasterize(plotraster, field = col, fun = mean) %>%
+                    raster::projectRaster(crs=p4s) %>%
+                    raster::rasterToPoints() %>%
+                    data.frame() %>%
                     magrittr::set_names(c("lon", "lat", col))
-        
+
     }
 
     # get the base map using plot_GCAM
     mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, ...)
-    
+
     # add the gridded data to the base map
-    grid <- geom_raster(data = plotdata, 
+    grid <- geom_raster(data = plotdata,
                         mapping = aes_string('lon', 'lat', fill = col),
                         alpha = alpha)
 
