@@ -50,72 +50,80 @@ co2[1:10, ]
 The data is in long form, so using `dplyr::filter()`  helps to get just the observations for the year you want to plot.  At the end of this, `co2` is a data frame that has CO<sub>2</sub> emissions by region for the year 2050.  This structure can now be passed to `plot_GCAM()` to plot maps, as shown in the examples below.
 
 ## Loading map data
-When using `plot_GCAM()` for your GCAM data, you also need to provide the map data that it should be associated with.  Generally you should use one of the map datasets included in the package whenever possible because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32 regions plus China subregions map. Additionally, each of those datasets has a simplified version which is helpful if you need faster plotting or less cluttered maps. 
+When using `plot_GCAM()` for your GCAM data, you also need to provide the map data that it should be associated with.  You should use one of the map datasets included in the package whenever possible, because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32 regions plus China subregions map. Additionally, each of those datasets has a simplified version such as `map.rgn32.simple`, which is helpful for faster plotting or less cluttered maps. 
 ```{r plot.default, fig.width=3.48, fig.show='hold'}
 plot_GCAM(map.rgn32, title="Full 32-Region map")
 plot_GCAM(map.rgn32.simple, title="Simplified 32-Region map")
 ```
 
-It is possible, however, for you to load your own map data as well.  The map data can be loaded by the package given the file path.  Your map data can be in any of the following formats: sf objects, spatial data frames, ESRI Shapefiles, or GeoJSON files.  You can either pass the name of the file (the full file path) to `plot_GCAM()` or load the data yourself first.
+It is possible, however, for you to load your own map data as well.  The map data can be loaded by `gcammaptools` given the file path.  Your map data can be in any of the following formats: sf objects, spatial data frames, ESRI Shapefiles, or GeoJSON files.  You can either pass the file path to `plot_GCAM()` or load the data yourself first.
 ```{r load.map, fig.width=4, fig.align='center'}
 mapdata <- system.file("extdata/rgn32", "reg32_spart.shp", package = "gcammaptools")
 mapdata
 plot_GCAM(mapdata)
 ```
-This gives you the same structure you would have gotten with `data(map.rgn32)`.  Generally you should use one of the map datasets included in the package whenever possible because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32 regions plus China subregions map.
 
-## Sample Maps generated with plot_GCAM and GCAM32 shapefile
+## Sample maps
 
 ### Example 1: Eckert III World Projection, Colored by Region
 
-This example just plots the map data frame with the GCAM region id.  Thus, you get each region colored according to a discrete color palette.
-```{r mp1, fig.width=6, fig.height=3}
-plot_GCAM(mapdata, col = 'region_id', proj = eck3)
+This example just plots the map data frame with the GCAM region name.  Applying a scale with `gcam32_colors`, the default GCAM colors, you get each region colored according to a discrete color palette.  For older data that uses 14-region GCAM, you can use the palette `gcam14_colors`.
+```{r mp1, fig.width=6, fig.height=3, fig.align='center'}
+plot_GCAM(map.rgn32.simple, col = 'region_name', proj = eck3) +
+    ggplot2::scale_fill_manual(values = gcam32_colors, na.value=gray(0.75))
 ```
 
 ### Example 2: Robinson World Projection, Colored by Regional CO<sub>2</sub> Emissions
-In this example we plot the map data frame of CO<sub>2</sub> that we created above.  We select the column for model year 2050.  We also use a different projection than we used above.
-```{r mp2, fig.width=6, fig.height=4}
-plot_GCAM(mapdata, col='value', proj=robin, extent=EXTENT_WORLD,
-          title="Robinson World", legend=T, gcam_df=co2, gcam_key='id',
-          mapdata_key="region_id")
+In this example we plot the CO<sub>2</sub> data frame that we created above.  We select the column `value`, which is the name of the column that contains the data.  It is also necessary to specify how to join the this data frame to the map data, which is why we created the column `id` with the function `add_region_id()` above.
+```{r mp2, fig.width=6, fig.height=4, fig.align='center'}
+plot_GCAM(map.rgn32.simple, col='value', proj=robin, title="Robinson World", legend=T,
+          gcam_df=co2, gcam_key='id', mapdata_key="region_id") + 
+    ggplot2::scale_fill_gradientn(colors = c("white", "red"),
+                                  na.value = gray(0.75), name="CO2 Emissions (MTC)")
 ```
 
 ### Example 3: U.S. Projection (Albers Equal Area)
 This map is specialized to the continental USA.  The `na_aea` and `EXTENT_USA` symbols are defined for convenience, but you can use any valid proj4 string (see `proj4::project` for how these strings are constructed) for the projection.  The extent should be the bounding box of the plot area in the form `c(lon.min, lon.max, lat.min, lat.max)`.
 ```{r mp3, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(mapdata, col='region_id', proj=na_aea, extent=EXTENT_USA, 
-          title="USA Albers Equal-Area", legend=T)
+plot_GCAM(map.rgn32, col='region_id', proj=na_aea, extent=EXTENT_USA, 
+          title="USA Albers Equal-Area")
 ```
 
 ### Example 4: China Projection (Albers Equal Area)
 A map of China.  Although the projection is once again the Albers equal area projection, we have to have a different projection string because the string includes some information about the parallels the projection is based on.
 ```{r mp4, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(mapdata, proj=ch_aea, extent=EXTENT_CHINA, title="China Albers Equal-Area")
+plot_GCAM(map.rgn32, proj=ch_aea, extent=EXTENT_CHINA, title="China Albers Equal-Area")
 ```
 
 ### Example 5: Africa Projection (Orthographic)
 For superregions with a long north-south extent, the orthographic projection gives the best result. We have predefined one for Africa, but you can find others defined by proj4 strings from spatialreference.org as shown in the following example. Although the extent parameter is the best way to specify the view you want, you can fine-tune the final plot by adjusting the zoom.
 ```{r mp5, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(mapdata, col='region_id', proj=af_ortho,
-          extent=EXTENT_AFRICA, zoom=10)
+plot_GCAM(map.rgn32, col='region_name', proj=af_ortho, extent=EXTENT_AFRICA,
+          title="Africa Orthographic", zoom=10) +
+    ggplot2::scale_fill_manual(values = gcam32_colors)
 ```
 
 ### Example 6: Latin America Projection (Orthographic)
 Orthographic projection of the Latin America superregion. Notice that projection strings can also be defined by specifying an EPSG, ESRI, or SR-ORG projection code.
 ```{r mp6, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(mapdata, col='region_id', proj=7567, proj_type='SR-ORG', extent=EXTENT_LA, zoom=8)
+plot_GCAM(map.rgn32, col='region_name', proj=7567, proj_type='SR-ORG',
+          extent=EXTENT_LA, title="Latin America Orthographic", zoom=8) +
+    ggplot2::scale_fill_manual(values = gcam32_colors)
 ```
 
 ### Example 7: Global Water Basins
-A map of the 235 global water basins.
-```{r mp7, fig.width=6, fig.height=3}
-plot_GCAM(map.basin235, col = 'GCAM_ID_1', proj = eck3)
+A map of the 235 global water basins.  Because `col` is set to `basin_name`, each basin name is treated as a separate category, giving the colorful map below.
+```{r mp7, fig.width=6, fig.height=3, fig.align='center'}
+plot_GCAM(map.basin235, col='basin_name', proj=eck3)
 ```
 
 ### Example 8: Gridded Data
 The `plot_GCAM_grid()` function tiles gridded data over a base map.
-```{r mp8, fig.width=6, fig.height=3}
+```{r mp8, fig.width=4, fig.height=6, fig.align='center'}
 co2grid <- rgcam::getQuery(prj, 'Cooling Degree Days', 'Reference')
-plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, zoom=8)
+plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, legend=T, zoom=8) + 
+    ggplot2::scale_fill_gradientn(colors=c("white", "red"), 
+                                  guide=ggplot2::guide_colorbar(title="Cooling Degree Days", 
+                                                                title.position="top"))
+
 ```

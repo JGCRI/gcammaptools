@@ -20,3 +20,7 @@ The simplified sf object.
 Takes a sf object representation of a map and simplifys it by removing
 polygons that are under a certain size.
 }
+\details{
+** NOTE: This function adds two polygons to the edges of the map to prevent
+         the removal of polygons near the edges redefining the map bounds.
+}

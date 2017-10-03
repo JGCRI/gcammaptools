@@ -4,29 +4,32 @@
 
 library('gcammaptools')
 library('magrittr')
-
+library('dplyr')
 
 gen.data <- function() {
 
     ## TODO:  add GCAM-USA dataset here
-    
+
     path.rgn14 <- system.file("extdata", "rgn14/GCAM_region.geojson", package = "gcammaptools")
     map.rgn14 <- import_mapdata(path.rgn14)
+    # add a column with the region names so that gcam32_colors can map to it
+    map.rgn14['region_name'] <- dplyr::left_join(map.rgn14, lut.rgn14, by="region_id")[3]
     map.rgn14.simple <- simplify_mapdata(map.rgn14)
-   
+
     path.rgn32 <- system.file("extdata", "rgn32/reg32_spart.shp", package = "gcammaptools")
     map.rgn32 <- import_mapdata(path.rgn32)
+    map.rgn32['region_name'] <- dplyr::left_join(map.rgn32, lut.rgn32, by=c("region_id" = "GCAM_ID"))[3]
     map.rgn32.simple <- simplify_mapdata(map.rgn32)
-   
+
     path.basin235 <- system.file("extdata", "rgnbasin/Global235_CLM_05_dissolve.geojson", package = "gcammaptools")
     map.basin235 <- import_mapdata(path.basin235)
     map.basin235.simple <- simplify_mapdata(map.basin235)
-   
+
     path.chn <- system.file("extdata", "rgnchn/GCAM_China.geojson", package = "gcammaptools")
     map.chn <- import_mapdata(path.chn)
     map.chn.simple <- simplify_mapdata(map.chn)
 
-    devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple, 
+    devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple,
                        map.basin235, map.basin235.simple, map.chn, map.chn.simple, overwrite=TRUE)
 }
 
@@ -61,5 +64,5 @@ gen.internal <- function() {
 }
 
 
-gen.data()
 gen.internal()
+gen.data()

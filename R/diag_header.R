@@ -246,21 +246,15 @@ EXTENT_LA <- c(-110, -40, -50, 30)
 
 # Default Colors
 LINE_COLOR <- "black"
-LINE_GRAT <- "grey50"
-GUIDE = "colourbar"
-SPACE = "Lab"
-
-# TODO - ALTER to inc. colorschemes
-DEFAULT_CHOROPLETH <- c("white", "red")
 
 # Background
-PANEL_BORDER <- ggplot2::element_blank()
 PANEL_BACKGROUND <- ggplot2::element_blank()
 PANEL_GRID <- ggplot2::element_line(colour = "black")
 AXIS_TICKS <- ggplot2::element_blank()
 AXIS_TEXT <- ggplot2::element_blank()
 XLAB <- ""
 YLAB <- ""
+
 
 # Legend
 LEGEND_POSITION = "bottom"

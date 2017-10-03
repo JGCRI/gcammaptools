@@ -6,7 +6,8 @@
 #'
 #' @param col Field name with target information to map.
 #' @param sub_val Field position to substitue as column reference
-set_col <- function(col, sub_val = 1) {
+#' @return The name of the data column or 1 if NULL.
+set_col <- function(col) {
 
     if (is.null(col)) {
         return(1)
@@ -204,6 +205,7 @@ load_shp <- function(file_pth) {
 #' @param obj Input full path string or object
 #' @param fld Field name to use as identifier
 #' @param prj4s Proj4 string for projection (default WGS84)
+#' @export
 import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 
     # get object class
@@ -247,6 +249,9 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #' Takes a sf object representation of a map and simplifys it by removing
 #' polygons that are under a certain size.
 #'
+#' ** NOTE: This function adds two polygons to the edges of the map to prevent
+#'          the removal of polygons near the edges redefining the map bounds.
+#'
 #' @param mapdata sf object containing polygons or multipolygons to simplify.
 #' @param min_area Minimum area of polygons to keep.
 #' @param degree_tolerance Tolerance parameter for simplifying polygons.
@@ -262,7 +267,7 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
   # filter out all polygons in the data under the minimum area
   areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
   filtermap <- which(areafilter) %>%
-    mapdata[.,1]
+    mapdata[.,]
 
   filtermap <- suppressWarnings({sf::st_simplify(filtermap, preserveTopology=TRUE, dTolerance=degree_tolerance)})
 
@@ -290,14 +295,12 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
   # create geometry with the two edges
   edges <- sf::st_sfc(left_edge, right_edge, crs = sf::st_crs(mapdata))
 
-  # create data for edges
-  borders <- data.frame(c(0, 0))
+  # data frame with same names as original map, so that the two can combine
+  borders <- data.frame(matrix(ncol = length(names(mapdata)), nrow = 2)) %>%
+      set_names(names(mapdata))
 
-  # combine data and geometry
+  # convert to sf object and add new border polygons
   sf::st_geometry(borders) <- edges
-
-  # name data column the same as in original map, so that the two can combine
-  colnames(borders)[1] <- colnames(mapdata)[1]
 
   # add new polygons to filtered map and return
   return(rbind(borders, filtermap))
@@ -985,10 +988,13 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
 
     # add the gridded data to the base map
     grid <- geom_raster(data = plotdata,
-                        mapping = aes_string('lon', 'lat', fill = col),
+                        mapping = aes_string(x='lon', y='lat', fill = col),
                         alpha = alpha)
 
-    return(mp + grid)
+    # remove x and y axis labels and give scale a title
+    lbls <- labs(x = XLAB, y = YLAB, fill=col)
+
+    return(mp + grid + lbls)
 }
 
 #' Get auxiliary data for a named mapset.

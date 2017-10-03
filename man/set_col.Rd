@@ -4,12 +4,15 @@
 \alias{set_col}
 \title{Helper to set column name for NULL.}
 \usage{
-set_col(col, sub_val = 1)
+set_col(col)
 }
 \arguments{
 \item{col}{Field name with target information to map.}
 
 \item{sub_val}{Field position to substitue as column reference}
+}
+\value{
+The name of the data column or 1 if NULL.
 }
 \description{
 Set column name to substitute position when NULL.
