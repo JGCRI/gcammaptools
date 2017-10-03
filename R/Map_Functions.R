@@ -1,78 +1,5 @@
 ## MAP FUNCTIONS
 
-#' Helper to set column name for NULL.
-#'
-#' Set column name to substitute position when NULL.
-#'
-#' @param col Field name with target information to map.
-#' @param sub_val Field position to substitue as column reference
-#' @return The name of the data column or 1 if NULL.
-set_col <- function(col) {
-
-    if (is.null(col)) {
-        return(1)
-    }
-    else {
-        return(col)
-    }
-}
-
-#' Set color scheme for ggplot object.
-#'
-#' Build color scheme object for ggplot.
-#'
-#' @param mapdata The sf object containing the spatial data.
-#' @param col Field name with target information to map.
-#' @param qtitle User specified title for color bar
-#' @param nacolor Color for NA features
-#' @param colors Color vector
-#' @param colorfcn Function to create color scheme
-set_color_scheme <- function(mapdata, col, qtitle, nacolor, colors, colorfcn) {
-
-    # if column null set as index
-    clm <- set_col(col)
-
-    # use default color gradient if none specified
-    if (is.null(col)) {
-        clr <- nacolor
-    }
-    else if (!is.null(col) & (is.null(colors))) {
-        clr <- DEFAULT_CHOROPLETH
-    }
-    else {
-        clr <- colors
-    }
-
-    # use alternate title if user provided
-    if (!is.null(qtitle)) {
-        nm <- qtitle
-    }
-    else {
-        nm <- clm
-    }
-
-    # for continuous data
-    if (is.numeric(mapdata[[clm]])) {
-
-        return(ggplot2::scale_fill_gradientn(name = nm, colors = clr,
-                                        values = NULL, guide = GUIDE,
-                                        space = SPACE, na.value = nacolor))
-    }
-    # for discrete
-    else {
-
-        # set color scheme using function
-        if (is.null(colorfcn)) {
-            clr <- qualPalette(n = length(unique(mapdata[[clm]])))
-        }
-        else {
-            clr <- colorfcn(n = length(unique(mapdata[[clm]])))
-        }
-
-        return(ggplot2::scale_fill_manual(values = clr, name = nm))
-    }
-}
-
 #' Build the coordinate zooming bounds for ggplot object.
 #'
 #' Either take the bounding box or the map coordinates depending on extent.
@@ -118,7 +45,7 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 #' is to join any feature that intersects the bounding box.
 filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo=sf::st_intersects) {
   # set NULL column to index
-  clm <- set_col(col)
+  clm <- if (is.null(col)) 1 else col
 
   # set attribute-geometry-relationship for input mapdata column and bounding box feature attribute
   sf::st_agr(mapdata) <- agr_type
@@ -651,97 +578,7 @@ drop_regions <- function(datatable, drops) {
     return(datatable)
 }
 
-#---------------------------------------------------------------------------
-# MAPPING UTILS
-#---------------------------------------------------------------------------
-#' Calculate legend breaks (intervals to put labels on legend scale)
-#'
-#' Given a minimum and maximum value, and number of breaks, calculate
-#' evenly-spaced break values.
-#'
-#' @param maxval Largest value in the scale
-#' @param minval Smallest value in the scale
-#' @param nbreak Number of break points
-#' @param nsig Number of significant digits to display in the legend.
-calc.breaks <- function(maxval, minval = 0, nbreak = 5, nsig = 3) {
-    step <- (maxval - minval)/(nbreak - 1)
-    brk <- seq(minval, maxval, by = step) %>% signif(nsig)
-    ## The rounding at the ends may have put the final label off the scale.  Fix
-    ## if necessary
-    if(brk[1] < minval) {
-        pwr <- ceiling(log10(abs(minval)))
-        unit <- 10**(-nsig)*10**pwr
-        brk[1] <- signif(brk[1] + unit, nsig)
-    }
-    if(brk[nbreak] > maxval) {
-        pwr <- ceiling(log10(abs(maxval)))
-        unit <- 10**(-nsig)*10**pwr
-        brk[nbreak] <- signif(brk[nbreak]-unit, nsig)
-    }
-    brk
-}
 
-calc.limits.map <- function(mapdata, colname, nbreaks = 5, zero.min = TRUE) {
-    ### Calculate legend
-    ### Inputs:
-    ###   mapdata - data frame of geometry and scenario data
-    ###   colname - column name of interest from which to calculate legend intervals
-    ###   nbreaks - number of intervals
-    ###   zero.min- force minimum value of scale to zero
-    ### Outputs:
-    ###   breaks - vector of values at which to include legend label
-
-    vals <- as.numeric(mapdata[[colname]])
-
-    max_dat <- max(vals, na.rm = TRUE)
-
-    if (zero.min) {
-        if(min(vals, na.rm = TRUE) < 0) {
-            ## If there are negative values in the data set, then pinning to
-            ## zero means putting the zero point in the middle of the color
-            ## bar.
-            mag <- max(abs(vals), na.rm = TRUE)
-            max_dat <- mag
-            min_dat <- -mag
-        }
-        else {
-            min_dat = 0
-        }
-    }                                   # if(zero.min)
-    else {
-        min_dat <- min(vals, na.rm = T)
-    }
-
-    c(min_dat, max_dat)
-}
-
-#-----------------------------------------------------------------
-# COLOR PALETTE FUNCTIONS
-#-----------------------------------------------------------------
-
-#' Generate a color palette for categorical data.
-#'
-#' Generate a palette with a specified number of entries.  This
-#' function uses a ramp function to extend the palettes from
-#' \code{\link{RColorBrewer}} so they can handle a larger number of
-#' entries.
-#'
-#' @param n Number of entries desired for the palette
-#' @param pal Name of the palette to base the new palette on. See
-#' \code{RColorBrewer} for the palettes available.
-#' @param na.val Color to use for the null region
-#' @importFrom stats setNames
-#' @importFrom grDevices colorRampPalette
-#' @export
-qualPalette <- function(n = 31, pal = "Set3", na.val = "grey50") {
-
-    colors <- colorRampPalette(RColorBrewer::brewer.pal(8, pal))(n) %>%
-        setNames(as.character(1:n))
-
-    colors["0"] <- na.val
-
-    return(colors)
-}
 
 #-----------------------------------------------------------------
 # MAPPING FUNCTIONS
@@ -777,7 +614,6 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
                                                                                     legend.key = element_rect(color = "black"))
     }
 }
-
 
 
 
