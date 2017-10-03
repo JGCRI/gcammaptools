@@ -81,7 +81,7 @@ filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo
 #' @param mapdata_key Name of the field having a tuple identifier that can be referenced
 #' in the gcam_df data frame.
 #' @param gcam_df The GCAM data frame provided from the user.  This is usually generated from
-#' an rgcam query.
+#' an \code{rgcam} query.
 #' @param gcam_key Name of field having a tuple identifier that can be referenced in the
 #' mapdata data frame.
 join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
@@ -129,9 +129,10 @@ load_shp <- function(file_pth) {
 #' Imports available for sf objects, spatial data frames, ESRI Shapefiles, or
 #' GeoJSON files.
 #'
-#' @param obj Input full path string or object
-#' @param fld Field name to use as identifier
-#' @param prj4s Proj4 string for projection (default WGS84)
+#' @param obj Input full path string or object.
+#' @param fld Field name to use as identifier.
+#' @param prj4s Proj4 string for projection (default WGS84).
+#' @return An sf object representation of the map data.
 #' @export
 import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 
@@ -224,7 +225,7 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
 
   # data frame with same names as original map, so that the two can combine
   borders <- data.frame(matrix(ncol = length(names(mapdata)), nrow = 2)) %>%
-      set_names(names(mapdata))
+      magrittr::set_names(names(mapdata))
 
   # convert to sf object and add new border polygons
   sf::st_geometry(borders) <- edges
@@ -389,6 +390,8 @@ reproject <- function(sdf, prj4s) {
     }
 }
 
+
+
 #---------------------------------------------------------------------------
 # DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
@@ -552,13 +555,12 @@ translate_province <- function(datatable, provincefile) {
     return(datatable)
 }
 
+#' Drop regions listed in drops file from data frame.
+#'
+#' @param datatable A data frame of query from batch query CSV.
+#' @param drops String; path to file containing regions to be dropped
+#' @return An updated data frame with regions dropped.
 drop_regions <- function(datatable, drops) {
-    ### Drop regions listed in drops file from data frame.
-    ### Inputs:
-    ###   datatable - a data frame of query from batch query CSV
-    ###   drops - string; path to file containing regions to be dropped
-    ### Outputs:
-    ###   datatable - updated data frame with regions dropped.
 
     dr <- if (is.symbol(drops)) {
         get.internal(drops, "drop")
@@ -583,35 +585,39 @@ drop_regions <- function(datatable, drops) {
 #-----------------------------------------------------------------
 # MAPPING FUNCTIONS
 #-----------------------------------------------------------------
-# theme_GCAM: Default GCAM theme function. Can be used with any ggplot2 object.
-#   Derives from ggplot2 black and white theme function (theme_bw)
-#
-# Arguments:
-#   base_size: Base font size
-#   base_family: Base font type
-#   legend: T or F; whether to include a legend with default legend formatting.
-#
-# Usage: As add-on function to any ggplot2 object.
-theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 
-    if (legend == F) {
-        theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
-                                                                                    panel.background = PANEL_BACKGROUND,
-                                                                                    panel.grid.major = PANEL_GRID,
-                                                                                    axis.ticks = AXIS_TICKS,
-                                                                                    axis.text = AXIS_TEXT,
-                                                                                    legend.position = "none")
-    } else if (legend == T) {
-        theme_bw(base_size = base_size, base_family = base_family) %+replace% theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
-                                                                                    panel.background = PANEL_BACKGROUND,
-                                                                                    panel.grid.major = PANEL_GRID,
-                                                                                    axis.ticks = AXIS_TICKS,
-                                                                                    axis.text = AXIS_TEXT,
-                                                                                    legend.key.size = unit(0.75, "cm"),
-                                                                                    legend.text = element_text(size = 10),
-                                                                                    legend.title = element_text(size = 12, face = "bold"),
-                                                                                    legend.position = LEGEND_POSITION,
-                                                                                    legend.key = element_rect(color = "black"))
+#' Default GCAM theme function
+#'
+#' An add-on function to any ggplot2 object. Derives from ggplot2 black and
+#' white theme function (theme_bw).
+#'
+#' @param base_size Base font size
+#' @param base_family Base font type
+#' @param legend Boolean; whether to include a legend with default legend
+#'   formatting.
+theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
+
+    if (legend) {
+        theme_bw(base_size = base_size, base_family = base_family) %+replace%
+            theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
+                  panel.background = PANEL_BACKGROUND,
+                  panel.grid.major = PANEL_GRID,
+                  axis.ticks = AXIS_TICKS,
+                  axis.text = AXIS_TEXT,
+                  legend.key.size = unit(0.75, "cm"),
+                  legend.text = element_text(size = 10),
+                  legend.title = element_text(size = 12, face = "bold"),
+                  legend.position = LEGEND_POSITION,
+                  legend.key = element_rect(color = "black"))
+
+    } else {
+        theme_bw(base_size = base_size, base_family = base_family) %+replace%
+            theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
+                  panel.background = PANEL_BACKGROUND,
+                  panel.grid.major = PANEL_GRID,
+                  axis.ticks = AXIS_TICKS,
+                  axis.text = AXIS_TEXT,
+                  legend.position = "none")
     }
 }
 
@@ -623,96 +629,101 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = F) {
 
 #' Primary GCAM mapping function. Can handle categorical or continuous data.
 #'
-#' This function produces a map visualization of a data set containing
-#' GCAM output data.  The required argument is a data frame of GCAM
-#' results by region.  The functions \code{\link{parse_mi_output}} and
-#' \code{\link{process_batch_q}} produce suitable data frames.
+#' This function produces a map visualization of a data set containing GCAM
+#' output data.  The required argument is a data frame of GCAM results by
+#' region.  The function \code{\link[rgcam]{getQuery}} produces suitable data
+#' frames.
+#'
+#' We don't try to take the color mapping, legend title, etc. as arguments to
+#' this function.  The ggplot2 way of specifying this information is way more
+#' flexible. To customize your color mapping, use one of \itemize{ \item
+#' \code{\link[ggplot2]{scale_fill_manual}} : A list of colors to map to
+#' categorical data. \item \code{\link[ggplot2]{scale_fill_gradient}} : A
+#' gradient from one color to another. \item
+#' \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging gradient from one
+#' color to another, passing through white in the middle.  You can set the data
+#' value that gets assigned to white with the \code{midpoint} argument. \item
+#' \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth gradient between an
+#' arbitrary selection of colors. } If you choose to display a legend for the
+#' color mapping, you will have to give it a title using the \code{title}
+#' argument to any of the above gradient functions.  You have to do this even if
+#' you want a legend with no title at all.  Use an empty string in that case.
 #'
 #' For specifying the projection you can use any Proj4 string.  For convenience,
-#' this package defines the following proj4 strings:
-#' \itemize{
-#'   \item \code{\link{wgs84}} - WGS84 (EPSG:4326)
-#'   \item \code{\link{eck3}} - Eckert III
-#'   \item \code{\link{robin}} - Robinson
-#'   \item \code{\link{na_aea}} - Albers equal area (North America)
-#'   \item \code{\link{ch_aea}} - Albers equal area (China)
-#'   \item \code{\link{af_ortho}} - Orthographic projection over Africa
-#' }
+#' this package defines the following proj4 strings: \itemize{ \item
+#' \code{\link{wgs84}} - WGS84 (EPSG:4326) \item \code{\link{eck3}} - Eckert III
+#' \item \code{\link{robin}} - Robinson \item \code{\link{na_aea}} - Albers
+#' equal area (North America) \item \code{\link{ch_aea}} - Albers equal area
+#' (China) \item \code{\link{af_ortho}} - Orthographic projection over Africa }
 #'
 #'
-#' The \code{extent} argument gives the bounding box of the area to be
-#' plotted.  Its format is \code{c(lon.min, lon.max, lat.min,
-#' lat.max)}.  For convenience we have defined the following
-#' frequently used map extents:
-#' \itemize{
-#'    \item \code{\link{EXTENT_WORLD}} - Entire world
-#'    \item \code{\link{EXTENT_USA}} - Continental United States
-#'    \item \code{\link{EXTENT_CHINA}} - China
-#'    \item \code{\link{EXTENT_AFRICA}} - Africa
-#'    \item \code{\link{EXTENT_LA}} - Latin America
-#' }
+#' The \code{extent} argument gives the bounding box of the area to be plotted.
+#' Its format is \code{c(lon.min, lon.max, lat.min, lat.max)}.  For convenience
+#' we have defined the following frequently used map extents: \itemize{ \item
+#' \code{\link{EXTENT_WORLD}} - Entire world \item \code{\link{EXTENT_USA}} -
+#' Continental United States \item \code{\link{EXTENT_CHINA}} - China \item
+#' \code{\link{EXTENT_AFRICA}} - Africa \item \code{\link{EXTENT_LA}} - Latin
+#' America }
 #'
 #' @param mapdata The data frame containing both geometric data (lat, long, id)
-#' and regional metadata.  This is the only mandatory variable. If used alone,
-#' will produce the default map.
+#'   and regional metadata.  This is the only mandatory variable. If used alone,
+#'   will produce the default map.
 #' @param col If plotting categorical/contiuous data, the name of the column to
-#' plot.  Will automatically determine type of style of plot based on type of
-#' data (numeric or character).
+#'   plot.  Will automatically determine type of style of plot based on type of
+#'   data (numeric or character).
 #' @param proj Map projection to use in the display map.  This should be a proj4
-#' string, except for a few special cases.  There are also symbols defined for
-#' some frequently used projections (e.g. \code{\link{robin}} or
-#' \code{\link{na_aea}}).
+#'   string, except for a few special cases.  There are also symbols defined for
+#'   some frequently used projections (e.g. \code{\link{robin}} or
+#'   \code{\link{na_aea}}).
 #' @param proj_type Either esri, epsg, or sr-org as string.  These correspond to
-#' available reference types hosted by http://spatialreference.org/
-#' @param extent Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to
-#' @param title Text to be displayed as the plot title
+#'   available reference types hosted by \url{http://spatialreference.org/}.
+#' @param extent Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to.
+#' @param title Text to be displayed as the plot title.
 #' @param legend Boolean flag: True = display map legend; False = do not display
-#' legend
-#' @param nacolor Color to use for polygons with no data.  The default is
-#' gray(0.75), which works well for thematic plots.  For plotting gridded data you
-#' probably want something a little more neutral, like gray(0.9).
-#' @param gcam_df A data frame generated from rgcam getQuery() that contains data
-#' that can be linked to the map geometry data using a unique identifier.
-#' @param gcam_key The field name containing a join identifier in the gcam_df data frame.
-#' @param mapdata_key The field name containing a join identifier in the mapdata.
+#'   legend.
+#' @param gcam_df A data frame generated from the \code{rgcam} function
+#'   \code{\link[rgcam]{getQuery}}.  Also accepts other data frames that contain
+#'   data that can be linked to the map geometry data using a unique identifier.
+#' @param gcam_key The field name containing a join identifier in the gcam_df
+#'   data frame.
+#' @param mapdata_key The field name containing a join identifier in the
+#'   mapdata.
 #' @param zoom A distance to buffer the bounding box extent by for on-the-fly
-#' adjustments needed when fitting area to maps.
-#' @param agr_type Aggregate-geometry-relationship type.  Either 'constant' (default),
-#' 'aggregate', or 'identity' classified as follows:  [constant] a variable that has a
-#' constant value at every location over a spatial extent; examples: soil type, climate zone, land use.
-#' [aggregate]	values are summary values (aggregates) over the geometry, e.g. population density,
-#' dominant land use.  [identity]	values identify the geometry: they refer to (the whole of)
-#' this and only this geometry.
-#' See https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries
-#' for futher explanation.
+#'   adjustments needed when fitting area to maps.
+#' @param agr_type Aggregate-geometry-relationship type.  Either 'constant'
+#'   (default), 'aggregate', or 'identity' classified as follows:  [constant] a
+#'   variable that has a constant value at every location over a spatial extent;
+#'   examples: soil type, climate zone, land use. [aggregate]	values are summary
+#'   values (aggregates) over the geometry, e.g. population density, dominant
+#'   land use.  [identity]	values identify the geometry: they refer to (the
+#'   whole of) this and only this geometry. See the
+#'   \href{https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries}{sf
+#'   vignette} for futher explanation.
 #' @importFrom grDevices gray
 #' @examples \dontrun{
 #'
-#' ## Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
-#'   map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32',
-#'                                                'GCAM_32_wo_Taiwan_clean.geojson',
-#'                                                package = 'gcammaptools'))
-#'   map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region = 'GCAM_ID')
-#'   mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3,
-#'                  colorfcn = qualPalette)
+#' ## Plot a map of GCAM regions; color it with the default theme palette.
+#' plot_GCAM(map.rgn32.simple, col = 'region_name', proj = eck3) +
+#'     ggplot2::scale_fill_manual(values = gcam32_colors, na.value=gray(0.75))
 #'
-#'   ## Plot oil consumption by region
-#'   tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',
-#'                           package = 'gcammaptools'))
-#'   prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel = 'a oil'))
-#'   prim_en<-add_region_ID(prim_en, file.path(basedir.viz,
-#'                                 system.file('extdata/rgn32', 'lookup.txt',
-#'                                             package = 'gcammaptools'),
-#'                                 system.file('extdata/rgn32',
-#'                                             'drop-regions.txt', package = 'gcammaptools')))
-#'   mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'),
-#'                  title = 'Robinson World', qtitle = 'Oil Consumption, 2050', legend = T)
+#' ## Plot refined liquids production by region for the year 2050
+#' prj <- loadProject(system.file('sample-gcam-data',
+#'                                'gcam-longform-sample.dat',
+#'                                package='gcammaptools'))
+#' ref_liquids <- rgcam::getQuery(prj, 'Refined liquids production by region', 'Reference')
+#' ref_liquids <- add_region_ID(ref_liquids, lookupfile=rgn32, drops=rgn32)
+#' ref_liquids <- dplyr::filter(ref_liquids, year==2050)
+#' plot_GCAM(map.rgn32.simple, col='value', proj=robin, title="Robinson World",
+#'           legend=T, gcam_df=co2, gcam_key='id', mapdata_key="region_id") +
+#'    ggplot2::scale_fill_gradientn(colors = c("white", "red"),
+#'                                  na.value = gray(0.75),
+#'                                  name="CO2 Emissions (MTC)")
 #' }
 #' @export
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
-                      nacolor = gray(0.75), gcam_df = NULL, gcam_key = NULL,
-                      mapdata_key = NULL, zoom = NULL, agr_type='constant') {
+                      gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL,
+                      zoom = NULL, agr_type='constant') {
 
   # get proj4 string that corresponds to user selection
   p4s <- assign_prj4s(proj_type, proj)
@@ -751,23 +762,6 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 #' to the function, so you can have, for example, latitude and longitude columns
 #' followed by columns for time slices.  Columns besides the coordinate and data
 #' columns will be ignored.
-#'
-#' Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping,
-#' legend title, etc. as arguments to this function.  The ggplot2 way of
-#' specifying this information is way more flexible. Eventually \code{plot_GCAM}
-#' will use this method too.
-#'
-#' To customize your color mapping, use one of \itemize{ \item
-#' \code{\link[ggplot2]{scale_fill_gradient}} : A gradient from one color to
-#' another. \item \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging
-#' gradient from one color to another, passing through white in the middle.  You
-#' can set the data value that gets assigned to white with the \code{midpoint}
-#' argument. \item \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth
-#' gradient between an arbitrary selection of colors. } If you choose to display
-#' a legend for the color mapping, you will have to give it a title using the
-#' \code{title} argument to any of the above gradient functions.  You have to do
-#' this even if you want a legend with no title at all.  Use an empty string in
-#' that case.
 #'
 #' @param plotdata Data frame with the coordinates and values to be plotted.
 #'   Must contain 'lat' and 'lon' columns.

@@ -21,7 +21,7 @@ some frequently used projections (e.g. \code{\link{robin}} or
 \code{\link{na_aea}}).}
 
 \item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
-available reference types hosted by http://spatialreference.org/}
+available reference types hosted by \url{http://spatialreference.org/}.}
 
 \item{alpha}{Transparency of the grid data layer.  Given as a number between
 0 and 1, where 0 is completely transparent and 1 is completely opaque.}
@@ -39,21 +39,4 @@ The plot data should be in the form of a table of latitude (lat), longitude
 to the function, so you can have, for example, latitude and longitude columns
 followed by columns for time slices.  Columns besides the coordinate and data
 columns will be ignored.
-
-Unlike \code{\link{plot_GCAM}}, we don't try to take the color mapping,
-legend title, etc. as arguments to this function.  The ggplot2 way of
-specifying this information is way more flexible. Eventually \code{plot_GCAM}
-will use this method too.
-
-To customize your color mapping, use one of \itemize{ \item
-\code{\link[ggplot2]{scale_fill_gradient}} : A gradient from one color to
-another. \item \code{\link[ggplot2]{scale_fill_gradient2}} : A diverging
-gradient from one color to another, passing through white in the middle.  You
-can set the data value that gets assigned to white with the \code{midpoint}
-argument. \item \code{\link[ggplot2]{scale_fill_gradientn}} : A smooth
-gradient between an arbitrary selection of colors. } If you choose to display
-a legend for the color mapping, you will have to give it a title using the
-\code{title} argument to any of the above gradient functions.  You have to do
-this even if you want a legend with no title at all.  Use an empty string in
-that case.
 }

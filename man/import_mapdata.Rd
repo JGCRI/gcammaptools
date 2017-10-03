@@ -7,11 +7,14 @@
 import_mapdata(obj, fld = NULL, prj4s = wgs84)
 }
 \arguments{
-\item{obj}{Input full path string or object}
+\item{obj}{Input full path string or object.}
 
-\item{fld}{Field name to use as identifier}
+\item{fld}{Field name to use as identifier.}
 
-\item{prj4s}{Proj4 string for projection (default WGS84)}
+\item{prj4s}{Proj4 string for projection (default WGS84).}
+}
+\value{
+An sf object representation of the map data.
 }
 \description{
 Imports available for sf objects, spatial data frames, ESRI Shapefiles, or

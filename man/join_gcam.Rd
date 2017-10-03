@@ -14,7 +14,7 @@ can be referenced in the gcam_df data frame.}
 in the gcam_df data frame.}
 
 \item{gcam_df}{The GCAM data frame provided from the user.  This is usually generated from
-an rgcam query.}
+an \code{rgcam} query.}
 
 \item{gcam_key}{Name of field having a tuple identifier that can be referenced in the
 mapdata data frame.}
