@@ -1,6 +1,6 @@
 Package: gcammaptools
 Title: Plot GCAM Output on Maps
-Version: 0.3.2
+Version: 0.4.0
 Authors@R: c(
 	   person("Catherine", "Ledna", email = "catherine.ledna@pnnl.gov", role = c("aut", "cre")),
 	   person("Robert", "Link", email="robert.link@pnnl.gov", role="ctb")
@@ -15,21 +15,20 @@ License: GPL-2
 LazyData: true
 Imports:
     dplyr (>= 0.5.0),
-    ggplot2 (>= 2.2),
-    ggalt (>= 0.3.2),
-    graticule (>= 0.1.2),
+    ggplot2 (>= 2.2.1.9000),
     magrittr (>= 1.5),
-    mapproj (>= 1.2.4),
-    maptools (>= 0.8.40),
+    raster (>= 2.5.8),
+    rgdal (>= 1.2.11),
+    rgeos (>= 0.3.25),
     RColorBrewer (>= 1.1.2),
-    rgdal,
-    rgeos,
-    sp (>= 1.2.3)
+    sp (>= 1.2.5),
+    sf (>= 0.5-4)
 RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown,
-    rgcam
+    rgcam,
+    testthat
 VignetteBuilder: knitr
 Remotes:
-    rplzzz/ggalt@ggp221,
+    tidyverse/ggplot2,
     JGCRI/rgcam

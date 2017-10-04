@@ -4,10 +4,10 @@
 \alias{plot_GCAM}
 \title{Primary GCAM mapping function. Can handle categorical or continuous data.}
 \usage{
-plot_GCAM(mapdata, col = NULL, proj = robin, extent = EXTENT_WORLD,
-  orientation = NULL, title = NULL, legend = F, colors = NULL,
-  qtitle = NULL, limits = NULL, colorfcn = NULL, nacolor = gray(0.75),
-  ...)
+plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
+  extent = EXTENT_WORLD, title = "", legend = F, gcam_df = NULL,
+  gcam_key = NULL, mapdata_key = NULL, zoom = NULL,
+  agr_type = "constant")
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (lat, long, id)
@@ -23,101 +23,94 @@ string, except for a few special cases.  There are also symbols defined for
 some frequently used projections (e.g. \code{\link{robin}} or
 \code{\link{na_aea}}).}
 
-\item{extent}{Bounding box for the display map}
+\item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
+available reference types hosted by \url{http://spatialreference.org/}.}
 
-\item{orientation}{The orientation vector.  This is only needed for
-projections that don't use proj4.  Projections using proj4 encode this
-information in their proj4 string.}
+\item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to.}
 
-\item{title}{Text to be displayed as the plot title}
+\item{title}{Text to be displayed as the plot title.}
 
 \item{legend}{Boolean flag: True = display map legend; False = do not display
-legend}
+legend.}
 
-\item{colors}{Vector of colors to use in the color scale.  If NULL, then
-default color scheme will be used.}
+\item{gcam_df}{A data frame generated from the \code{rgcam} function
+\code{\link[rgcam]{getQuery}}.  Also accepts other data frames that contain
+data that can be linked to the map geometry data using a unique identifier.}
 
-\item{qtitle}{Text to be displayed as the legend title.}
+\item{gcam_key}{The field name containing a join identifier in the gcam_df
+data frame.}
 
-\item{limits}{Vector of two values giving the range of the color bar in the
-legend.  c(min,max)}
+\item{mapdata_key}{The field name containing a join identifier in the
+mapdata.}
 
-\item{colorfcn}{If plotting categorical data, the function used to generate a
-colorscheme when colors are not provided (if NULL, use qualPalette).  If
-\code{colors} is specified, or if the data being plotted is numerical, this
-argument will be ignored.}
+\item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
+adjustments needed when fitting area to maps.}
 
-\item{nacolor}{Color to use for polygons with no data.  The default is
-gray(0.75), which works well for thematic plots.  For plotting gridded data you
-probably want something a little more neutral, like gray(0.9).}
-
-\item{...}{Other parameters passed on to \code{colorfcn}.}
+\item{agr_type}{Aggregate-geometry-relationship type.  Either 'constant'
+(default), 'aggregate', or 'identity' classified as follows:  [constant] a
+variable that has a constant value at every location over a spatial extent;
+examples: soil type, climate zone, land use. [aggregate]    values are summary
+values (aggregates) over the geometry, e.g. population density, dominant
+land use.  [identity]    values identify the geometry: they refer to (the
+whole of) this and only this geometry. See the
+\href{https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries}{sf
+vignette} for futher explanation.}
 }
 \description{
-This function produces a map visualization of a data set containing
-GCAM output data.  The required argument is a data frame of GCAM
-results by region.  The functions \code{\link{parse_mi_output}} and
-\code{\link{process_batch_q}} produce suitable data frames.
+This function produces a map visualization of a data set containing GCAM
+output data.  The required argument is a data frame of GCAM results by
+region.  The function \code{\link[rgcam]{getQuery}} produces suitable data
+frames.
 }
 \details{
-For specifying the projection you can use any Proj4 string.
-Projections specified this way are computed using
-\code{\link[ggalt]{coord_proj}}.  For convenience, this package
-defines the following proj4 strings:
-\itemize{
-  \item \code{\link{eck3}} - Eckert III
-  \item \code{\link{wintri}} - Winkel-Tripel
-  \item \code{\link{robin}} - Robinson
-  \item \code{\link{na_aea}} - Albers equal area (North America)
-  \item \code{\link{ch_aea}} - Albers equal area (China)
-}
+We don't try to take the color mapping, legend title, etc. as arguments to
+this function.  The ggplot2 way of specifying this information is way more
+flexible. To customize your color mapping, use one of \itemize{ \item
+\code{\link[ggplot2]{scale_fill_manual}} : A list of colors to map to
+categorical data. \item \code{\link[ggplot2]{scale_fill_gradient}} : A
+gradient from one color to another. \item
+\code{\link[ggplot2]{scale_fill_gradient2}} : A diverging gradient from one
+color to another, passing through white in the middle.  You can set the data
+value that gets assigned to white with the \code{midpoint} argument. \item
+\code{\link[ggplot2]{scale_fill_gradientn}} : A smooth gradient between an
+arbitrary selection of colors. } If you choose to display a legend for the
+color mapping, you will have to give it a title using the \code{title}
+argument to any of the above gradient functions.  You have to do this even if
+you want a legend with no title at all.  Use an empty string in that case.
 
-For orthographic projections, we compute the projection using the
-\code{\link[ggplot2]{coord_map}} function.  To get this projection
-pass the \code{\link{ortho}} symbol as the \code{proj} argument.
-You will then need to pass a vector in the \code{orientation}
-argument.  We have defined the following fequently used orientation
-vectors:
-\itemize{
-  \item \code{\link{ORIENTATION_AFRICA}} - Africa
-  \item \code{\link{ORIENTATION_LA}} - Latin America
-  \item \code{\link{ORIENTATION_SPOLE}} - South Pole
-  \item \code{\link{ORIENTATION_NPOLE}} - North Pole
-}
+For specifying the projection you can use any Proj4 string.  For convenience,
+this package defines the following proj4 strings: \itemize{ \item
+\code{\link{wgs84}} - WGS84 (EPSG:4326) \item \code{\link{eck3}} - Eckert III
+\item \code{\link{robin}} - Robinson \item \code{\link{na_aea}} - Albers
+equal area (North America) \item \code{\link{ch_aea}} - Albers equal area
+(China) \item \code{\link{af_ortho}} - Orthographic projection over Africa }
 
-The \code{extent} argument gives the bounding box of the area to be
-plotted.  Its format is \code{c(lon.min, lon.max, lat.min,
-lat.max)}.  For convenience we have defined the following
-frequently used map extents:
-\itemize{
-   \item \code{\link{EXTENT_WORLD}} - Entire world
-   \item \code{\link{EXTENT_USA}} - Continental United States
-   \item \code{\link{EXTENT_CHINA}} - China
-   \item \code{\link{EXTENT_AFRICA}} - Africa
-   \item \code{\link{EXTENT_LA}} - Latin America
-}
+The \code{extent} argument gives the bounding box of the area to be plotted.
+Its format is \code{c(lon.min, lon.max, lat.min, lat.max)}.  For convenience
+we have defined the following frequently used map extents: \itemize{ \item
+\code{\link{EXTENT_WORLD}} - Entire world \item \code{\link{EXTENT_USA}} -
+Continental United States \item \code{\link{EXTENT_CHINA}} - China \item
+\code{\link{EXTENT_AFRICA}} - Africa \item \code{\link{EXTENT_LA}} - Latin
+America }
 }
 \examples{
 \dontrun{
 
-## Plot a map of GCAM regions; color it with a palette based on RColorBrewer's 'Set3' palette.
-  map_32_wo_Taiwan<-rgdal::readOGR(system.file('extdata/rgn32',
-                                               'GCAM_32_wo_Taiwan_clean.geojson',
-                                               package='gcammaptools'))
-  map_32_wo_Taiwan.fort<-ggplot2::fortify(map_32_wo_Taiwan, region='GCAM_ID')
-  mp1<-plot_GCAM(map_32_wo_Taiwan.fort, col = 'id', proj = eck3,
-                 colorfcn=qualPalette)
+## Plot a map of GCAM regions; color it with the default theme palette.
+plot_GCAM(map.rgn32.simple, col = 'region_name', proj = eck3) +
+    ggplot2::scale_fill_manual(values = gcam32_colors, na.value=gray(0.75))
 
-  ## Plot oil consumption by region
-  tables<-parse_mi_output(fn = system.file('extdata','sample-batch.csv',
-                          package='gcammaptools'))
-  prim_en<-process_batch_q(tables, 'primary_energy', 'Reference', c(fuel='a oil'))
-  prim_en<-addRegionID(prim_en, file.path(basedir.viz,
-                                system.file('extdata/rgn32', 'lookup.txt',
-                                            package='gcammaptools'),
-                                system.file('extdata/rgn32',
-                                            'drop-regions.txt', package='gcammaptools')))
-  mp2<-plot_GCAM(map_primen, col = 'X2050', colors = c('white', 'red'),
-                 title='Robinson World', qtitle='Oil Consumption, 2050', legend=T)
+## Plot refined liquids production by region for the year 2050
+prj <- loadProject(system.file('sample-gcam-data',
+                               'gcam-longform-sample.dat',
+                               package='gcammaptools'))
+ref_liquids <- rgcam::getQuery(prj, 'Refined liquids production by region', 'Reference')
+ref_liquids <- add_region_ID(ref_liquids, lookupfile=rgn32, drops=rgn32)
+ref_liquids <- dplyr::filter(ref_liquids, year==2050)
+plot_GCAM(map.rgn32.simple, col='value', proj=robin, title="Robinson World",
+          legend=T, gcam_df=co2, gcam_key='id', mapdata_key="region_id") +
+   ggplot2::scale_fill_gradientn(colors = c("white", "red"),
+                                 na.value = gray(0.75),
+                                 name="CO2 Emissions (MTC)")
 }
 }

@@ -4,7 +4,7 @@
 \name{map.chn}
 \alias{map.chn}
 \title{Base map for 32-region GCAM with China subregions}
-\format{Spatial data frame}
+\format{Simple feature collection}
 \usage{
 map.chn
 }

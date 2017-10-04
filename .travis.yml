@@ -1,35 +1,22 @@
-# Travis-CI configuration file
-
-notifications:
-  email:
-    - robert.link@pnnl.gov
-
 language: r
+
+r:
+  - release
+
 cache: packages
+
 os:
   - linux
   - osx
+
+sudo: required
+
 dist: trusty
-sudo: false
-
-r_binary_packages:
-  - rgdal
-  - rgeos
-  - sp
-
-addons:
-  apt:
-    packages:
-      - libhdf5-7
-      - libhdf5-dev
-      - libgeos-dev
-      - libproj-dev
-      - proj-data
-      - proj-bin
-      - libgdal-dev 
 
 r_github_packages:
-  - jimhester/covr
+  - tidyverse/ggplot2
 
-#after_success:
-#  - Rscript -e 'library(covr);codecov(function_exclusions = "atest")'
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable --yes; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get --yes --force-yes update -qq; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install --yes libudunits2-dev libproj-dev libgeos-dev libgdal-dev; fi

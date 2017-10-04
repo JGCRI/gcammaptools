@@ -26,7 +26,7 @@ of a single GCAM query as a table.  You can optionally do some simple
 filtering and aggregation in this function as well
 
 Once you have a table of results, you must add a region id column using
-\code{\link{addRegionID}}.  This function allows you to provide an alternate
+\code{\link{add_region_ID}}.  This function allows you to provide an alternate
 GCAM region mapping, along with optional subregional (i.e., state or
 province) mappings and a table of regions to drop.
 }
@@ -34,7 +34,7 @@ province) mappings and a table of regions to drop.
 \section{Mapping GCAM data}{
 
 
-To map GCAM data, you will need a spatial data frame with your region
+To map GCAM data, you will need a simple feature collection with your region
 boundaries.  The package provides the following commonly-used base maps:
 \itemize{
   \item \code{\link{map.rgn14}}: 14 region map used prior to GCAM 4.0.

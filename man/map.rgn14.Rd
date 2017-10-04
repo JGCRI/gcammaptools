@@ -4,7 +4,7 @@
 \name{map.rgn14}
 \alias{map.rgn14}
 \title{Base map for 14-region GCAM}
-\format{Spatial data frame}
+\format{Simple feature collection}
 \usage{
 map.rgn14
 }
