@@ -35,7 +35,8 @@ gen.data <- function() {
     map.usa <- rbind(map.rgn32, map.usa)
 
     devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple,
-                       map.basin235, map.basin235.simple, map.chn, map.chn.simple, overwrite=TRUE)
+                       map.basin235, map.basin235.simple, map.chn, map.chn.simple,
+                       map.usa, overwrite=TRUE)
 }
 
 gen.internal <- function() {
@@ -62,12 +63,13 @@ gen.internal <- function() {
     prov.chn <- read.csv('inst/extdata/rgnchn/rgn-name-translation.csv', strip.white=TRUE,
                          stringsAsFactors=FALSE)
 
-    ## CAM-USA has a lookup table
+    ## GCAM-USA has a lookup table
     lut.usa <- read.csv('inst/extdata/rgnusa/lookup.txt', strip.white=TRUE,
                         stringsAsFactors=FALSE)
 
     devtools::use_data(lut.rgn14, lut.rgn32, drop.rgn32, lut.basin235,
-                       lut.chn, drop.chn, prov.chn, internal=TRUE, overwrite=TRUE)
+                       lut.chn, drop.chn, prov.chn, lut.usa,
+                       internal=TRUE, overwrite=TRUE)
 }
 
 

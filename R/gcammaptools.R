@@ -33,8 +33,7 @@
 #' excluding Taiwan.
 #'   \item \code{\link{map.basin235}}: 235 water basins.
 #'   \item \code{\link{map.chn}}: 32 global regions plus China subregions
-#'   \item \code{map.usa}: 32 global regions plus US states (XXX not yet
-#' provided; coming as soon as I can dig up the shapefile).
+#'   \item \code{\link{map.usa}}: 32 global regions plus US states.
 #' }
 #' Users can provid their own base maps.  You will need a geometry file in
 #' geojson format, where each region has a \code{GCAM_ID} property.  Land masses
@@ -120,3 +119,11 @@ NULL
 #'
 #' @format Spatial data frame
 "map.chn.simple"
+
+#' Base map for 32-region GCAM with USA states
+#'
+#' This map has the 32 GCAM regions, plus the subregions corresponding to
+#' US states including the District of Columbia.
+#'
+#' @format Simple feature collection
+"map.usa"
