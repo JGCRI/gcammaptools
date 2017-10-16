@@ -779,6 +779,17 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     if (!('lon' %in% names(plotdata) && 'lat' %in% names(plotdata)))
         stop("gridded data must have a 'lon' column and a 'lat' column")
 
+
+    # m <- sf::st_as_sf(d, coords = c("lat", "lon"), crs = wgs84, agr = "field")
+    #
+    # # create sf obj bounding box from extent and define native proj; apply buffer if needed
+    # b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(wgs84))
+    #
+    # # import spatial data; join gcam data; get only features in bounds; transform projection
+    # m <- filter_spatial(m, bbox = b, extent = extent, col = col, agr_type = 'constant')
+    # crds <- sf::st_coordinates(m)
+    # plotdata <- data.frame(lat=crds[,1], lon=crds[,2], value=m$value)
+
     # if we are in a projected crs
     if (!sf::st_is_longlat(proj)) {
         p4s <- assign_prj4s(proj_type, proj)
