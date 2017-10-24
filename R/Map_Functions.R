@@ -605,8 +605,8 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
                   axis.ticks = AXIS_TICKS,
                   axis.text = AXIS_TEXT,
                   legend.key.size = unit(0.75, "cm"),
-                  legend.text = element_text(size = 10),
-                  legend.title = element_text(size = 12, face = "bold"),
+                  legend.text = element_text(size = 12),
+                  legend.title = element_text(size = 13, face = "bold"),
                   legend.position = LEGEND_POSITION,
                   legend.key = element_rect(color = "black"))
 
@@ -733,7 +733,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   # create sf obj bounding box from extent and define native proj; apply buffer if needed
   b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(m))
 
-    # import spatial data; join gcam data; get only features in bounds; transform projection
+  # import spatial data; join gcam data; get only features in bounds; transform projection
   m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
     filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
     reproject(prj4s = p4s)
@@ -767,30 +767,34 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 #'   Must contain 'lat' and 'lon' columns.
 #' @param col Name of the column holding the data values to plot
 #' @param map Base map data.  Default is GCAM 32-region
+#' @param extent Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to.
+#' @param zoom A distance to buffer the bounding box extent by for on-the-fly
+#'   adjustments needed when fitting area to maps.
 #' @param alpha Transparency of the grid data layer.  Given as a number between
 #'   0 and 1, where 0 is completely transparent and 1 is completely opaque.
 #' @param ... Other parameters passed on to \code{plot_GCAM}.
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
-                           proj_type = NULL, alpha = 0.8, ...) {
+                           proj_type = NULL, extent = EXTENT_WORLD, zoom = 0,
+                           alpha = 0.8, ...) {
 
     # make sure data has valid gridded data
     if (!('lon' %in% names(plotdata) && 'lat' %in% names(plotdata)))
         stop("gridded data must have a 'lon' column and a 'lat' column")
 
+    # find the bounds of the map
+    b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(map))
+    map <- filter_spatial(map, bbox = b, extent = extent, col = NULL)
+    bounds <- sf::st_bbox(map)
 
-    # m <- sf::st_as_sf(d, coords = c("lat", "lon"), crs = wgs84, agr = "field")
-    #
-    # # create sf obj bounding box from extent and define native proj; apply buffer if needed
-    # b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(wgs84))
-    #
-    # # import spatial data; join gcam data; get only features in bounds; transform projection
-    # m <- filter_spatial(m, bbox = b, extent = extent, col = col, agr_type = 'constant')
-    # crds <- sf::st_coordinates(m)
-    # plotdata <- data.frame(lat=crds[,1], lon=crds[,2], value=m$value)
+    # filter the gridded data to only what will be shown
+    plotdata <- dplyr::filter(plotdata, plotdata$lon > bounds[[1]] &
+                                        plotdata$lat > bounds[[2]] &
+                                        plotdata$lon < bounds[[3]] &
+                                        plotdata$lat < bounds[[4]])
 
-    # if we are in a projected crs
+    # Only raster if we are in a projected crs
     if (!sf::st_is_longlat(proj)) {
         p4s <- assign_prj4s(proj_type, proj)
 
@@ -798,17 +802,16 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         crs <- sp::CRS(wgs84)
         spdf <- sp::SpatialPointsDataFrame(plotdata[c('lon', 'lat')], plotdata[col], proj4string = crs)
 
-        # get raster extent and use that to calculate the x to y ratio
+        # get raster extent
         e = raster::extent(spdf)
-        ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
 
-        # set the number of rows in the raster equal to the number of unique
-        # latitudes in the original data
+        # set the number of rows and columns in the raster equal to the number
+        # of unique latitudes and longitudes in the original data
         nr <- plotdata['lat'] %>% unique() %>% nrow
+        nc <- plotdata['lon'] %>% unique() %>% nrow
 
         # build a raster that fits the data
-        plotraster <- raster::raster(nrows = nr, ncols = floor( nr * ratio ),
-                                     ext = e, crs = crs)
+        plotraster <- raster::raster(nrows = nr, ncols = nc, ext = e, crs = crs)
 
         # 1. Add SpatialPointsDataFrame values to raster cells
         # 2. Reproject the raster into the user-defined crs
@@ -821,11 +824,11 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
                     raster::rasterToPoints() %>%
                     data.frame() %>%
                     magrittr::set_names(c("lon", "lat", col))
-
     }
 
     # get the base map using plot_GCAM
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, ...)
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent,
+                    zoom = zoom, ...)
 
     # add the gridded data to the base map
     grid <- geom_raster(data = plotdata,
@@ -834,7 +837,6 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
 
     # remove x and y axis labels and give scale a title
     lbls <- labs(x = XLAB, y = YLAB, fill=col)
-
     return(mp + grid + lbls)
 }
 
