@@ -34,9 +34,13 @@ gen.data <- function() {
     names(map.usa)[1] <- c("region_name")
     map.usa <- rbind(map.rgn32, map.usa)
 
+    path.countries <- system.file("extdata", "rgnworld/ne_110m_admin_0_countries.shp", package = "gcammaptools")
+    map.countries <- import_mapdata(path.countries)[,c('admin', 'geometry')]
+    map.countries <- simplify_mapdata(map.countries, 1, 0.2)
+
     devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple,
                        map.basin235, map.basin235.simple, map.chn, map.chn.simple,
-                       map.usa, overwrite=TRUE)
+                       map.usa, map.countries, overwrite=TRUE)
 }
 
 gen.internal <- function() {

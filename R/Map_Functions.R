@@ -185,7 +185,7 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #' @param degree_tolerance Tolerance parameter for simplifying polygons.
 #' @return The simplified sf object.
 #' @export
-simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
+simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 
   . <- NULL                             # silence package notes for NSE.
 
