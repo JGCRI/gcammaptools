@@ -462,7 +462,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' province abbreviations.  The \code{rgn32} set has drops, but not province
 #' abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
 #' finally implemented) has both.
-#' @param datatable A table of results produced by \code{\link{process_batch_q}}
+#' @param datatable A table of results produced by \code{\link{getQuery}}
 #' @param lookupfile Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing the region lookup table
 #' @param provincefile Name of one of the predefined map sets, OR, if you're
