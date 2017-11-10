@@ -745,7 +745,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   minZoom = 2
 
   m <- leaflet(data = m, options = leafletOptions(minZoom = minZoom,
-                                                  maxZoom = 10, crs = crs)) %>%
+                                                  maxZoom = 10)) %>%
           addProviderTiles(providers$Esri.WorldShadedRelief) %>%
           addPolygons(fillColor = as.formula(paste('~pal(', col, ')')),
                       color = "#444444", weight = 1, smoothFactor = 0.5,
