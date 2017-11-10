@@ -734,21 +734,36 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(m))
 
     # import spatial data; join gcam data; get only features in bounds; transform projection
-  m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
-    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
-    reproject(prj4s = p4s)
+  m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) #%>%
+    # filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type)
+    # reproject(prj4s = p4s)
 
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
   # generate plot object
-  mp <- ggplot() +
-    ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
-    map_zoom +
-    ggplot2::ggtitle(title) +
-    theme_GCAM(legend = legend)
+  # mp <- ggplot() +
+  #   ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
+  #   map_zoom +
+  #   ggplot2::ggtitle(title) +
+  #   theme_GCAM(legend = legend)
+  #
+  pal <- colorBin("YlGn", domain = m[[col]], bins = 8)
 
-  return(mp)
+  leaflet(data = m, options = leafletOptions(minZoom = 2, maxZoom = 10)) %>%
+      addProviderTiles(providers$Esri.WorldShadedRelief) %>%
+      addPolygons(fillColor = as.formula(paste('~pal(', col, ')')),
+                  color = "#444444", weight = 1, smoothFactor = 0.5,
+                  opacity = 1.0, fillOpacity = 0.5,
+                  highlightOptions = highlightOptions(color = "white",
+                                                      weight = 2,
+                                                      bringToFront = TRUE)) %>%
+      fitBounds(sf::st_bbox(b)[[1]],sf::st_bbox(b)[[2]],sf::st_bbox(b)[[3]],sf::st_bbox(b)[[4]]) %>%
+      # setView((extent[1] + extent[2]) / 2, (extent[3] + extent[4]) / 2, zoom) %>%
+      addLegend(pal = pal, values = as.formula(paste0('~', col)), opacity = 0.7, title = NULL,
+                position = "bottomright")
+
+  # return(mp)
 }
 
 #' Plot a gridded dataset over a base map
