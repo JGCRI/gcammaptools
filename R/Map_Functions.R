@@ -738,29 +738,40 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
     # filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type)
     # reproject(prj4s = p4s)
 
-  pal <- colorBin("YlGn", domain = m[[col]], bins = 8)
   bounds <- sf::st_bbox(b)
   centerx <- (bounds[[1]] + bounds[[3]]) / 2
   centery <- (bounds[[2]] + bounds[[4]]) / 2
   minZoom = 2
-
-  m <- leaflet(data = m, options = leafletOptions(minZoom = minZoom,
-                                                  maxZoom = 10)) %>%
+  map <- leaflet(data = m, options = leafletOptions(minZoom = minZoom,
+                                                    maxZoom = 10)) %>%
           addProviderTiles(providers$Esri.WorldShadedRelief) %>%
-          addPolygons(fillColor = as.formula(paste('~pal(', col, ')')),
-                      color = "#444444", weight = 1, smoothFactor = 0.5,
-                      opacity = 1.0, fillOpacity = 0.5,
-                      highlightOptions = highlightOptions(color = "white",
-                                                          weight = 2,
-                                                          bringToFront = TRUE)) %>%
           setView(centerx, centery, minZoom + zoom)
 
-  if(legend) {
-      m <- addLegend(m, pal = pal, values = as.formula(paste0('~', col)),
-                     opacity = 0.7, title = gcam_df$Units[1],
-                     position = "bottomright")
+  if(is.null(col)) {
+      map <- addPolygons(map, fillColor = NULL, color = "#444444", weight = 1,
+                         smoothFactor = 0.5, opacity = 1.0,
+                         highlightOptions = highlightOptions(color = "white",
+                                                             weight = 2,
+                                                             bringToFront = TRUE))
   }
-  m
+  else {
+      pal <- colorBin("YlGn", domain = m[[col]], bins = 8)
+      map <- addPolygons(map, fillColor = as.formula(paste('~pal(', col, ')')),
+                         color = "#444444", weight = 1, smoothFactor = 0.5,
+                         opacity = 1.0, fillOpacity = 0.5,
+                         highlightOptions = highlightOptions(color = "white",
+                                                             weight = 2,
+                                                             bringToFront = TRUE))
+      if(legend) {
+          if(!is.null(gcam_df$Units))
+              title <- gcam_df$Units[1]
+          else
+              title <- ""
+          map <- addLegend(map, pal = pal, values = as.formula(paste0('~', col)),
+                           opacity = 0.7, title = title, position = "bottomright")
+      }
+  }
+  map
 }
 
 #' Plot a gridded dataset over a base map
@@ -785,58 +796,47 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
-                           proj_type = NULL, alpha = 0.8, ...) {
+                           proj_type = NULL, legend = F, alpha = 0.8, ...) {
 
     # make sure data has valid gridded data
     if (!('lon' %in% names(plotdata) && 'lat' %in% names(plotdata)))
         stop("gridded data must have a 'lon' column and a 'lat' column")
 
-    # if we are in a projected crs
-    if (!sf::st_is_longlat(proj)) {
-        p4s <- assign_prj4s(proj_type, proj)
+    # make SpatialPointsDataFrame because raster can't work with sf objects
+    crs <- sp::CRS(wgs84)
+    spdf <- sp::SpatialPointsDataFrame(plotdata[c('lon', 'lat')], plotdata[col], proj4string = crs)
 
-        # make SpatialPointsDataFrame because raster can't work with sf objects
-        crs <- sp::CRS(wgs84)
-        spdf <- sp::SpatialPointsDataFrame(plotdata[c('lon', 'lat')], plotdata[col], proj4string = crs)
+    # get raster extent and use that to calculate the x to y ratio
+    e = raster::extent(spdf)
+    ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
 
-        # get raster extent and use that to calculate the x to y ratio
-        e = raster::extent(spdf)
-        ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
+    # set the number of rows and columns in the raster equal to the number of
+    # unique latitudes and longitudes in the original data
+    nr <- plotdata['lat'] %>% unique() %>% nrow
+    nc <- plotdata['lon'] %>% unique() %>% nrow
 
-        # set the number of rows in the raster equal to the number of unique
-        # latitudes in the original data
-        nr <- plotdata['lat'] %>% unique() %>% nrow
+    # build a raster that fits the data
+    plotraster <- raster::raster(nrows = nr, ncols = nc, ext = e, crs = crs) %>%
+                  raster::rasterize(spdf, ., field = col, fun = mean) %>%
+                  projectRasterForLeaflet()
 
-        # build a raster that fits the data
-        plotraster <- raster::raster(nrows = nr, ncols = floor( nr * ratio ),
-                                     ext = e, crs = crs)
+    # If the minimum of the original data was zero, let's assume that values
+    # less than zero aren't meaningful, and remove them from the reprojected
+    # raster. Note that this approach might be better to do differently once
+    # this PR is merged: https://github.com/rstudio/leaflet/pull/462.
+    if(min(plotdata[col]) == 0)
+        raster::values(plotraster)[raster::values(plotraster) < 0] <- 0
 
-        # 1. Add SpatialPointsDataFrame values to raster cells
-        # 2. Reproject the raster into the user-defined crs
-        # 3. Turn the raster back into points in the new crs
-        # 4. Convert back to a data.frame with the correct names so that
-        #    geom_raster can plot it
-        plotdata <- spdf %>%
-                    raster::rasterize(plotraster, field = col, fun = mean) %>%
-                    raster::projectRaster(crs=p4s) %>%
-                    raster::rasterToPoints() %>%
-                    data.frame() %>%
-                    magrittr::set_names(c("lon", "lat", col))
+    pal <- colorBin("Spectral", domain = raster::values(plotraster), bins = 8, na.color = '#00000000')
 
-    }
+    # get the base map using plot_GCAM then add raster on top
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, legend = F, ...) %>%
+          addRasterImage(plotraster, colors = pal, opacity = alpha, project = F)
 
-    # get the base map using plot_GCAM
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, ...)
-
-    # add the gridded data to the base map
-    grid <- geom_raster(data = plotdata,
-                        mapping = aes_string(x='lon', y='lat', fill = col),
-                        alpha = alpha)
-
-    # remove x and y axis labels and give scale a title
-    lbls <- labs(x = XLAB, y = YLAB, fill=col)
-
-    return(mp + grid + lbls)
+    if(legend)
+        mp <- addLegend(mp, pal = pal, position = "bottomright",
+                        values = plotdata[col])
+    mp
 }
 
 #' Get auxiliary data for a named mapset.
