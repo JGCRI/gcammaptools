@@ -738,32 +738,29 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
     # filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type)
     # reproject(prj4s = p4s)
 
-  # create object to control map zoom extent
-  map_zoom <- zoom_bounds(m, b, extent, p4s)
-
-  # generate plot object
-  # mp <- ggplot() +
-  #   ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
-  #   map_zoom +
-  #   ggplot2::ggtitle(title) +
-  #   theme_GCAM(legend = legend)
-  #
   pal <- colorBin("YlGn", domain = m[[col]], bins = 8)
+  bounds <- sf::st_bbox(b)
+  centerx <- (bounds[[1]] + bounds[[3]]) / 2
+  centery <- (bounds[[2]] + bounds[[4]]) / 2
+  minZoom = 2
 
-  leaflet(data = m, options = leafletOptions(minZoom = 2, maxZoom = 10)) %>%
-      addProviderTiles(providers$Esri.WorldShadedRelief) %>%
-      addPolygons(fillColor = as.formula(paste('~pal(', col, ')')),
-                  color = "#444444", weight = 1, smoothFactor = 0.5,
-                  opacity = 1.0, fillOpacity = 0.5,
-                  highlightOptions = highlightOptions(color = "white",
-                                                      weight = 2,
-                                                      bringToFront = TRUE)) %>%
-      fitBounds(sf::st_bbox(b)[[1]],sf::st_bbox(b)[[2]],sf::st_bbox(b)[[3]],sf::st_bbox(b)[[4]]) %>%
-      # setView((extent[1] + extent[2]) / 2, (extent[3] + extent[4]) / 2, zoom) %>%
-      addLegend(pal = pal, values = as.formula(paste0('~', col)), opacity = 0.7, title = NULL,
-                position = "bottomright")
+  m <- leaflet(data = m, options = leafletOptions(minZoom = minZoom,
+                                                  maxZoom = 10, crs = crs)) %>%
+          addProviderTiles(providers$Esri.WorldShadedRelief) %>%
+          addPolygons(fillColor = as.formula(paste('~pal(', col, ')')),
+                      color = "#444444", weight = 1, smoothFactor = 0.5,
+                      opacity = 1.0, fillOpacity = 0.5,
+                      highlightOptions = highlightOptions(color = "white",
+                                                          weight = 2,
+                                                          bringToFront = TRUE)) %>%
+          setView(centerx, centery, minZoom + zoom)
 
-  # return(mp)
+  if(legend) {
+      m <- addLegend(m, pal = pal, values = as.formula(paste0('~', col)),
+                     opacity = 0.7, title = gcam_df$Units[1],
+                     position = "bottomright")
+  }
+  m
 }
 
 #' Plot a gridded dataset over a base map
