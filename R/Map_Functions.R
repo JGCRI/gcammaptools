@@ -775,6 +775,8 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
                            proj_type = NULL, legend = F, alpha = 0.8, ...) {
 
+    map.rgn32 <- gcammaptools::map.rgn32 # Silence package notes
+
     # make sure data has valid gridded data
     if (!('lon' %in% names(plotdata) && 'lat' %in% names(plotdata)))
         stop("gridded data must have a 'lon' column and a 'lat' column")
