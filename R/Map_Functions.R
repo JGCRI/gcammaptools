@@ -66,7 +66,7 @@ filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo
   }
   # conducting the intersection here eliminates erroneous-filled poly generated at the global extent
   else {
-    return(sf::st_intersection(bbox, mapdata[clm])[clm])
+    return(suppressMessages({sf::st_intersection(bbox, mapdata[clm])[clm]}))
   }
 }
 
@@ -353,9 +353,9 @@ spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datu
     sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
     sf::st_transform(proj4s)
 
-  # Suppress Warning: In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) :
-  #   st_buffer does not correctly buffer longitude/latitude data, dist needs
-  #   to be in decimal degrees.
+  # Suppress Warning and message: In st_buffer.sfc(st_geometry(x), dist,
+  #   nQuadSegs) : st_buffer does not correctly buffer longitude/latitude data,
+  #   dist needs to be in decimal degrees.
   #   This warning occurs from buffering a feature that is in a geographic
   #   coordinate system (lat/long) rather than a projection one.  This makes the
   #   the buffer not be exact due to the distance being calculated in decimal
@@ -365,7 +365,7 @@ spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datu
 
   # buffer if user desires
   if (!is.null(buff_dist)) {
-    return(suppressWarnings({sf::st_buffer(bb, buff_dist)}))
+    return(suppressWarnings({suppressMessages({sf::st_buffer(bb, buff_dist)})}))
   }
   else {
     return(bb)
@@ -773,7 +773,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
-                           proj_type = NULL, alpha = 0.8, ...) {
+                           proj_type = NULL, legend = F, alpha = 0.8, ...) {
 
     # make sure data has valid gridded data
     if (!('lon' %in% names(plotdata) && 'lat' %in% names(plotdata)))
@@ -789,15 +789,14 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
 
         # get raster extent and use that to calculate the x to y ratio
         e = raster::extent(spdf)
-        ratio <- ( e@xmax - e@xmin ) / ( e@ymax - e@ymin )
 
         # set the number of rows in the raster equal to the number of unique
         # latitudes in the original data
         nr <- plotdata['lat'] %>% unique() %>% nrow
+        nc <- plotdata['lon'] %>% unique() %>% nrow
 
         # build a raster that fits the data
-        plotraster <- raster::raster(nrows = nr, ncols = floor( nr * ratio ),
-                                     ext = e, crs = crs)
+        plotraster <- raster::raster(nrows = nr, ncols = nc, ext = e, crs = crs)
 
         # 1. Add SpatialPointsDataFrame values to raster cells
         # 2. Reproject the raster into the user-defined crs
@@ -806,7 +805,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         #    geom_raster can plot it
         plotdata <- spdf %>%
                     raster::rasterize(plotraster, field = col, fun = mean) %>%
-                    raster::projectRaster(crs=p4s) %>%
+                    raster::projectRaster(crs=p4s, over=TRUE) %>%
                     raster::rasterToPoints() %>%
                     data.frame() %>%
                     magrittr::set_names(c("lon", "lat", col))

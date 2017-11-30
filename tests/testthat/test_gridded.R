@@ -43,9 +43,9 @@ test_that("gridded data plots with EPSG projection type", {
 })
 
 test_that("gridded data plots with orthographic projection", {
-  # I expect that this fails because raster::projectRaster attempts to
-  # transform into a projection where the data is invalid
-  expect_error(
+  # Expect a warning because raster::projectRaster attempts to transform into a
+  # projection where many of the points can't be plotted
+  expect_warning(
     plot_GCAM_grid(co2grid,
                    col='value',
                    map=m,
@@ -64,7 +64,7 @@ test_that("gridded data plots with SR-ORG projection type and zoom", {
                  extent=EXTENT_LA,
                  zoom=8)
 })
-  
+
 test_that("gridded data plots with Robinson projection", {
   plot_GCAM_grid(co2grid,
                  col='value',
