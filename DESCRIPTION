@@ -22,7 +22,6 @@ Imports:
     rgdal (>= 1.2.11),
     rgeos (>= 0.3.25),
     RColorBrewer (>= 1.1.2),
-    sp (>= 1.2.5),
     sf (>= 0.5-4)
 RoxygenNote: 6.0.1
 Suggests: knitr,

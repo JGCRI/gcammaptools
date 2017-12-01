@@ -785,12 +785,8 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     if (!sf::st_is_longlat(proj)) {
         p4s <- assign_prj4s(proj_type, proj)
 
-        # make SpatialPointsDataFrame because raster can't work with sf objects
-        crs <- sp::CRS(wgs84)
-        spdf <- sp::SpatialPointsDataFrame(plotdata[c('lon', 'lat')], plotdata[col], proj4string = crs)
-
-        # get raster extent and use that to calculate the x to y ratio
-        e = raster::extent(spdf)
+        # get raster extent
+        e = raster::extent(c(range(plotdata$lon), range(plotdata$lat)))
 
         # set the number of rows in the raster equal to the number of unique
         # latitudes in the original data
@@ -798,15 +794,17 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         nc <- plotdata['lon'] %>% unique() %>% nrow
 
         # build a raster that fits the data
-        plotraster <- raster::raster(nrows = nr, ncols = nc, ext = e, crs = crs)
+        plotraster <- raster::raster(nrows = nr, ncols = nc, ext = e, crs = wgs84)
 
-        # 1. Add SpatialPointsDataFrame values to raster cells
+        points <- plotdata[ , c('lon', 'lat')]
+        values <- plotdata[[col]]
+
+        # 1. Add data values to raster cells
         # 2. Reproject the raster into the user-defined crs
         # 3. Turn the raster back into points in the new crs
         # 4. Convert back to a data.frame with the correct names so that
         #    geom_raster can plot it
-        plotdata <- spdf %>%
-                    raster::rasterize(plotraster, field = col, fun = mean) %>%
+        plotdata <- raster::rasterize(points, plotraster, field = values, fun = mean) %>%
                     raster::projectRaster(crs=p4s, over=TRUE) %>%
                     raster::rasterToPoints() %>%
                     data.frame() %>%
