@@ -1,9 +1,10 @@
 Package: gcammaptools
 Title: Plot GCAM Output on Maps
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: c(
 	   person("Catherine", "Ledna", email = "catherine.ledna@pnnl.gov", role = c("aut", "cre")),
-	   person("Robert", "Link", email="robert.link@pnnl.gov", role="ctb")
+	   person("Robert", "Link", email="robert.link@pnnl.gov", role="ctb"),
+	   person("Caleb", "Braun", email="caleb.braun@pnnl.gov", role="ctb")
 	   )
 Description: This package provides tools for displaying GCAM output plotted as
     shaded regions on maps (a type of plot called a "choropleth"). Both numerical
