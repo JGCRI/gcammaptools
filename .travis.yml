@@ -6,7 +6,7 @@ r:
 cache: packages
 
 os:
-  - linux
+#  - linux
   - osx
 
 sudo: required
