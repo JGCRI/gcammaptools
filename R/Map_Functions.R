@@ -545,12 +545,12 @@ translate_province <- function(datatable, provincefile) {
         rgn <- "region"
     }
 
-    datatable$rgn <- as.character(datatable$rgn)
+    datatable[[rgn]] <- as.character(datatable[[rgn]])
     provincetable$province <- as.character(provincetable$province)
     provincetable$province.name <- as.character(provincetable$province.name)
 
-    datatable$rgn <- ifelse(is.na(provincetable$province.name[match(datatable$rgn, provincetable$province)]),
-                            datatable$rgn, provincetable$province.name[match(datatable$rgn, provincetable$province)])
+    datatable[[rgn]] <- ifelse(is.na(provincetable$province.name[match(datatable[[rgn]], provincetable$province)]),
+                            datatable[[rgn]], provincetable$province.name[match(datatable[[rgn]], provincetable$province)])
 
     return(datatable)
 }
