@@ -66,7 +66,7 @@ filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo
   }
   # conducting the intersection here eliminates erroneous-filled poly generated at the global extent
   else {
-    return(suppressMessages({sf::st_intersection(bbox, mapdata[clm])[clm]}))
+    return(suppressMessages({sf::st_intersection(bbox, mapdata)}))
   }
 }
 
@@ -105,7 +105,8 @@ join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
         # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343 ;
         # to remedy until dplyr creates an sf join function cast back to sf obj
         mapdata <- dplyr::left_join(mapdata, gcam_df, by='pkey') %>%
-                      sf::st_as_sf()
+                   dplyr::select(-dplyr::one_of('pkey', mapdata_key)) %>%
+                   sf::st_as_sf()
     }
     return(mapdata)
 }
@@ -505,11 +506,10 @@ add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL
     ## set column name for id column
     colnames(finaltable)[ncol(finaltable)] <- "id"
 
-    ## find NA values
-    na.vals <- is.na(finaltable)
-    na.vals[finaltable$id == 0,] <- FALSE    # exclude non-regions; they should stay NA
-    finaltable[na.vals] <- 0
-    # finaltable$id <- as.character(finaltable$id)  # other functions used id to be a char
+    ## Replace NA values with 0, except for non-regions which should stay NA
+    valuecols <- sapply(finaltable, is.numeric)
+    na.vals <- which(!complete.cases(finaltable[ , valuecols]) & finaltable$id != 0)
+    finaltable[na.vals, valuecols][is.na(finaltable[na.vals, valuecols])] <- 0
 
     # Add null vector row to end to account for GCAM region 0
     nullvec <- rep(NA, ncol(finaltable))
