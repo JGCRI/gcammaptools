@@ -472,10 +472,12 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' @param drops Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing a list of regions to drop, if
 #' applicable.
+#' @param disaggregate A column of \code{datatable} used to disaggregate regions
+#' that are not specified in the original data.
 #' @return Input table modified to include a GCAM ID for reach region.
 #' @importFrom utils read.csv
 #' @export
-add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
+add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL, disaggregate = NULL) {
     if (!is.null(provincefile)) {
         datatable <- translate_province(datatable, provincefile)
     }
@@ -490,33 +492,37 @@ add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL
         read.csv(lookupfile, strip.white = T, stringsAsFactors = F)
     }
 
-    # Differentiate region-Region issue
-    if ("Region" %in% names(datatable)) {
-        rgn <- "Region"
-    } else {
-        rgn <- "region"
-    }
+    # Don't allow "Region"; replace with "region"
+    rgnidx <- which(names(datatable) == "Region")
+    names(datatable)[rgnidx] <- "region"
 
-    finaltable <- merge(datatable, lookuptable, by.x = rgn, by.y = colnames(lookuptable)[1], all.y = TRUE)
+    # Add column containing region id to end of datatable
+    finaltable <- dplyr::full_join(datatable, lookuptable, by = "region")
 
-    ## Regions that weren't in the original table will show as NA.
-    ## Zero them out and give them a sensible unit.
-    unit <- finaltable$Units[!is.na(finaltable$Units)][1]  # pick the first available unit value; they should all be the same
-    finaltable$Units[is.na(finaltable$Units)] <- unit
-    ## set column name for id column
-    colnames(finaltable)[ncol(finaltable)] <- "id"
-
-    ## Replace NA values with 0, except for non-regions which should stay NA
-    valuecols <- sapply(finaltable, is.numeric)
-    na.vals <- which(!complete.cases(finaltable[ , valuecols]) & finaltable$id != 0)
-    finaltable[na.vals, valuecols][is.na(finaltable[na.vals, valuecols])] <- 0
+    # Set column name for id column
+    names(finaltable)[ncol(finaltable)] <- "id"
 
     # Add null vector row to end to account for GCAM region 0
-    nullvec <- rep(NA, ncol(finaltable))
+    finaltable <- rbind(finaltable, rep(NA, ncol(finaltable)))
+    finaltable[nrow(finaltable), 'region'] <- "#N/A"
+    finaltable[nrow(finaltable), 'id'] <- 0
 
-    finaltable <- rbind(finaltable, nullvec)
-    finaltable[nrow(finaltable), rgn] <- "0"  # region 0 name (should be something more descriptive?)
-    finaltable$id[nrow(finaltable)] <- 0
+    # Regions that weren't in the original table will have NA values for all
+    # data except for the region and id columns. If the user specified a
+    # disaggregate column, split the new regions over all factors from that
+    # column.
+    if (!is.null(disaggregate)) {
+        # Get values to disaggregate over
+        factors <- finaltable[[disaggregate]] %>% unique %>% na.omit
+
+        # Get rows that need disaggregating (the ones that have NAs in that col)
+        na.rgns <- finaltable[which(is.na(finaltable[[disaggregate]])), ]
+
+        # Build disaggregated dataframe and add to end of original table
+        disaggr <- na.rgns[rep(seq_len(nrow(na.rgns)), each = length(factors)), ]
+        disaggr[[disaggregate]] <- rep(factors, nrow(na.rgns))
+        finaltable <- rbind(dplyr::setdiff(finaltable, na.rgns), disaggr)
+    }
 
     return(finaltable)
 }
