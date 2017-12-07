@@ -1,5 +1,4 @@
-REGION_NAME,GCAM_ID
-,0.0
+region,region_id
 USA,1.0
 Africa_Eastern,2.0
 Africa_Northern,3.0

@@ -18,7 +18,7 @@ gen.data <- function() {
 
     path.rgn32 <- system.file("extdata", "rgn32/reg32_spart.shp", package = "gcammaptools")
     map.rgn32 <- import_mapdata(path.rgn32)
-    map.rgn32['region_name'] <- dplyr::left_join(map.rgn32, lut.rgn32, by=c("region_id" = "GCAM_ID"))[3]
+    map.rgn32['region_name'] <- dplyr::left_join(map.rgn32, lut.rgn32, by="region_id")[3]
     map.rgn32.simple <- simplify_mapdata(map.rgn32)
 
     path.basin235 <- system.file("extdata", "rgnbasin/Global235_CLM_05_dissolve.geojson", package = "gcammaptools")
