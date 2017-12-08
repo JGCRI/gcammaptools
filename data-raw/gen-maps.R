@@ -26,8 +26,8 @@ gen.data <- function() {
     map.basin235.simple <- simplify_mapdata(map.basin235)
 
     path.chn <- system.file("extdata", "rgnchn/GCAM_China.geojson", package = "gcammaptools")
-    map.chn <- import_mapdata(path.chn)
-    map.chn.simple <- simplify_mapdata(map.chn)
+    map.chn <- import_mapdata(path.chn) %>% dplyr::select(region_name, region_id, geometry)
+    map.chn.simple <- simplify_mapdata(map.chn, min_area = 0.1, degree_tolerance = 0.05)
 
     devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple,
                        map.basin235, map.basin235.simple, map.chn, map.chn.simple, overwrite=TRUE)
