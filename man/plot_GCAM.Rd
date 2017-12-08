@@ -6,7 +6,7 @@
 \usage{
 plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
   extent = EXTENT_WORLD, title = "", legend = F, gcam_df = NULL,
-  gcam_key = NULL, mapdata_key = NULL, zoom = NULL,
+  gcam_key = "id", mapdata_key = "region_id", zoom = NULL,
   agr_type = "constant")
 }
 \arguments{

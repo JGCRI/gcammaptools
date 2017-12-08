@@ -38,12 +38,13 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 #'
 #' @param mapdata The sf object containing the spatial data.
 #' @param bbox Bounding box.
+#' @param p4s The proj4 string of the final map.
 #' @param extent Extent provided by the user or as default.
 #' @param col Field name with target information to map.
 #' @param agr_type Inherited attribute-geometry-relationship type from plot_GCAM function params.
 #' @param topo SF topologic function to define how the join will be conducted. Default
 #' is to join any feature that intersects the bounding box.
-filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo=sf::st_intersects) {
+filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant', topo=sf::st_intersects) {
   # set NULL column to index
   clm <- if (is.null(col)) 1 else col
 
@@ -62,7 +63,20 @@ filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo
 
   # if extent is not world conduct spatial join; else, return all
   if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
-    return(suppressMessages({sf::st_join(mapdata[clm], bbox, left = FALSE)}))
+      # the filtering bbox must be rectangular in the coordinates being plotted
+      # because the resulting map will be viewed in a rectangular window
+      if (sf::st_is_longlat(mapdata) & !grepl("(+proj=longlat|+proj=ortho)", p4s)) {
+          bbox <- sf::st_transform(bbox, p4s)
+          xn <- sf::st_bbox(bbox)[['xmin']]
+          xx <- sf::st_bbox(bbox)[['xmax']]
+          yx <- sf::st_bbox(bbox)[['ymax']]
+          yn <- sf::st_bbox(bbox)[['ymin']]
+          newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
+          sf::st_geometry(bbox)[[1]] <- newbbox * 1.1
+          bbox <- sf::st_transform(bbox, sf::st_crs(mapdata), check = T)
+      }
+
+      return(suppressMessages({sf::st_join(mapdata[clm], bbox, left = FALSE)}))
   }
   # conducting the intersection here eliminates erroneous-filled poly generated at the global extent
   else {
@@ -193,10 +207,25 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
     mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
 
+  # lapply(mapdata$geometry, function(mpoly) {
+  #     mpoly.filtered <- lapply(mpoly, function(poly) {
+  #                             poly <- sf::st_polygon(poly)
+  #                             if (sf::st_area(poly) > min_area) poly else NULL
+  #                       })
+  #
+  #     mpoly.filtered <- mpoly.filtered[which(sapply(mpoly.filtered, length) != 0)]
+  #     if (length(mpoly.filtered) != 0) {
+  #         mpoly.filtered
+  #     } else { NULL }
+  # }) -> test
+  # test2 <- test[which(sapply(test,length) != 0)]
+  # test3 <- sapply(test2, sf::st_multipolygon)
+  # filtermap <- test3
+
   # filter out all polygons in the data under the minimum area
   areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
   filtermap <- which(areafilter) %>%
-    mapdata[.,]
+   mapdata[., ]
 
   filtermap <- suppressWarnings({sf::st_simplify(filtermap, preserveTopology=TRUE, dTolerance=degree_tolerance)})
 
@@ -744,16 +773,25 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 
     # import spatial data; join gcam data; get only features in bounds; transform projection
   m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
-    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
+    filter_spatial(b, p4s, extent, col, agr_type) %>%
     reproject(prj4s = p4s)
 
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
+  bb <- sf::st_transform(b, sf::st_crs(m))
+  xn <- sf::st_bbox(bb)[['xmin']] * 1.1
+  xx <- sf::st_bbox(bb)[['xmax']] * 1.1
+  yx <- sf::st_bbox(bb)[['ymax']] * 1.1
+  yn <- sf::st_bbox(bb)[['ymin']] * 1.1
+  newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
+  sf::st_geometry(bb)[[1]] <- newbbox
+
   # generate plot object
   mp <- ggplot() +
     ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
-    map_zoom +
+     # geom_sf(data=bb) +
+      map_zoom +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend)
 
