@@ -4,11 +4,11 @@
 \alias{add_region_ID}
 \title{Match GCAM ID to region using data from a lookup table.}
 \usage{
-add_region_ID(datatable, lookupfile = lut.rgn32, provincefile = NULL,
-  drops = NULL)
+add_region_ID(datatable, lookupfile = rgn32, provincefile = NULL,
+  drops = NULL, disaggregate = NULL)
 }
 \arguments{
-\item{datatable}{A table of results produced by \code{\link{process_batch_q}}}
+\item{datatable}{A table of results produced by \code{\link{getQuery}}}
 
 \item{lookupfile}{Name of one of the predefined map sets, OR, if you're using
 a custom map set, the file containing the region lookup table}
@@ -20,6 +20,9 @@ applicable.}
 \item{drops}{Name of one of the predefined map sets, OR, if you're using
 a custom map set, the file containing a list of regions to drop, if
 applicable.}
+
+\item{disaggregate}{A column of \code{datatable} used to disaggregate regions
+that are not specified in the original data.}
 }
 \value{
 Input table modified to include a GCAM ID for reach region.

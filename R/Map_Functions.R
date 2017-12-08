@@ -228,6 +228,9 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
   borders <- data.frame(matrix(ncol = length(names(mapdata)), nrow = 2)) %>%
       magrittr::set_names(names(mapdata))
 
+  # extra polygons should be GCAM region 0
+  if ('region_id' %in% names(borders)) borders$region_id <- c(0, 0)
+
   # convert to sf object and add new border polygons
   sf::st_geometry(borders) <- edges
 
@@ -463,7 +466,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' province abbreviations.  The \code{rgn32} set has drops, but not province
 #' abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
 #' finally implemented) has both.
-#' @param datatable A table of results produced by \code{\link{process_batch_q}}
+#' @param datatable A table of results produced by \code{\link{getQuery}}
 #' @param lookupfile Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing the region lookup table
 #' @param provincefile Name of one of the predefined map sets, OR, if you're
@@ -477,7 +480,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' @return Input table modified to include a GCAM ID for reach region.
 #' @importFrom utils read.csv
 #' @export
-add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL, disaggregate = NULL) {
+add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, drops = NULL, disaggregate = NULL) {
     if (!is.null(provincefile)) {
         datatable <- translate_province(datatable, provincefile)
     }
@@ -728,7 +731,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 #' @export
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
-                      gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL,
+                      gcam_df = NULL, gcam_key = "id", mapdata_key = "region_id",
                       zoom = NULL, agr_type='constant') {
 
   # get proj4 string that corresponds to user selection
@@ -819,7 +822,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     }
 
     # get the base map using plot_GCAM
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, ...)
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, legend = legend, ...)
 
     # add the gridded data to the base map
     grid <- geom_raster(data = plotdata,

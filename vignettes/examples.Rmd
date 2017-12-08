@@ -127,3 +127,15 @@ plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, legend=T, zoo
                                                                 title.position="top"))
 
 ```
+### Example 9: Faceting
+Using `ggplot::facet_wrap()` is often a good way to compare the results from several different scenarios. To do this with `plot_GCAM()`, it is important to make sure that your dataset contains the facet variable for each region you want to plot. By default, `add_region_ID()` puts in `NA` values for missing regions. The `disaggregate` parameter allows you to specify that the missing regions with no data should be included in each facet.
+```{r mp9, fig.width=4, fig.height=6, fig.align='center'}
+w <- read.csv('~/../Downloads/examplewater.csv', stringsAsFactors = F)
+w <- add_region_ID(w, disaggregate = 'scenario')
+plot_GCAM(map.rgn32.simple, col='value', legend=T, gcam_df=w) + 
+    ggplot2::scale_fill_gradientn(colors = c("deepskyblue", "firebrick1"),
+                                  na.value = gray(0.9),
+                                  name="Water Dependency in 2100") +
+    ggplot2::facet_wrap(~scenario)
+
+```
