@@ -547,7 +547,7 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
     # column.
     if (!is.null(disaggregate)) {
         # Get values to disaggregate over
-        factors <- finaltable[[disaggregate]] %>% unique %>% na.omit
+        factors <- finaltable[[disaggregate]] %>% unique() %>% stats::na.omit()
 
         # Get rows that need disaggregating (the ones that have NAs in that col)
         na.rgns <- finaltable[which(is.na(finaltable[[disaggregate]])), ]
