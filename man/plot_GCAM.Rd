@@ -14,7 +14,7 @@ plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
 and regional metadata.  This is the only mandatory variable. If used alone,
 will produce the default map.}
 
-\item{col}{If plotting categorical/contiuous data, the name of the column to
+\item{col}{If plotting categorical/continuous data, the name of the column to
 plot.  Will automatically determine type of style of plot based on type of
 data (numeric or character).}
 
@@ -54,7 +54,7 @@ values (aggregates) over the geometry, e.g. population density, dominant
 land use.  [identity]    values identify the geometry: they refer to (the
 whole of) this and only this geometry. See the
 \href{https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries}{sf
-vignette} for futher explanation.}
+vignette} for further explanation.}
 }
 \description{
 This function produces a map visualization of a data set containing GCAM

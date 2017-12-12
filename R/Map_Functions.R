@@ -200,7 +200,7 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #' @param degree_tolerance Tolerance parameter for simplifying polygons.
 #' @return The simplified sf object.
 #' @export
-simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.5) {
+simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 
   . <- NULL                             # silence package notes for NSE.
 
@@ -495,7 +495,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' province abbreviations.  The \code{rgn32} set has drops, but not province
 #' abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
 #' finally implemented) has both.
-#' @param datatable A table of results produced by \code{\link{getQuery}}
+#' @param datatable A table of results produced by \code{\link[rgcam]{getQuery}}
 #' @param lookupfile Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing the region lookup table
 #' @param provincefile Name of one of the predefined map sets, OR, if you're
@@ -645,8 +645,8 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
                   axis.ticks = AXIS_TICKS,
                   axis.text = AXIS_TEXT,
                   legend.key.size = unit(0.75, "cm"),
-                  legend.text = element_text(size = 10),
-                  legend.title = element_text(size = 12, face = "bold"),
+                  legend.text = element_text(size = 12),
+                  legend.title = element_text(size = 13, face = "bold"),
                   legend.position = LEGEND_POSITION,
                   legend.key = element_rect(color = "black"))
 
@@ -708,7 +708,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 #' @param mapdata The data frame containing both geometric data (lat, long, id)
 #'   and regional metadata.  This is the only mandatory variable. If used alone,
 #'   will produce the default map.
-#' @param col If plotting categorical/contiuous data, the name of the column to
+#' @param col If plotting categorical/continuous data, the name of the column to
 #'   plot.  Will automatically determine type of style of plot based on type of
 #'   data (numeric or character).
 #' @param proj Map projection to use in the display map.  This should be a proj4
@@ -738,7 +738,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 #'   land use.  [identity]	values identify the geometry: they refer to (the
 #'   whole of) this and only this geometry. See the
 #'   \href{https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries}{sf
-#'   vignette} for futher explanation.
+#'   vignette} for further explanation.
 #' @importFrom grDevices gray
 #' @examples \dontrun{
 #'
@@ -773,7 +773,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   # create sf obj bounding box from extent and define native proj; apply buffer if needed
   b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(m))
 
-    # import spatial data; join gcam data; get only features in bounds; transform projection
+  # import spatial data; join gcam data; get only features in bounds; transform projection
   m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
     filter_spatial(b, p4s, extent, col, agr_type) %>%
     reproject(prj4s = p4s)
@@ -837,8 +837,8 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         # get raster extent
         e = raster::extent(c(range(plotdata$lon), range(plotdata$lat)))
 
-        # set the number of rows in the raster equal to the number of unique
-        # latitudes in the original data
+        # set the number of rows and columns in the raster equal to the number
+        # of unique latitudes and longitudes in the original data
         nr <- plotdata['lat'] %>% unique() %>% nrow
         nc <- plotdata['lon'] %>% unique() %>% nrow
 
@@ -858,7 +858,6 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
                     raster::rasterToPoints() %>%
                     data.frame() %>%
                     magrittr::set_names(c("lon", "lat", col))
-
     }
 
     # get the base map using plot_GCAM
@@ -871,7 +870,6 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
 
     # remove x and y axis labels and give scale a title
     lbls <- labs(x = XLAB, y = YLAB, fill=col)
-
     return(mp + grid + lbls)
 }
 

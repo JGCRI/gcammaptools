@@ -8,8 +8,6 @@ library('dplyr')
 
 gen.data <- function() {
 
-    ## TODO:  add GCAM-USA dataset here
-
     path.rgn14 <- system.file("extdata", "rgn14/GCAM_region.geojson", package = "gcammaptools")
     map.rgn14 <- import_mapdata(path.rgn14)
     # add a column with the region names so that gcam32_colors can map to it
@@ -27,6 +25,16 @@ gen.data <- function() {
 
     path.chn <- system.file("extdata", "rgnchn/GCAM_China.geojson", package = "gcammaptools")
     map.chn <- import_mapdata(path.chn) %>% dplyr::select(region_name, region_id, geometry)
+
+    path.usa <- system.file("extdata", "rgnusa/us_states_50m.shp", package = "gcammaptools")
+    map.usa <- import_mapdata(path.usa)[,c(1,3)]
+    map.usa$name <- levels(droplevels(map.usa$name))
+    map.usa['region_id'] <- dplyr::left_join(map.usa, lut.usa, by=c("name" = "REGION_NAME"))[3]
+    names(map.usa)[1] <- c("region_name")
+    map.usa <- rbind(map.rgn32, map.usa)
+
+    path.countries <- system.file("extdata", "rgnworld/ne_110m_admin_0_countries.shp", package = "gcammaptools")
+    map.countries <- import_mapdata(path.countries)[,c('admin', 'geometry')]
 
     devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple,
                        map.basin235, map.basin235.simple, map.chn, overwrite=TRUE)
@@ -56,10 +64,13 @@ gen.internal <- function() {
     prov.chn <- read.csv('inst/extdata/rgnchn/rgn-name-translation.csv', strip.white=TRUE,
                          stringsAsFactors=FALSE)
 
-    ## TODO:  We need this data for GCAM-USA too
+    ## GCAM-USA has a lookup table
+    lut.usa <- read.csv('inst/extdata/rgnusa/lookup.txt', strip.white=TRUE,
+                        stringsAsFactors=FALSE)
 
     devtools::use_data(lut.rgn14, lut.rgn32, drop.rgn32, lut.basin235,
-                       lut.chn, drop.chn, prov.chn, internal=TRUE, overwrite=TRUE)
+                       lut.chn, drop.chn, prov.chn, lut.usa,
+                       internal=TRUE, overwrite=TRUE)
 }
 
 
