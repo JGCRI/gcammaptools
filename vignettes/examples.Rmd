@@ -111,11 +111,6 @@ A map of China.  Although the projection is once again the Albers equal area pro
 plot_GCAM(map.rgn32, proj=ch_aea, extent=EXTENT_CHINA, title="China Albers Equal-Area")
 ```
 
-<!-- ### Example 7: China with Provinces -->
-<!-- The basemap `map.chn` can be used to plot data corresponding with Chinese provinces.  -->
-<!-- ```{r mp7, fig.width=4, fig.height=4, fig.align='center'} -->
-<!-- plot_GCAM(map.rgn32, proj=ch_aea, extent=EXTENT_CHINA, title="China Albers Equal-Area") -->
-<!-- ``` -->
 
 ### Example 7: Global Water Basins
 A map of the 235 global water basins.  Because `col` is set to `basin_name`, each basin name is treated as a separate category, giving the colorful map below.
@@ -134,15 +129,18 @@ plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, legend=T, zoo
                                                                 title.position="top"))
 
 ```
+
 ### Example 9: Faceting
 Using `ggplot::facet_wrap()` is often a good way to compare the results from several different scenarios. To do this with `plot_GCAM()`, it is important to make sure that your dataset contains the facet variable for each region you want to plot. By default, `add_region_ID()` puts in `NA` values for missing regions. The `disaggregate` parameter allows you to specify that the missing regions with no data should be included in each facet.
-```{r mp9, fig.width=4, fig.height=6, fig.align='center'}
-w <- read.csv('~/../Downloads/examplewater.csv', stringsAsFactors = F)
-w <- add_region_ID(w, disaggregate = 'scenario')
-plot_GCAM(map.rgn32.simple, col='value', legend=T, gcam_df=w) + 
+```{r mp9, fig.width=7, fig.height=3, fig.align='center'}
+waterdata <- read.csv(system.file('extdata','facet_example.csv', package='gcammaptools'),
+                      stringsAsFactors = F)
+waterdata <- add_region_ID(waterdata, disaggregate = 'scenario')
+
+plot_GCAM(map.rgn32.simple, col='value', legend=T, gcam_df=waterdata,
+          title="Water Scarcity in 2100") + 
     ggplot2::scale_fill_gradientn(colors = c("deepskyblue", "firebrick1"),
-                                  na.value = gray(0.9),
-                                  name="Water Dependency in 2100") +
+                                  na.value = gray(0.9), name="km^3") +
     ggplot2::facet_wrap(~scenario)
 
 ```
