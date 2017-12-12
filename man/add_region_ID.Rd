@@ -8,7 +8,7 @@ add_region_ID(datatable, lookupfile = lut.rgn32, provincefile = NULL,
   drops = NULL)
 }
 \arguments{
-\item{datatable}{A table of results produced by \code{\link{process_batch_q}}}
+\item{datatable}{A table of results produced by \code{\link{getQuery}}}
 
 \item{lookupfile}{Name of one of the predefined map sets, OR, if you're using
 a custom map set, the file containing the region lookup table}

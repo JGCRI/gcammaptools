@@ -5,7 +5,7 @@
 \title{Plot a gridded dataset over a base map}
 \usage{
 plot_GCAM_grid(plotdata, col, map = map.rgn32, proj = robin,
-  proj_type = NULL, extent = EXTENT_WORLD, zoom = 0, alpha = 0.8, ...)
+  proj_type = NULL, legend = F, alpha = 0.8, ...)
 }
 \arguments{
 \item{plotdata}{Data frame with the coordinates and values to be plotted.
@@ -23,15 +23,18 @@ some frequently used projections (e.g. \code{\link{robin}} or
 \item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
 available reference types hosted by \url{http://spatialreference.org/}.}
 
-\item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to.}
-
-\item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
-adjustments needed when fitting area to maps.}
+\item{legend}{Boolean flag: True = display map legend; False = do not display
+legend.}
 
 \item{alpha}{Transparency of the grid data layer.  Given as a number between
 0 and 1, where 0 is completely transparent and 1 is completely opaque.}
 
 \item{...}{Other parameters passed on to \code{plot_GCAM}.}
+
+\item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to.}
+
+\item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
+adjustments needed when fitting area to maps.}
 }
 \description{
 This function produces a map visualization of a gridded (i.e., values
