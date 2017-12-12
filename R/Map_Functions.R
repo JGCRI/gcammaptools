@@ -668,7 +668,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 #' @param mapdata The data frame containing both geometric data (lat, long, id)
 #'   and regional metadata.  This is the only mandatory variable. If used alone,
 #'   will produce the default map.
-#' @param col If plotting categorical/contiuous data, the name of the column to
+#' @param col If plotting categorical/continuous data, the name of the column to
 #'   plot.  Will automatically determine type of style of plot based on type of
 #'   data (numeric or character).
 #' @param proj Map projection to use in the display map.  This should be a proj4
@@ -698,7 +698,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 #'   land use.  [identity]	values identify the geometry: they refer to (the
 #'   whole of) this and only this geometry. See the
 #'   \href{https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries}{sf
-#'   vignette} for futher explanation.
+#'   vignette} for further explanation.
 #' @importFrom grDevices gray
 #' @examples \dontrun{
 #'
