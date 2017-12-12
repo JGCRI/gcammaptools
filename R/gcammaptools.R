@@ -33,8 +33,7 @@
 #' excluding Taiwan.
 #'   \item \code{\link{map.basin235}}: 235 water basins.
 #'   \item \code{\link{map.chn}}: 32 global regions plus China subregions
-#'   \item \code{map.usa}: 32 global regions plus US states (XXX not yet
-#' provided; coming as soon as I can dig up the shapefile).
+#'   \item \code{\link{map.usa}}: 32 global regions plus US states.
 #' }
 #' Users can provid their own base maps.  You will need a geometry file in
 #' geojson format, where each region has a \code{GCAM_ID} property.  Land masses
@@ -102,7 +101,7 @@ NULL
 #' The same map as \code{map.basin235} but with only Polygons that have an area
 #' greater than 2.5 square degrees and simplified Polygon borders.
 #'
-#' @format Spatial data frame
+#' @format Simple feature collection
 "map.basin235.simple"
 
 #' Base map for 32-region GCAM with China subregions
@@ -118,5 +117,21 @@ NULL
 #' The same map as \code{map.chn} but with only Polygons that have an area
 #' greater than 2.5 square degrees and simplified Polygon borders.
 #'
-#' @format Spatial data frame
+#' @format Simple feature collection
 "map.chn.simple"
+
+#' Base map for 32-region GCAM with USA states
+#'
+#' This map has the 32 GCAM regions, plus the subregions corresponding to
+#' US states including the District of Columbia.
+#'
+#' @format Simple feature collection
+"map.usa"
+
+#' Base map for gridded data over national borders
+#'
+#' This map has the administrative borders of the world's countries. It is meant
+#' for use with gridded data only, as no GCAM output matches country boundaries.
+#'
+#' @format Simple feature collection
+"map.countries"
