@@ -535,7 +535,9 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
     names(finaltable)[ncol(finaltable)] <- "id"
 
     # Add null vector row to end to account for GCAM region 0
-    finaltable <- rbind(finaltable, rep(NA, ncol(finaltable)))
+    nullvec <- rep(NA, ncol(finaltable)) %>% setNames(names(finaltable))
+
+    finaltable <- rbind(finaltable, nullvec)
     finaltable[nrow(finaltable), 'region'] <- "#N/A"
     finaltable[nrow(finaltable), 'id'] <- 0
 
