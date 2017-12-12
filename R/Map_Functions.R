@@ -462,7 +462,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' province abbreviations.  The \code{rgn32} set has drops, but not province
 #' abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
 #' finally implemented) has both.
-#' @param datatable A table of results produced by \code{\link{getQuery}}
+#' @param datatable A table of results produced by \code{\link[rgcam]{getQuery}}
 #' @param lookupfile Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing the region lookup table
 #' @param provincefile Name of one of the predefined map sets, OR, if you're
@@ -767,9 +767,6 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 #'   Must contain 'lat' and 'lon' columns.
 #' @param col Name of the column holding the data values to plot
 #' @param map Base map data.  Default is GCAM 32-region
-#' @param extent Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to.
-#' @param zoom A distance to buffer the bounding box extent by for on-the-fly
-#'   adjustments needed when fitting area to maps.
 #' @param alpha Transparency of the grid data layer.  Given as a number between
 #'   0 and 1, where 0 is completely transparent and 1 is completely opaque.
 #' @param ... Other parameters passed on to \code{plot_GCAM}.
@@ -784,18 +781,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     if (!('lon' %in% names(plotdata) && 'lat' %in% names(plotdata)))
         stop("gridded data must have a 'lon' column and a 'lat' column")
 
-    # find the bounds of the map
-    b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(map))
-    map <- filter_spatial(map, bbox = b, extent = extent, col = NULL)
-    bounds <- sf::st_bbox(map)
-
-    # filter the gridded data to only what will be shown
-    plotdata <- dplyr::filter(plotdata, plotdata$lon > bounds[[1]] &
-                                        plotdata$lat > bounds[[2]] &
-                                        plotdata$lon < bounds[[3]] &
-                                        plotdata$lat < bounds[[4]])
-
-    # Only raster if we are in a projected crs
+    # if we are in a projected crs
     if (!sf::st_is_longlat(proj)) {
         p4s <- assign_prj4s(proj_type, proj)
 
@@ -826,8 +812,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     }
 
     # get the base map using plot_GCAM
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent,
-                    zoom = zoom, ...)
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, ...)
 
     # add the gridded data to the base map
     grid <- geom_raster(data = plotdata,

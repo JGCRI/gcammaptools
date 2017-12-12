@@ -30,11 +30,6 @@ legend.}
 0 and 1, where 0 is completely transparent and 1 is completely opaque.}
 
 \item{...}{Other parameters passed on to \code{plot_GCAM}.}
-
-\item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to.}
-
-\item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
-adjustments needed when fitting area to maps.}
 }
 \description{
 This function produces a map visualization of a gridded (i.e., values
