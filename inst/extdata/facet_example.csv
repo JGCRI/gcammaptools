@@ -1,0 +1,61 @@
+year,scenario,region,value
+2100,Policy,Africa_Eastern,349.2467282
+2100,Policy,Africa_Northern,110.0923232
+2100,Policy,Africa_Southern,39.0653672
+2100,Policy,Africa_Western,20.45421263
+2100,Policy,Argentina,5.12193624
+2100,Policy,Australia_NZ,28.5242896
+2100,Policy,Brazil,93.0700576
+2100,Policy,Canada,3.04622159
+2100,Policy,Central America and Caribbean,29.584992
+2100,Policy,Central Asia,199.9252752
+2100,Policy,China,916.7170984
+2100,Policy,EU-12,43.82236319
+2100,Policy,EU-15,129.3813748
+2100,Policy,Europe_Eastern,10.79132
+2100,Policy,Europe_Non_EU,31.88700308
+2100,Policy,European Free Trade Association,0.1248008
+2100,Policy,India,418.148767
+2100,Policy,Indonesia,61.6123108
+2100,Policy,Japan,15.73336
+2100,Policy,Mexico,52.68461142
+2100,Policy,Middle East,72.49103144
+2100,Policy,Pakistan,7.838327838
+2100,Policy,Russia,2.762584574
+2100,Policy,South Africa,1.802891125
+2100,Policy,South America_Northern,8.36552
+2100,Policy,South America_Southern,30.75766
+2100,Policy,South Asia,6.162650163
+2100,Policy,South Korea,19.70368
+2100,Policy,Southeast Asia,83.7899744
+2100,Policy,USA,252.9655013
+2100,Reference,Africa_Eastern,482.7979297
+2100,Reference,Africa_Northern,184.3994195
+2100,Reference,Africa_Southern,80.95427
+2100,Reference,Africa_Western,47.51381364
+2100,Reference,Argentina,8.840376
+2100,Reference,Australia_NZ,49.805528
+2100,Reference,Brazil,173.86027
+2100,Reference,Canada,4.861081582
+2100,Reference,Central America and Caribbean,53.42749
+2100,Reference,Central Asia,448.5730108
+2100,Reference,China,1328.228328
+2100,Reference,EU-12,76.80038923
+2100,Reference,EU-15,209.7363631
+2100,Reference,Europe_Eastern,25.3812
+2100,Reference,Europe_Non_EU,58.96081381
+2100,Reference,European Free Trade Association,0.205362
+2100,Reference,India,620.1063287
+2100,Reference,Indonesia,105.2463163
+2100,Reference,Japan,26.2293
+2100,Reference,Mexico,93.2911134
+2100,Reference,Middle East,133.0321927
+2100,Reference,Pakistan,32.19429024
+2100,Reference,Russia,5.846433131
+2100,Reference,South Africa,4.194839155
+2100,Reference,South America_Northern,15.7487
+2100,Reference,South America_Southern,75.75559
+2100,Reference,South Asia,15.35219214
+2100,Reference,South Korea,34.6956
+2100,Reference,Southeast Asia,129.9162594
+2100,Reference,USA,439.0128269

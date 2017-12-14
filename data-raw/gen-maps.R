@@ -16,7 +16,7 @@ gen.data <- function() {
 
     path.rgn32 <- system.file("extdata", "rgn32/reg32_spart.shp", package = "gcammaptools")
     map.rgn32 <- import_mapdata(path.rgn32)
-    map.rgn32['region_name'] <- dplyr::left_join(map.rgn32, lut.rgn32, by=c("region_id" = "GCAM_ID"))[3]
+    map.rgn32['region_name'] <- dplyr::left_join(map.rgn32, lut.rgn32, by="region_id")[3]
     map.rgn32.simple <- simplify_mapdata(map.rgn32)
 
     path.basin235 <- system.file("extdata", "rgnbasin/Global235_CLM_05_dissolve.geojson", package = "gcammaptools")
@@ -24,8 +24,7 @@ gen.data <- function() {
     map.basin235.simple <- simplify_mapdata(map.basin235)
 
     path.chn <- system.file("extdata", "rgnchn/GCAM_China.geojson", package = "gcammaptools")
-    map.chn <- import_mapdata(path.chn)
-    map.chn.simple <- simplify_mapdata(map.chn)
+    map.chn <- import_mapdata(path.chn) %>% dplyr::select(region_name, region_id, geometry)
 
     path.usa <- system.file("extdata", "rgnusa/us_states_50m.shp", package = "gcammaptools")
     map.usa <- import_mapdata(path.usa)[,c(1,3)]
@@ -38,8 +37,7 @@ gen.data <- function() {
     map.countries <- import_mapdata(path.countries)[,c('admin', 'geometry')]
 
     devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple,
-                       map.basin235, map.basin235.simple, map.chn, map.chn.simple,
-                       map.usa, map.countries, overwrite=TRUE)
+                       map.basin235, map.basin235.simple, map.chn, overwrite=TRUE)
 }
 
 gen.internal <- function() {

@@ -1,4 +1,4 @@
-REGION_NAME,GCAM_ID
+region,region_id
 Africa_Eastern,2
 Africa_Northern,3
 Africa_Southern,4
@@ -30,4 +30,3 @@ South Asia,27
 South Korea,28
 Southeast Asia,29
 USA,1
-#N/A,0

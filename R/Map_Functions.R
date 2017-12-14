@@ -38,12 +38,13 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 #'
 #' @param mapdata The sf object containing the spatial data.
 #' @param bbox Bounding box.
+#' @param p4s The proj4 string of the final map.
 #' @param extent Extent provided by the user or as default.
 #' @param col Field name with target information to map.
 #' @param agr_type Inherited attribute-geometry-relationship type from plot_GCAM function params.
 #' @param topo SF topologic function to define how the join will be conducted. Default
 #' is to join any feature that intersects the bounding box.
-filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo=sf::st_intersects) {
+filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant', topo=sf::st_intersects) {
   # set NULL column to index
   clm <- if (is.null(col)) 1 else col
 
@@ -62,11 +63,24 @@ filter_spatial <- function(mapdata, bbox, extent, col, agr_type='constant', topo
 
   # if extent is not world conduct spatial join; else, return all
   if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
-    return(suppressMessages({sf::st_join(mapdata[clm], bbox, left = FALSE)}))
+      # the filtering bbox must be rectangular in the coordinates being plotted
+      # because the resulting map will be viewed in a rectangular window
+      if (sf::st_is_longlat(mapdata) & !grepl("(+proj=longlat|+proj=ortho)", p4s)) {
+          bbox <- sf::st_transform(bbox, p4s)
+          xn <- sf::st_bbox(bbox)[['xmin']]
+          xx <- sf::st_bbox(bbox)[['xmax']]
+          yx <- sf::st_bbox(bbox)[['ymax']]
+          yn <- sf::st_bbox(bbox)[['ymin']]
+          newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
+          sf::st_geometry(bbox)[[1]] <- newbbox * 1.1
+          bbox <- sf::st_transform(bbox, sf::st_crs(mapdata), check = T)
+      }
+
+      return(suppressMessages({sf::st_join(mapdata[clm], bbox, left = FALSE)}))
   }
   # conducting the intersection here eliminates erroneous-filled poly generated at the global extent
   else {
-    return(suppressMessages({sf::st_intersection(bbox, mapdata[clm])[clm]}))
+    return(suppressMessages({sf::st_intersection(bbox, mapdata)}))
   }
 }
 
@@ -105,7 +119,8 @@ join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
         # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343 ;
         # to remedy until dplyr creates an sf join function cast back to sf obj
         mapdata <- dplyr::left_join(mapdata, gcam_df, by='pkey') %>%
-                      sf::st_as_sf()
+                   dplyr::select(-dplyr::one_of('pkey', mapdata_key)) %>%
+                   sf::st_as_sf()
     }
     return(mapdata)
 }
@@ -192,10 +207,25 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
     mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
 
+  # lapply(mapdata$geometry, function(mpoly) {
+  #     mpoly.filtered <- lapply(mpoly, function(poly) {
+  #                             poly <- sf::st_polygon(poly)
+  #                             if (sf::st_area(poly) > min_area) poly else NULL
+  #                       })
+  #
+  #     mpoly.filtered <- mpoly.filtered[which(sapply(mpoly.filtered, length) != 0)]
+  #     if (length(mpoly.filtered) != 0) {
+  #         mpoly.filtered
+  #     } else { NULL }
+  # }) -> test
+  # test2 <- test[which(sapply(test,length) != 0)]
+  # test3 <- sapply(test2, sf::st_multipolygon)
+  # filtermap <- test3
+
   # filter out all polygons in the data under the minimum area
   areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
   filtermap <- which(areafilter) %>%
-    mapdata[.,]
+   mapdata[., ]
 
   filtermap <- suppressWarnings({sf::st_simplify(filtermap, preserveTopology=TRUE, dTolerance=degree_tolerance)})
 
@@ -226,6 +256,9 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
   # data frame with same names as original map, so that the two can combine
   borders <- data.frame(matrix(ncol = length(names(mapdata)), nrow = 2)) %>%
       magrittr::set_names(names(mapdata))
+
+  # extra polygons should be GCAM region 0
+  if ('region_id' %in% names(borders)) borders$region_id <- c(0, 0)
 
   # convert to sf object and add new border polygons
   sf::st_geometry(borders) <- edges
@@ -471,10 +504,12 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' @param drops Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing a list of regions to drop, if
 #' applicable.
+#' @param disaggregate A column of \code{datatable} used to disaggregate regions
+#' that are not specified in the original data.
 #' @return Input table modified to include a GCAM ID for reach region.
 #' @importFrom utils read.csv
 #' @export
-add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL, drops = NULL) {
+add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, drops = NULL, disaggregate = NULL) {
     if (!is.null(provincefile)) {
         datatable <- translate_province(datatable, provincefile)
     }
@@ -489,34 +524,39 @@ add_region_ID <- function(datatable, lookupfile = lut.rgn32, provincefile = NULL
         read.csv(lookupfile, strip.white = T, stringsAsFactors = F)
     }
 
-    # Differentiate region-Region issue
-    if ("Region" %in% names(datatable)) {
-        rgn <- "Region"
-    } else {
-        rgn <- "region"
-    }
+    # Don't allow "Region"; replace with "region"
+    rgnidx <- which(names(datatable) == "Region")
+    names(datatable)[rgnidx] <- "region"
 
-    finaltable <- merge(datatable, lookuptable, by.x = rgn, by.y = colnames(lookuptable)[1], all.y = TRUE)
+    # Add column containing region id to end of datatable
+    finaltable <- dplyr::full_join(datatable, lookuptable, by = "region")
 
-    ## Regions that weren't in the original table will show as NA.
-    ## Zero them out and give them a sensible unit.
-    unit <- finaltable$Units[!is.na(finaltable$Units)][1]  # pick the first available unit value; they should all be the same
-    finaltable$Units[is.na(finaltable$Units)] <- unit
-    ## set column name for id column
-    colnames(finaltable)[ncol(finaltable)] <- "id"
-
-    ## find NA values
-    na.vals <- is.na(finaltable)
-    na.vals[finaltable$id == 0,] <- FALSE    # exclude non-regions; they should stay NA
-    finaltable[na.vals] <- 0
-    # finaltable$id <- as.character(finaltable$id)  # other functions used id to be a char
+    # Set column name for id column
+    names(finaltable)[ncol(finaltable)] <- "id"
 
     # Add null vector row to end to account for GCAM region 0
-    nullvec <- rep(NA, ncol(finaltable))
+    nullvec <- rep(NA, ncol(finaltable)) %>% stats::setNames(names(finaltable))
 
     finaltable <- rbind(finaltable, nullvec)
-    finaltable[nrow(finaltable), rgn] <- "0"  # region 0 name (should be something more descriptive?)
-    finaltable$id[nrow(finaltable)] <- 0
+    finaltable[nrow(finaltable), 'region'] <- "#N/A"
+    finaltable[nrow(finaltable), 'id'] <- 0
+
+    # Regions that weren't in the original table will have NA values for all
+    # data except for the region and id columns. If the user specified a
+    # disaggregate column, split the new regions over all factors from that
+    # column.
+    if (!is.null(disaggregate)) {
+        # Get values to disaggregate over
+        factors <- finaltable[[disaggregate]] %>% unique() %>% stats::na.omit()
+
+        # Get rows that need disaggregating (the ones that have NAs in that col)
+        na.rgns <- finaltable[which(is.na(finaltable[[disaggregate]])), ]
+
+        # Build disaggregated dataframe and add to end of original table
+        disaggr <- na.rgns[rep(seq_len(nrow(na.rgns)), each = length(factors)), ]
+        disaggr[[disaggregate]] <- rep(factors, nrow(na.rgns))
+        finaltable <- rbind(dplyr::setdiff(finaltable, na.rgns), disaggr)
+    }
 
     return(finaltable)
 }
@@ -722,7 +762,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 #' @export
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
-                      gcam_df = NULL, gcam_key = NULL, mapdata_key = NULL,
+                      gcam_df = NULL, gcam_key = "id", mapdata_key = "region_id",
                       zoom = NULL, agr_type='constant') {
 
   # get proj4 string that corresponds to user selection
@@ -735,16 +775,25 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 
   # import spatial data; join gcam data; get only features in bounds; transform projection
   m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
-    filter_spatial(bbox = b, extent = extent, col = col, agr_type = agr_type) %>%
+    filter_spatial(b, p4s, extent, col, agr_type) %>%
     reproject(prj4s = p4s)
 
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
+  bb <- sf::st_transform(b, sf::st_crs(m))
+  xn <- sf::st_bbox(bb)[['xmin']] * 1.1
+  xx <- sf::st_bbox(bb)[['xmax']] * 1.1
+  yx <- sf::st_bbox(bb)[['ymax']] * 1.1
+  yn <- sf::st_bbox(bb)[['ymin']] * 1.1
+  newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
+  sf::st_geometry(bb)[[1]] <- newbbox
+
   # generate plot object
   mp <- ggplot() +
     ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
-    map_zoom +
+     # geom_sf(data=bb) +
+      map_zoom +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend)
 
@@ -812,7 +861,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     }
 
     # get the base map using plot_GCAM
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, ...)
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, legend = legend, ...)
 
     # add the gridded data to the base map
     grid <- geom_raster(data = plotdata,

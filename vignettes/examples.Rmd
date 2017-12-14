@@ -77,7 +77,7 @@ plot_GCAM(map.rgn32.simple, col = 'region_name', proj = eck3) +
 In this example we plot the CO<sub>2</sub> data frame that we created above.  We select the column `value`, which is the name of the column that contains the data.  It is also necessary to specify how to join the this data frame to the map data, which is why we created the column `id` with the function `add_region_id()` above.
 ```{r mp2, fig.width=6, fig.height=4, fig.align='center'}
 plot_GCAM(map.rgn32.simple, col='value', proj=robin, title="Robinson World", legend=T,
-          gcam_df=co2, gcam_key='id', mapdata_key="region_id") + 
+          gcam_df=co2) + 
     ggplot2::scale_fill_gradientn(colors = c("white", "red"),
                                   na.value = gray(0.75), name="CO2 Emissions (MTC)")
 ```
@@ -89,33 +89,35 @@ plot_GCAM(map.rgn32, col='region_id', proj=na_aea, extent=EXTENT_USA,
           title="USA Albers Equal-Area")
 ```
 
-### Example 4: China Projection (Albers Equal Area)
-A map of China.  Although the projection is once again the Albers equal area projection, we have to have a different projection string because the string includes some information about the parallels the projection is based on.
+### Example 4: Africa Projection (Orthographic)
+For superregions with a long north-south extent, the orthographic projection gives the best result. We have predefined one for Africa, but you can find others defined by proj4 strings from http://spatialreference.org as shown in the following example. Although the extent parameter is the best way to specify the view you want, you can fine-tune the final plot by adjusting the zoom.
 ```{r mp4, fig.width=4, fig.height=4, fig.align='center'}
-plot_GCAM(map.rgn32, proj=ch_aea, extent=EXTENT_CHINA, title="China Albers Equal-Area")
-```
-
-### Example 5: Africa Projection (Orthographic)
-For superregions with a long north-south extent, the orthographic projection gives the best result. We have predefined one for Africa, but you can find others defined by proj4 strings from spatialreference.org as shown in the following example. Although the extent parameter is the best way to specify the view you want, you can fine-tune the final plot by adjusting the zoom.
-```{r mp5, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map.rgn32, col='region_name', proj=af_ortho, extent=EXTENT_AFRICA,
           title="Africa Orthographic", zoom=10) +
     ggplot2::scale_fill_manual(values = gcam32_colors)
 ```
 
-### Example 6: Latin America Projection (Orthographic)
+### Example 5: Latin America Projection (Orthographic)
 Orthographic projection of the Latin America superregion. Notice that projection strings can also be defined by specifying an EPSG, ESRI, or SR-ORG projection code.
-```{r mp6, fig.width=4, fig.height=4, fig.align='center'}
+```{r mp5, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map.rgn32, col='region_name', proj=7567, proj_type='SR-ORG',
           extent=EXTENT_LA, title="Latin America Orthographic", zoom=8) +
     ggplot2::scale_fill_manual(values = gcam32_colors)
 ```
+
+### Example 6: China Projection (Albers Equal Area)
+A map of China.  Although the projection is once again the Albers equal area projection, we have to have a different projection string because the string includes some information about the parallels the projection is based on.
+```{r mp6, fig.width=4, fig.height=4, fig.align='center'}
+plot_GCAM(map.rgn32, proj=ch_aea, extent=EXTENT_CHINA, title="China Albers Equal-Area")
+```
+
 
 ### Example 7: Global Water Basins
 A map of the 235 global water basins.  Because `col` is set to `basin_name`, each basin name is treated as a separate category, giving the colorful map below.
 ```{r mp7, fig.width=6, fig.height=3, fig.align='center'}
 plot_GCAM(map.basin235, col='basin_name', proj=eck3)
 ```
+
 
 ### Example 8: Gridded Data
 The `plot_GCAM_grid()` function tiles gridded data over a base map.
@@ -125,5 +127,20 @@ plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, legend=T, zoo
     ggplot2::scale_fill_gradientn(colors=c("white", "red"), 
                                   guide=ggplot2::guide_colorbar(title="Cooling Degree Days", 
                                                                 title.position="top"))
+
+```
+
+### Example 9: Faceting
+Using `ggplot::facet_wrap()` is often a good way to compare the results from several different scenarios. To do this with `plot_GCAM()`, it is important to make sure that your dataset contains the facet variable for each region you want to plot. By default, `add_region_ID()` puts in `NA` values for missing regions. The `disaggregate` parameter allows you to specify that the missing regions with no data should be included in each facet.
+```{r mp9, fig.width=7, fig.height=3, fig.align='center'}
+waterdata <- read.csv(system.file('extdata','facet_example.csv', package='gcammaptools'),
+                      stringsAsFactors = F)
+waterdata <- add_region_ID(waterdata, disaggregate = 'scenario')
+
+plot_GCAM(map.rgn32.simple, col='value', legend=T, gcam_df=waterdata,
+          title="Water Scarcity in 2100") + 
+    ggplot2::scale_fill_gradientn(colors = c("deepskyblue", "firebrick1"),
+                                  na.value = gray(0.9), name="km^3") +
+    ggplot2::facet_wrap(~scenario)
 
 ```

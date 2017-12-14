@@ -112,14 +112,6 @@ NULL
 #' @format Simple feature collection
 "map.chn"
 
-#' Simplified base map for 32-region GCAM with China subregions
-#'
-#' The same map as \code{map.chn} but with only Polygons that have an area
-#' greater than 2.5 square degrees and simplified Polygon borders.
-#'
-#' @format Simple feature collection
-"map.chn.simple"
-
 #' Base map for 32-region GCAM with USA states
 #'
 #' This map has the 32 GCAM regions, plus the subregions corresponding to
