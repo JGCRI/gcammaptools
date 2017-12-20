@@ -13,8 +13,7 @@ style for GCAM plots.
 ## Installation
 
 This package must be installed from the github repository using
-`install_github`.  To
-do this, you will need to install `devtools` first if you
+`install_github`.  To do this, you will need to install `devtools` first if you
 don't have it already.  
 
 ```R
@@ -82,11 +81,9 @@ oil.cons <- add_region_ID(oil.cons, lookupfile=rgn32, drops=rgn32)
 
 The main plotting function is `plot_GCAM`.  You can supply your own
 map of region boundaries, but most of the time you will want to use
-the ones supplied with the package.  You start by merging your data
-frame with the map structure, and then passing the result to
+the ones supplied with the package.
 `plot_GCAM`:  
 ```R
 data(map.rgn32)
-map.oil <- merge(map.rgn32, oil.cons, by='id')
-plot_GCAM(map.oil, col='X2050', title='Oil Consumption (2050)', legend=TRUE)
+plot_GCAM(map.rgn32, col='X2050', gcam_df=oil.cons, title='Oil Consumption (2050)', legend=TRUE)
 ```
