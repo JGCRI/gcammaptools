@@ -21,8 +21,8 @@ applicable.}
 a custom map set, the file containing a list of regions to drop, if
 applicable.}
 
-\item{disaggregate}{A column of \code{datatable} used to disaggregate regions
-that are not specified in the original data.}
+\item{disaggregate}{A column (or vector of columns) of \code{datatable} used
+to disaggregate regions that are not specified in the original data.}
 }
 \value{
 Input table modified to include a GCAM ID for reach region.
