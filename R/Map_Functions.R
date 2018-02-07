@@ -207,21 +207,6 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
     mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
 
-  # lapply(mapdata$geometry, function(mpoly) {
-  #     mpoly.filtered <- lapply(mpoly, function(poly) {
-  #                             poly <- sf::st_polygon(poly)
-  #                             if (sf::st_area(poly) > min_area) poly else NULL
-  #                       })
-  #
-  #     mpoly.filtered <- mpoly.filtered[which(sapply(mpoly.filtered, length) != 0)]
-  #     if (length(mpoly.filtered) != 0) {
-  #         mpoly.filtered
-  #     } else { NULL }
-  # }) -> test
-  # test2 <- test[which(sapply(test,length) != 0)]
-  # test3 <- sapply(test2, sf::st_multipolygon)
-  # filtermap <- test3
-
   # filter out all polygons in the data under the minimum area
   areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
   filtermap <- which(areafilter) %>%
@@ -270,12 +255,11 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 
 #' Retrieve proj4 projection string.
 #'
-#' Provides a lookup list for default proj4 strings utilized.  Users
-#' may also specify their own lookup list.  Options also include
-#' providing either the EPSG, ESRI, or SR-ORG projection codes to
-#' retrieve the associated proj4 string from a web query from
-#' http://spatialreference.org.  Definitions for proj4 string
-#' parmeters can be referenced here:
+#' Provides a lookup list for default proj4 strings utilized.  Users may also
+#' specify their own lookup list.  Options also include providing either the
+#' EPSG, ESRI, or SR-ORG projection codes to retrieve the associated proj4
+#' string from a web query from http://spatialreference.org.  Definitions for
+#' proj4 string parmeters can be referenced here:
 #' http://proj4.org/parameters.html#parameter-list
 #'
 #' @param obj Use object instead that has a predefined proj4 string.
@@ -422,7 +406,6 @@ reproject <- function(sdf, prj4s) {
         return(sf::st_transform(sdf, prj4s))
     }
 }
-
 
 
 #---------------------------------------------------------------------------
