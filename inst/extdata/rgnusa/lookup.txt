@@ -1,4 +1,4 @@
-REGION_NAME,GCAM_ID
+region,region_id
 Alabama,AL
 Alaska,AK
 Arizona,AZ

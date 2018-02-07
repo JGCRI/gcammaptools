@@ -29,8 +29,10 @@ test_that("plot_GCAM_grid plots with provided basemaps", {
 })
 
 test_that("plots default correctly to EXTENT_WORLD", {
-  plot_GCAM_grid(co2grid, 'value')
-  plot_GCAM_grid(co2grid, 'value', extent = EXTENT_WORLD)
+  expect_equal(
+    plot_GCAM_grid(co2grid, 'value'),
+    plot_GCAM_grid(co2grid, 'value', extent = EXTENT_WORLD)
+  )
 })
 
 test_that("gridded data plots with EPSG projection type", {

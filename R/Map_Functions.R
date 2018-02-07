@@ -27,7 +27,7 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 
       return(ggplot2::coord_sf(crs = p4s, datum = sf::st_crs(p4s),
                                xlim = c(bx[1], bx[3]),
-                               ylim = c(bx[2], bx[4]), expand = TRUE))
+                               ylim = c(bx[2], bx[4]), expand = FALSE))
     }
 }
 
@@ -72,7 +72,7 @@ filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant',
           yx <- sf::st_bbox(bbox)[['ymax']]
           yn <- sf::st_bbox(bbox)[['ymin']]
           newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
-          sf::st_geometry(bbox)[[1]] <- newbbox * 1.1
+          sf::st_geometry(bbox)[[1]] <- newbbox
           bbox <- sf::st_transform(bbox, sf::st_crs(mapdata), check = T)
       }
 
@@ -100,28 +100,30 @@ filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant',
 #' mapdata data frame.
 join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
 
-    if (!is.null(gcam_df)) {
-
-        # Make sure join keys are valid
-        if (is.null(mapdata_key) || !(mapdata_key %in% names(mapdata))) {
-            stop("You must provide a valid key for joining the spatial data")
-        }
-        if (is.null(gcam_key) || !(gcam_key %in% names(gcam_df))) {
-            stop("You must provide a valid key for joining the GCAM data")
-        }
-
-        # add pkey fields for join
-        mapdata['pkey'] <- mapdata[[mapdata_key]]
-        gcam_df['pkey'] <- gcam_df[gcam_key]
-
-        # Join the map data and gcam data using the keys provided
-        # Note that using dplyr::left_join() here can cause the result to no
-        # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343 ;
-        # to remedy until dplyr creates an sf join function cast back to sf obj
-        mapdata <- dplyr::left_join(mapdata, gcam_df, by='pkey') %>%
-                   dplyr::select(-dplyr::one_of('pkey', mapdata_key)) %>%
-                   sf::st_as_sf()
+    if (is.null(gcam_df)) {
+        return(mapdata)
     }
+
+    # Make sure join keys are valid
+    if (is.null(mapdata_key) || !(mapdata_key %in% names(mapdata))) {
+        stop("You must provide a valid key for joining the spatial data")
+    }
+    if (is.null(gcam_key) || !(gcam_key %in% names(gcam_df))) {
+        stop("You must provide a valid key for joining the GCAM data")
+    }
+
+    # add pkey fields for join
+    mapdata['pkey'] <- mapdata[[mapdata_key]]
+    gcam_df['pkey'] <- gcam_df[gcam_key]
+
+    # Join the map data and gcam data using the keys provided
+    # Note that using dplyr::left_join() here can cause the result to no
+    # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343 ;
+    # to remedy until dplyr creates an sf join function cast back to sf obj
+    mapdata <- dplyr::left_join(mapdata, gcam_df, by='pkey') %>%
+               dplyr::select(-pkey) %>%
+               sf::st_as_sf()
+
     return(mapdata)
 }
 
@@ -635,9 +637,9 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 #' \code{\link{EXTENT_AFRICA}} - Africa \item \code{\link{EXTENT_LA}} - Latin
 #' America }
 #'
-#' @param mapdata The data frame containing both geometric data (lat, long, id)
-#'   and regional metadata.  This is the only mandatory variable. If used alone,
-#'   will produce the default map.
+#' @param mapdata The data frame containing both geometric data (simple features
+#'   collection and id) and regional metadata.  This is the only mandatory
+#'   variable. If used alone, will produce the default map.
 #' @param col If plotting categorical/continuous data, the name of the column to
 #'   plot.  Will automatically determine type of style of plot based on type of
 #'   data (numeric or character).
@@ -711,19 +713,10 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
-  bb <- sf::st_transform(b, sf::st_crs(m))
-  xn <- sf::st_bbox(bb)[['xmin']] * 1.1
-  xx <- sf::st_bbox(bb)[['xmax']] * 1.1
-  yx <- sf::st_bbox(bb)[['ymax']] * 1.1
-  yn <- sf::st_bbox(bb)[['ymin']] * 1.1
-  newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
-  sf::st_geometry(bb)[[1]] <- newbbox
-
   # generate plot object
   mp <- ggplot() +
     ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
-     # geom_sf(data=bb) +
-      map_zoom +
+    map_zoom +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend)
 
@@ -840,3 +833,9 @@ basin235 <- quote(basin235)
 #' This symbol will select the chn map set
 #' @export
 chn <- quote(chn)
+
+#' Designator for the usa map set
+#'
+#' This symbol will select the usa map set
+#' @export
+usa <- quote(usa)

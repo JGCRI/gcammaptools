@@ -29,7 +29,7 @@ gen.data <- function() {
     path.usa <- system.file("extdata", "rgnusa/us_states_50m.shp", package = "gcammaptools")
     map.usa <- import_mapdata(path.usa)[,c(1,3)]
     map.usa$name <- levels(droplevels(map.usa$name))
-    map.usa['region_id'] <- dplyr::left_join(map.usa, lut.usa, by=c("name" = "REGION_NAME"))[3]
+    map.usa['region_id'] <- dplyr::left_join(map.usa, lut.usa, by=c("name" = "region"))[3]
     names(map.usa)[1] <- c("region_name")
     map.usa <- rbind(map.rgn32, map.usa)
 
@@ -37,7 +37,8 @@ gen.data <- function() {
     map.countries <- import_mapdata(path.countries)[,c('admin', 'geometry')]
 
     devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple,
-                       map.basin235, map.basin235.simple, map.chn, overwrite=TRUE)
+                       map.basin235, map.basin235.simple, map.chn, map.countries,
+                       overwrite=TRUE)
 }
 
 gen.internal <- function() {
