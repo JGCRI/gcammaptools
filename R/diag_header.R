@@ -193,7 +193,7 @@ na_aea <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ell
 #' String for specifying the Albers equal area projection over China
 #' in mapping functions.  This is a conic projection situatied over
 #' China.  Its value is \code{'+proj=aea +lat_1=20 +lat_2=60 +lat_0=40
-#' +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83'}
+#' +lon_0=-96 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84'}
 #' @export
 ch_aea <- "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84"
 #' Proj4 string for orthographic projection over Africa
