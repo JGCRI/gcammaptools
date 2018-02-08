@@ -21,6 +21,7 @@ gen.data <- function() {
 
     path.basin235 <- system.file("extdata", "rgnbasin/Global235_CLM_05_dissolve.geojson", package = "gcammaptools")
     map.basin235 <- import_mapdata(path.basin235)
+    map.basin235 <- rbind(map.basin235, dplyr::rename(map.rgn14[1, ], basin_name = region_name)) # Add Antarctica
     map.basin235.simple <- simplify_mapdata(map.basin235)
 
     path.chn <- system.file("extdata", "rgnchn/GCAM_China.geojson", package = "gcammaptools")
