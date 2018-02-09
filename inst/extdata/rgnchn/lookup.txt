@@ -11,8 +11,8 @@ Central America and Caribbean,9.0
 Central Asia,10.0
 EU-12,12.0
 EU-15,13.0
-European_Eastern,14.0
-European_Non_EU,15.0
+Europe_Eastern,14.0
+Europe_Non_EU,15.0
 European Free Trade Association,16.0
 India,17.0
 Indonesia,18.0
@@ -31,11 +31,11 @@ Taiwan,30.0
 Argentina,31.0
 Colombia,32.0
 Anhui,44
-Beijing  Shi,33
+Beijing,33
 Fujian,45
 Gansu,60
 Guangdong,51
-Guangxi Zizhiqu,52
+Guangxi,52
 Guizhou,56
 Hainan,53
 Hebei,35
@@ -47,17 +47,16 @@ Jiangsu,42
 Jiangxi,46
 Jilin,39
 Liaoning,38
-Nei Mongol Zizhiqu,37
-Ningxia  Zizhiqu,62
+Inner Mongolia,37
+Ningxia,62
 Qinghai,61
 Shaanxi,59
 Shandong,47
-Shanghai Shi,41
+Shanghai,41
 Shanxi,36
 Sichuan,55
-Tianjin Shi,34
-Xinjiang  Zizhiqu,63
-Xizang  Zizhiqu,58
+Tianjin,34
+Tibet,63
+Xizang,58
 Yunnan,57
 Zhejiang,43
-Sichuan,55

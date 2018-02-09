@@ -6,6 +6,18 @@ library('gcammaptools')
 library('magrittr')
 library('dplyr')
 
+# This function generates six map files, represented as sf objects (see
+# https://cran.r-project.org/web/packages/sf/). The default maps supported by
+# gcammaptools are:
+#   - rgn14:     The outdated GCAM 14-region boundaries
+#   - rgn32:     The current 32 GCAM regions
+#   - basin235:  The 235 water basins, which are soon replacing AEZs
+#   - chn:       The current 32 GCAM regions with China broken down into 30
+#                provinces
+#   - usa:       The current 32 GCAM regions with USA broken down into 51
+#                regions (50 states and Washington DC)
+#   - countries: A standard world map containing country administrative borders
+# Additionally, simplified versions of rgn14, rgn32, and basin235 are created.
 gen.data <- function() {
 
     path.rgn14 <- system.file("extdata", "rgn14/GCAM_region.geojson", package = "gcammaptools")
@@ -23,6 +35,16 @@ gen.data <- function() {
     map.basin235 <- import_mapdata(path.basin235)
     map.basin235.simple <- simplify_mapdata(map.basin235)
 
+    # The original geoJSON for China is 9.7MB, so it is not included. The
+    # smaller version was produced by simplifying both the Chinese provinces and
+    # the GCAM regions, but keeping more detail in the provinces:
+    #
+    # orig <- import_mapdata('path/to/original/file/GCAM_China.geojson')
+    # keeps <- c("China", "Central Asia")
+    # simpler <- rbind(simplify_mapdata(orig[!orig$Region %in% keeps , ], 2.5, 0.1),
+    #                  simplify_mapdata(orig[orig$Region %in% keeps, ], 0, 0.01))
+    # ...
+    #
     path.chn <- system.file("extdata", "rgnchn/GCAM_China.geojson", package = "gcammaptools")
     map.chn <- import_mapdata(path.chn) %>% dplyr::select(region_name, region_id, geometry)
 
@@ -51,7 +73,7 @@ gen.internal <- function() {
     lut.rgn32 <- read.csv('inst/extdata/rgn32/lookup.txt', strip.white=TRUE,
                           stringsAsFactors=FALSE)
     drop.rgn32 <- read.csv('inst/extdata/rgn32/drop-regions.txt', strip.white=TRUE,
-                           stringsAsFactors=FALSE)
+                           stringsAsFactors=FALSE, header=F)
 
     ## basins have just a lookup table
     lut.basin235 <- read.csv('inst/extdata/rgnbasin/lookup.txt', strip.white=TRUE,
@@ -61,7 +83,7 @@ gen.internal <- function() {
     lut.chn <- read.csv('inst/extdata/rgnchn/lookup.txt', strip.white=TRUE,
                         stringsAsFactors=FALSE)
     drop.chn <- read.csv('inst/extdata/rgnchn/drop-regions.txt', strip.white=TRUE,
-                         stringsAsFactors=FALSE)
+                         stringsAsFactors=FALSE, header=F)
     prov.chn <- read.csv('inst/extdata/rgnchn/rgn-name-translation.csv', strip.white=TRUE,
                          stringsAsFactors=FALSE)
 
