@@ -144,3 +144,14 @@ plot_GCAM(map.rgn32.simple, col='value', legend=T, gcam_df=waterdata,
     ggplot2::facet_wrap(~scenario)
 
 ```
+
+### Example 10: GCAM China
+Data from GCAM China may contain extra regions that you want to drop as well as region name abbreviations that you want to translate into the full province name.
+```{r mp10, fig.width=7, fig.height=3, fig.align='center'}
+gcamchina <- read.csv(system.file('extdata', 'china_example.csv', package='gcammaptools'),
+                      stringsAsFactors = F)
+gcamchina <- add_region_ID(gcamchina, lookupfile = chn, provincefile = chn,
+                           drops = chn)
+plot_GCAM(map.chn, col='value', gcam_df=gcamchina, proj=ch_aea,
+          extent=EXTENT_CHINA, zoom = 2)
+```
