@@ -431,8 +431,7 @@ reproject <- function(sdf, prj4s) {
 #' \emph{must not} specify them if they don't exist for the map set you are
 #' using.  Currently, \code{rgn14} and \code{basin235} have neither drops nor
 #' province abbreviations.  The \code{rgn32} set has drops, but not province
-#' abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
-#' finally implemented) has both.
+#' abbreviations.  Only the \code{chn} set has both.
 #' @param datatable A table of results produced by \code{\link[rgcam]{getQuery}}
 #' @param lookupfile Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing the region lookup table
@@ -457,6 +456,11 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
     names(datatable)[names(datatable) == "Region"] <- "region"
     if (!"region" %in% names(datatable)) {
         stop("Data must contain a 'region' column")
+    }
+
+    if ("id" %in% names(datatable)) {
+        message("id column is already present and will not be modified")
+        return(datatable)
     }
 
     if (!is.null(provincefile)) {
