@@ -1,0 +1,52 @@
+region,Year,value,state,scenario
+AK,2050,0,alaska,Reference
+AL,2050,0.02,alabama,Reference
+AR,2050,0.04,arkansas,Reference
+AZ,2050,0.06,arizona,Reference
+CA,2050,0.08,california,Reference
+CO,2050,0.1,colorado,Reference
+CT,2050,0.12,connecticut,Reference
+DC,2050,0.14,district of columbia,Reference
+DE,2050,0.16,delaware,Reference
+FL,2050,0.18,florida,Reference
+GA,2050,0.2,georgia,Reference
+HI,2050,0.22,hawaii,Reference
+IA,2050,0.24,iowa,Reference
+ID,2050,0.26,idaho,Reference
+IL,2050,0.28,illinois,Reference
+IN,2050,0.3,indiana,Reference
+KS,2050,0.32,kansas,Reference
+KY,2050,0.34,kentucky,Reference
+LA,2050,0.36,louisiana,Reference
+MA,2050,0.38,massachusetts,Reference
+MD,2050,0.4,maryland,Reference
+ME,2050,0.42,maine,Reference
+MI,2050,0.44,michigan,Reference
+MN,2050,0.46,minnesota,Reference
+MO,2050,0.48,missouri,Reference
+MS,2050,0.5,mississippi,Reference
+MT,2050,0.52,montana,Reference
+NC,2050,0.54,north carolina,Reference
+ND,2050,0.56,north dakota,Reference
+NE,2050,0.58,nebraska,Reference
+NH,2050,0.6,new hampshire,Reference
+NJ,2050,0.62,new jersey,Reference
+NM,2050,0.64,new mexico,Reference
+NV,2050,0.66,nevada,Reference
+NY,2050,0.68,new york,Reference
+OH,2050,0.7,ohio,Reference
+OK,2050,0.72,oklahoma,Reference
+OR,2050,0.74,oregon,Reference
+PA,2050,0.76,pennsylvania,Reference
+RI,2050,0.78,rhode island,Reference
+SC,2050,0.8,south carolina,Reference
+SD,2050,0.82,south dakota,Reference
+TN,2050,0.84,tennessee,Reference
+TX,2050,0.86,texas,Reference
+UT,2050,0.88,utah,Reference
+VA,2050,0.9,virginia,Reference
+VT,2050,0.92,vermont,Reference
+WA,2050,0.94,washington,Reference
+WI,2050,0.96,wisconsin,Reference
+WV,2050,0.98,west virginia,Reference
+WY,2050,1,wyoming,Reference

@@ -16,19 +16,17 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 
       # use map bounds instead of bounding box for zoom
       bx <- sf::st_bbox(mapdata)
-
-      return(ggplot2::coord_sf(xlim = c(bx[1], bx[3]),
-                               ylim = c(bx[2], bx[4])))
+      coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]))
     }
     else {
 
       bx <- reproject(bbox, prj4s = sf::st_crs(p4s)[[2]]) %>%
         sf::st_bbox()
-
-      return(ggplot2::coord_sf(xlim = c(bx[1], bx[3]),
-                               ylim = c(bx[2], bx[4]), expand = FALSE,
-                               crs = p4s, datum = sf::st_crs(p4s)))
+      coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]),
+                                 expand = F, crs = p4s, datum = sf::st_crs(p4s))
     }
+
+    return(coord)
 }
 
 #' Get features topologically associated with extent bounds.
