@@ -37,7 +37,8 @@ gen.data <- function() {
     ## The basin235 map is also provided in detailed and simplified forms.
     path.basin235 <- "rgnbasin/Global235_CLM_05_dissolve.geojson"
     map.basin235 <- system.file("extdata", path.basin235, package = "gcammaptools") %>%
-        import_mapdata()
+        import_mapdata() %>%
+        rbind(dplyr::rename(map.rgn14[1, ], basin_name = region_name)) # Add Antarctica
     map.basin235.simple <- simplify_mapdata(map.basin235)
 
     ## The original geoJSON for China is 9.7MB, so it is not included. The
