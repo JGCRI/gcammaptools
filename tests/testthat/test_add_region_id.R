@@ -3,8 +3,6 @@
 library(gcammaptools)
 context("Mapping user data to map data")
 
-add_region_ID(datatable,lookupfile,provincefile,drops,disaggregate)
-
 test <- data.frame(region = c('USA'), stringsAsFactors = F)
 test_that("32 regions get added even if only one provided", {
     # taiwan id = 30
@@ -21,13 +19,13 @@ test_that("lookupfiles work", {
     expect_equal(nrow(add_region_ID(test, rgn14)), 15) # 14 regions + 1 NA
     expect_equal(nrow(add_region_ID(test, basin235)), 237) # 235 basins + 1 NA + 1 USA
     expect_equal(nrow(add_region_ID(test, chn)), 62) # 31 regions + 1 NA + 30 provinces
-    expect_equal(nrow(add_region_ID(test, usa)), 84) # 31 regions + 1 NA + 51 states + 1 USA
+    expect_equal(nrow(add_region_ID(test, usa)), 83) # 30 regions + 1 NA + 51 states + 1 USA
 
     # Hawaii is both a basin name and state name
     test.hi <- data.frame(region = c('Hawaii'), stringsAsFactors = F)
-    expect_equal(nrow(add_region_ID(test, basin235)), 236) # 235 basins + 1 NA
-    expect_equal(nrow(add_region_ID(test, chn)), 63) # 31 regions + 1 NA + 30 provinces + 1 Hawaii
-    expect_equal(nrow(add_region_ID(test, usa)), 83) # 31 regions + 1 NA + 51 states
+    expect_equal(nrow(add_region_ID(test.hi, basin235)), 236) # 235 basins + 1 NA
+    expect_equal(nrow(add_region_ID(test.hi, chn)), 63) # 31 regions + 1 NA + 30 provinces + 1 Hawaii
+    expect_equal(nrow(add_region_ID(test.hi, usa)), 82) # 30 regions + 1 NA + 51 states
 })
 
 test_that("provincefiles work", {
