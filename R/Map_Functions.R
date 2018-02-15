@@ -16,6 +16,8 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 
       # use map bounds instead of bounding box for zoom
       bx <- sf::st_bbox(mapdata)
+      bx[2] <- -max(abs(bx[2]), bx[4]) # makes latitude extent equal N and S
+      bx[4] <- max(abs(bx[2]), bx[4])
       coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]))
     }
     else {
@@ -84,7 +86,7 @@ filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant',
   # conducting the intersection here eliminates erroneous-filled poly generated
   # at the global extent
   else {
-    return(suppressMessages({sf::st_intersection(bbox, mapdata)}))
+    return(suppressMessages({sf::st_intersection(mapdata, bbox)}))
   }
 }
 
@@ -694,7 +696,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
                       gcam_df = NULL, gcam_key = "id", mapdata_key = "region_id",
-                      zoom = NULL, agr_type='constant') {
+                      zoom = NULL, agr_type = 'constant') {
 
   # get proj4 string that corresponds to user selection
   p4s <- assign_prj4s(proj_type, proj)
