@@ -761,7 +761,8 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                          opacity = 1.0, fillOpacity = 0.5,
                          highlightOptions = highlightOptions(color = "white",
                                                              weight = 2,
-                                                             bringToFront = TRUE))
+                                                             bringToFront = TRUE),
+                         label = as.formula(paste0('~region_name, as.character(', col, ')')))
       if(legend) {
           if(!is.null(gcam_df$Units))
               title <- gcam_df$Units[1]
