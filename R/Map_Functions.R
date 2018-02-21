@@ -12,21 +12,21 @@
 zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 
     # if the extent given is NULL
-    if (isTRUE(all.equal(extent, EXTENT_WORLD))) {
-
-      # use map bounds instead of bounding box for zoom
-      bx <- sf::st_bbox(mapdata)
-      bx[2] <- -max(abs(bx[2]), bx[4]) # makes latitude extent equal N and S
-      bx[4] <- max(abs(bx[2]), bx[4])
-      coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]))
-    }
-    else {
+    # if (isTRUE(all.equal(extent, EXTENT_WORLD))) {
+    #
+    #   # use map bounds instead of bounding box for zoom
+    #   bx <- sf::st_bbox(mapdata)
+    #   bx[2] <- -max(abs(bx[2]), bx[4]) # makes latitude extent equal N and S
+    #   bx[4] <- max(abs(bx[2]), bx[4])
+    #   coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]), datum = NA)
+    # }
+    # else {
 
       bx <- reproject(bbox, prj4s = sf::st_crs(p4s)[[2]]) %>%
         sf::st_bbox()
       coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]),
                                  expand = F, crs = p4s, datum = sf::st_crs(p4s))
-    }
+    # }
 
     return(coord)
 }
@@ -364,15 +364,19 @@ assign_prj4s <- function(proj_type, proj) {
 #'   of the bounds
 spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") {
 
-  # convert bounding box to simple features polygon collection
-  geom <- sf::st_sfc(sf::st_polygon(list(rbind(c(b_ext[1], b_ext[3]),
-                                               c(b_ext[1], b_ext[4]),
-                                               c(b_ext[2], b_ext[4]),
-                                               c(b_ext[2], b_ext[3]),
-                                               c(b_ext[1], b_ext[3])))))
+  # create polygon from bounding box, segmentize it to 1 degree resolution so
+  # that reprojections of it look smooth, then convert bounding box to simple
+  # features polygon collection
+  pgon <- sf::st_polygon(list(rbind(c(b_ext[1], b_ext[3]),
+                                    c(b_ext[1], b_ext[4]),
+                                    c(b_ext[2], b_ext[4]),
+                                    c(b_ext[2], b_ext[3]),
+                                    c(b_ext[1], b_ext[3]))))
+  pgon <- sf::st_segmentize(pgon, 1)
+  geom <- sf::st_sfc(pgon)
 
-  # make sf object; a is an id field; 1 is the arbitrary value; assign default WGS84 proj;
-  # transform projection to that of the input mapdata
+  # make sf object; a is an id field; 1 is the arbitrary value; assign default
+  # WGS84 proj; transform projection to that of the input mapdata
   bb <- sf::st_sf(a = 1, geometry = geom) %>%
     sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
     sf::st_transform(proj4s)
@@ -586,7 +590,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
     } else {
         theme_bw(base_size = base_size, base_family = base_family) %+replace%
             theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
-                  panel.background = PANEL_BACKGROUND,
+                  panel.background = element_rect(fill = '#eeeeee'),
                   panel.grid.major = PANEL_GRID,
                   axis.ticks = AXIS_TICKS,
                   axis.text = AXIS_TEXT,
@@ -706,17 +710,56 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   # create sf obj bounding box from extent and define native proj; apply buffer if needed
   b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(m))
 
+  #=============TESTS==============
+  wborder.orig <- spat_bb(EXTENT_WORLD, 0, sf::st_crs(m))
+  wborder.proj <- reproject(wborder.orig, p4s) # Reprojected world bounds
+
+  is_world_map <- TRUE
+  surface_area <- units::set_units(5e+14, m^2)
+  if (!sf::st_is_valid(wborder.proj) | sf::st_area(wborder.proj) < surface_area) {
+      is_world_map <- FALSE
+  }
+
+  mborder <- spat_bb(b_ext = extent, buff_dist = 0, proj4s = p4s)
+  if (!sf::st_is_valid(mborder) | is.na(sf::st_dimension(mborder))) {
+     stop("Extent is not valid for the given projection")
+  }
+  xn <- sf::st_bbox(mborder)[['xmin']]
+  xx <- sf::st_bbox(mborder)[['xmax']]
+  yx <- sf::st_bbox(mborder)[['ymax']]
+  yn <- sf::st_bbox(mborder)[['ymin']]
+  newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
+  perimeter <- (xx - xn + yx - yn) * 2
+  newbbox <- sf::st_segmentize(newbbox, perimeter / 16) # add 4 points per side
+  sf::st_geometry(mborder)[[1]] <- newbbox
+
+  if (suppressWarnings(is_world_map)) {
+      mborder <- sf::st_intersection(wborder.proj, mborder)
+  }
+  border <- sf::st_transform(mborder, sf::st_crs(m))
+
+  m <- join_gcam(m, mapdata_key, gcam_df, gcam_key)
+  m <- sf::st_intersection(m, wborder.orig) # eliminate erroneous-filled poly generated at the global extent
+  m <- sf::st_join(m, border, left = FALSE)
+  m <- reproject(m, prj4s = p4s)
+
+  border <- ggplot2::geom_sf(data = mborder, fill = '#ddefff')
+  #================================
+
   # import spatial data; join gcam data; get only features in bounds; transform projection
-  m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
-    filter_spatial(b, p4s, extent, col, agr_type) %>%
-    reproject(prj4s = p4s)
+  # m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
+  #   filter_spatial(b, p4s, extent, col, agr_type) %>%
+  #   reproject(prj4s = p4s)
 
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
   # generate plot object
-  mp <- ggplot() +
-    ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
+  if (is.null(col)) gsf <- ggplot2::geom_sf(data = m, fill = '#222222', color = alpha('#888888', 0.5))
+  else gsf <- ggplot2::geom_sf(data = m, aes_string(fill = col), alpha = 1, color = alpha('#000000', 0.5))
+  # else gsf <- ggplot2::geom_sf(data = m, aes_string(fill = col), color = '#666666')
+  mp <- ggplot() + border +
+    gsf +
     map_zoom +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend)

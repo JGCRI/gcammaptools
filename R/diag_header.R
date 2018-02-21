@@ -124,7 +124,7 @@ EXTENT_LA <- c(-110, -40, -50, 30)
 # AESTHETICS
 
 # Default Colors
-LINE_COLOR <- "black"
+LINE_COLOR <- "#444444"
 
 # Background
 PANEL_BACKGROUND <- ggplot2::element_blank()
