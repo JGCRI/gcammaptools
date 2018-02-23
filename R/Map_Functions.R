@@ -9,7 +9,10 @@
 #' @param p4s Proj4 string set by user
 #' @param extent Extent provided by the user. If NULL defaults to the bounds of
 #'   the data.
-zoom_bounds <- function(mapdata, bbox, extent, p4s) {
+zoom_bounds <- function(mapdata, bbox, extent, p4s, grat = FALSE) {
+
+    dtm <- if (grat) sf::st_crs(p4s) else NA
+    expand <- isTRUE(all.equal(extent, EXTENT_WORLD))
 
     # if the extent given is NULL
     # if (isTRUE(all.equal(extent, EXTENT_WORLD))) {
@@ -25,7 +28,7 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
       bx <- reproject(bbox, prj4s = sf::st_crs(p4s)[[2]]) %>%
         sf::st_bbox()
       coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]),
-                                 expand = F, crs = p4s, datum = sf::st_crs(p4s))
+                                 expand = expand, crs = p4s, datum = dtm)
     # }
 
     return(coord)
@@ -712,37 +715,39 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 
   #=============TESTS==============
   wborder.orig <- spat_bb(EXTENT_WORLD, 0, sf::st_crs(m))
-  wborder.proj <- reproject(wborder.orig, p4s) # Reprojected world bounds
 
-  is_world_map <- TRUE
-  surface_area <- units::set_units(5e+14, m^2)
-  if (!sf::st_is_valid(wborder.proj) | sf::st_area(wborder.proj) < surface_area) {
-      is_world_map <- FALSE
-  }
-
-  mborder <- spat_bb(b_ext = extent, buff_dist = 0, proj4s = p4s)
+  # Get the bounding box of the final, projected map
+  mborder <- sf::st_transform(b, p4s)
   if (!sf::st_is_valid(mborder) | is.na(sf::st_dimension(mborder))) {
      stop("Extent is not valid for the given projection")
   }
+
+  # Turn bounding box into a rectangle to match final viewing window
   xn <- sf::st_bbox(mborder)[['xmin']]
   xx <- sf::st_bbox(mborder)[['xmax']]
   yx <- sf::st_bbox(mborder)[['ymax']]
   yn <- sf::st_bbox(mborder)[['ymin']]
   newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
-  perimeter <- (xx - xn + yx - yn) * 2
-  newbbox <- sf::st_segmentize(newbbox, perimeter / 16) # add 4 points per side
   sf::st_geometry(mborder)[[1]] <- newbbox
-
-  if (suppressWarnings(is_world_map)) {
-      mborder <- sf::st_intersection(wborder.proj, mborder)
-  }
-  border <- sf::st_transform(mborder, sf::st_crs(m))
 
   m <- join_gcam(m, mapdata_key, gcam_df, gcam_key)
   m <- sf::st_intersection(m, wborder.orig) # eliminate erroneous-filled poly generated at the global extent
-  m <- sf::st_join(m, border, left = FALSE)
   m <- reproject(m, prj4s = p4s)
+  remove_invalid <- function(sfcobj) {
+      sfcobj <- sfcobj[!is.na(sf::st_is_valid(sfcobj)), ]
+      sfc <- sfcobj[!is.na(sf::st_dimension(sfcobj)), ]
+      return(sfc)
+  }
+  m <- remove_invalid(m)
 
+  # Don't show a border past the edge of the world extent
+  if (all(extent == EXTENT_WORLD)) {
+      wborder.proj <- reproject(wborder.orig, p4s) # Reprojected world bounds
+      mborder <- sf::st_intersection(wborder.proj, mborder)
+  }
+  m <- sf::st_join(m, mborder, left = FALSE)
+
+  # Create geom for background and outline
   border <- ggplot2::geom_sf(data = mborder, fill = '#ddefff')
   #================================
 
