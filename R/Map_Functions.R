@@ -710,11 +710,24 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 
   m <- import_mapdata(mapdata)
 
-  # create sf obj bounding box from extent and define native proj; apply buffer if needed
+  # create sf obj bounding box from extent and define native proj;
+  # apply buffer if needed: this is the box defining the final view of the map.
   b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(m))
 
   #=============TESTS==============
-  wborder.orig <- spat_bb(EXTENT_WORLD, 0, sf::st_crs(m))
+  if (grepl("+proj=ortho", p4s)) {
+      olat <- sub(".*\\+lat_0=(\\d+).*", "\\1", p4s)
+      olon <- sub(".*\\+lon_0=(\\d+).*", "\\1", p4s)
+      olat <- suppressWarnings(as.numeric(olat))
+      olon <- suppressWarnings(as.numeric(olon))
+      if (is.na(olat)) olat <- 0
+      if (is.na(olon)) olon <- 0
+      wborder.orig <- sf::st_point(x = c(olat, olon), dim = "XY") %>%
+          sf::st_sfc(crs = sf::st_crs(m)) %>%
+          sf::st_buffer(dist = 90) %>% sf::st_sf()
+  } else{
+      wborder.orig <- spat_bb(EXTENT_WORLD, 0, sf::st_crs(m))
+  }
 
   # Get the bounding box of the final, projected map
   mborder <- sf::st_transform(b, p4s)
@@ -745,6 +758,15 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
       wborder.proj <- reproject(wborder.orig, p4s) # Reprojected world bounds
       mborder <- sf::st_intersection(wborder.proj, mborder)
   }
+  if (grepl("+proj=ortho", p4s)) {
+      centerx <- (sf::st_bbox(m)[1] + sf::st_bbox(m)[3]) / 2
+      centery <- (sf::st_bbox(m)[2] + sf::st_bbox(m)[4]) / 2
+      radius <- max(sf::st_bbox(m)[4] - sf::st_bbox(m)[2],
+                    sf::st_bbox(m)[3] - sf::st_bbox(m)[1]) / 2
+      mborder <- sf::st_point(x = c(centerx, centery), dim = "XY") %>%
+          sf::st_sfc(crs = sf::st_crs(m)) %>%
+          sf::st_buffer(dist = radius) %>% sf::st_sf()
+  }
   m <- sf::st_join(m, mborder, left = FALSE)
 
   # Create geom for background and outline
@@ -757,7 +779,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   #   reproject(prj4s = p4s)
 
   # create object to control map zoom extent
-  map_zoom <- zoom_bounds(m, b, extent, p4s)
+  # map_zoom <- zoom_bounds(m, b, extent, p4s)
 
   # generate plot object
   if (is.null(col)) gsf <- ggplot2::geom_sf(data = m, fill = '#222222', color = alpha('#888888', 0.5))
@@ -765,7 +787,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   # else gsf <- ggplot2::geom_sf(data = m, aes_string(fill = col), color = '#666666')
   mp <- ggplot() + border +
     gsf +
-    map_zoom +
+    # map_zoom +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend)
 
