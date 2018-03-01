@@ -380,7 +380,8 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
-                           proj_type = NULL, legend = F, alpha = 0.8, ...) {
+                           proj_type = NULL, extent = EXTENT_WORLD, legend = F,
+                           alpha = 0.8, ...) {
 
     map.rgn32 <- gcammaptools::map.rgn32 # Silence package notes
 
@@ -393,7 +394,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         p4s <- assign_prj4s(proj_type, proj)
 
         # get raster extent
-        e = raster::extent(c(range(plotdata$lon), range(plotdata$lat)))
+        e <- raster::extent(c(range(plotdata$lon), range(plotdata$lat)))
 
         # set the number of rows and columns in the raster equal to the number
         # of unique latitudes and longitudes in the original data
@@ -406,20 +407,25 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         points <- plotdata[ , c('lon', 'lat')]
         values <- plotdata[[col]]
 
+        # get plot bounds
+        bounds <- sf::st_bbox(spat_bb(extent, proj4s = p4s))[c(1,3,2,4)]
+
         # 1. Add data values to raster cells
         # 2. Reproject the raster into the user-defined crs
-        # 3. Turn the raster back into points in the new crs
-        # 4. Convert back to a data.frame with the correct names so that
+        # 3. Crop out any cells not within the map extent
+        # 4. Turn the raster back into points in the new crs
+        # 5. Convert back to a data.frame with the correct names so that
         #    geom_raster can plot it
         plotdata <- raster::rasterize(points, plotraster, field = values, fun = mean) %>%
                     raster::projectRaster(crs=p4s, over=TRUE) %>%
+                    raster::crop(bounds) %>%
                     raster::rasterToPoints() %>%
                     data.frame() %>%
                     magrittr::set_names(c("lon", "lat", col))
     }
 
     # get the base map using plot_GCAM
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, legend = legend, ...)
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent, legend = legend, ...)
 
     # add the gridded data to the base map
     grid <- geom_raster(data = plotdata,
