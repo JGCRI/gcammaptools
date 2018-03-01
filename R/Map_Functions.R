@@ -66,7 +66,6 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 }
 
 
-
 # Map Data Transformations ------------------------------------------------
 
 #' Get features topologically associated with extent bounds.
@@ -76,23 +75,17 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #'
 #' @param mapdata The sf object containing the spatial data.
 #' @param bbox Bounding box.
-#' @param p4s The proj4 string of the final map.
-#' @param extent Extent provided by the user or as default.
-#' @param col Field name with target information to map.
 #' @param agr_type Inherited attribute-geometry-relationship type from plot_GCAM
 #' function params.
 #' @param topo SF topologic function to define how the join will be conducted.
 #' Default is to join any feature that intersects the bounding box.
-filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant', topo=sf::st_intersects) {
-  # set NULL column to index
-  clm <- if (is.null(col)) 1 else col
-
+filter_spatial <- function(mapdata, bbox, agr_type='constant', topo=sf::st_intersects) {
   # set attribute-geometry-relationship for input mapdata column and bounding
   # box feature attribute
   sf::st_agr(mapdata) <- agr_type
   sf::st_agr(bbox) <- agr_type
 
-  # Message for st_join suppressed:
+  # Message for st_join and st_intersection suppressed:
   #     "although coordinates are longitude/latitude, it is assumed that they
   #     are planar."
   # This comes from the input projection being a geographic coordinate system
@@ -103,29 +96,8 @@ filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant',
   # code. There is no option to quiet this.  We are getting the expected return
   # from the operation due to harmonizing the map and bounding box projection
   # pre-join.
-
-  # if extent is not world conduct spatial join; else, return all
-  if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
-      # the filtering bbox must be rectangular in the coordinates being plotted
-      # because the resulting map will be viewed in a rectangular window
-      if (sf::st_is_longlat(mapdata) & !grepl("(+proj=longlat|+proj=ortho)", p4s)) {
-          bbox <- sf::st_transform(bbox, p4s)
-          xn <- sf::st_bbox(bbox)[['xmin']]
-          xx <- sf::st_bbox(bbox)[['xmax']]
-          yx <- sf::st_bbox(bbox)[['ymax']]
-          yn <- sf::st_bbox(bbox)[['ymin']]
-          newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
-          sf::st_geometry(bbox)[[1]] <- newbbox
-          bbox <- sf::st_transform(bbox, sf::st_crs(mapdata), check = T)
-      }
-
-      return(suppressMessages({sf::st_join(mapdata[clm], bbox, left = FALSE)}))
-  }
-  # conducting the intersection here eliminates erroneous-filled poly generated
-  # at the global extent
-  else {
-    return(suppressMessages({sf::st_intersection(mapdata, bbox)}))
-  }
+  mapdata <- suppressMessages({sf::st_intersection(mapdata, bbox)})
+  return(suppressMessages({sf::st_join(mapdata, bbox, join = topo, left = FALSE)}))
 }
 
 #' Join GCAM data with spatial data.
@@ -337,7 +309,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
                       gcam_df = NULL, gcam_key = "id", mapdata_key = "region_id",
                       zoom = 0, graticules = FALSE, agr_type = 'constant',
-                      background_color = '#ddefff',
+                      background_color = MAP_BACKGROUND,
                       padding = all(extent == EXTENT_WORLD)) {
 
   # get proj4 string that corresponds to user selection
@@ -350,39 +322,36 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   wborder <- spat_bb(EXTENT_WORLD, 0, sf::st_crs(map))
   sf::st_agr(wborder) <- agr_type
   sf::st_agr(map) <- agr_type
-  map <- sf::st_intersection(map, wborder)
+  map <- suppressMessages({sf::st_intersection(map, wborder)})
 
-  # create sf obj bounding box from extent and define transformed proj;
-  # apply buffer if needed; this is the box defining the final view of the map,
-  # so convert it to a rectangle.
+  # create sf obj bounding box from extent; this box defines the final view of
+  # the map so it needs to be a rectangle (except for the global extent, where
+  # the map edge may be rounded).
   bounds <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = p4s)
   if (!all(extent == EXTENT_WORLD)) {
-      xn <- sf::st_bbox(bounds)[['xmin']]
-      xx <- sf::st_bbox(bounds)[['xmax']]
-      yx <- sf::st_bbox(bounds)[['ymax']]
-      yn <- sf::st_bbox(bounds)[['ymin']]
-      newbbox <- sf::st_polygon(list(rbind(c(xn,yn), c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))))
-      sf::st_geometry(bounds)[[1]] <- newbbox
+      bbox <- sf::st_bbox(bounds)[c(1,3,2,4)]
+      sf::st_geometry(bounds)[[1]] <- pgon_from_extent(bbox)
   }
 
+  # reproject map into user-specified crs, filter to extent, then join user data
   map <- sf::st_transform(map, p4s)
   map <- remove_invalid(map)
-  map <- sf::st_intersection(map, bounds)
-  map <- sf::st_join(map, bounds, left = FALSE)
-
+  map <- filter_spatial(map, bounds, agr_type)
   map <- join_gcam(map, mapdata_key, gcam_df, gcam_key)
-  border <- ggplot2::geom_sf(data = bounds, fill = background_color)
 
+  # datum = wgs84 means that graticules are drawn based on first layer's crs
   dtm <- if (graticules) wgs84 else NA
-  map_opts <- ggplot2::coord_sf(expand = padding, datum = dtm)
+
+  if (is.null(col))
+      gsf <- ggplot2::geom_sf(data = map, fill = FILL_COLOR, color = BORDER_LIGHT)
+  else
+      gsf <- ggplot2::geom_sf(data = map, aes_string(fill = col), alpha = 1, color = BORDER_DARK)
 
   # generate plot object
-  if (is.null(col)) gsf <- ggplot2::geom_sf(data = map, fill = '#222222', color = alpha('#888888', 0.5))
-  else gsf <- ggplot2::geom_sf(data = map, aes_string(fill = col), alpha = 1, color = alpha('#000000', 0.5))
   mp <- ggplot() +
-    border +
+    ggplot2::geom_sf(data = bounds, fill = background_color) +
     gsf +
-    map_opts +
+    ggplot2::coord_sf(expand = padding, datum = dtm) +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend)
 

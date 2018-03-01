@@ -90,6 +90,16 @@ assign_prj4s <- function(proj_type, proj) {
     }
 }
 
+#' Create a rectangluar sf polygon from numeric extent.
+#'
+#' @param ext Numeric extent [xmin, xmax, ymin, ymax]
+pgon_from_extent <- function(ext) {
+    pgon <- sf::st_polygon(list(rbind(c(ext[1], ext[3]), c(ext[1], ext[4]),
+                                      c(ext[2], ext[4]), c(ext[2], ext[3]),
+                                      c(ext[1], ext[3]))))
+    return(pgon)
+}
+
 
 #' Create sf object from numeric extent.
 #'
@@ -106,11 +116,7 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
   # create polygon from bounding box, segmentize it to 1 degree resolution so
   # that reprojections of it look smooth, then convert bounding box to simple
   # features polygon collection
-  pgon <- sf::st_polygon(list(rbind(c(b_ext[1], b_ext[3]),
-                                    c(b_ext[1], b_ext[4]),
-                                    c(b_ext[2], b_ext[4]),
-                                    c(b_ext[2], b_ext[3]),
-                                    c(b_ext[1], b_ext[3]))))
+  pgon <- pgon_from_extent(b_ext)
   pgon <- sf::st_segmentize(pgon, 1)
   geom <- sf::st_sfc(pgon)
 
@@ -150,14 +156,15 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
 #' Clean spatial data.
 #'
 #' Removes empty, corrupt, or invalid geometries from an sfc object.
+#' supressWarnings call should not be necessary: sf commit edd578 fixes it.
 #'
 #' @param sfcobj Object of class \code{sf} or \code{sfc}
 remove_invalid <- function(sfcobj) {
-    sfc <- sfcobj[!is.na(sf::st_is_valid(sfcobj)), ]
+    sfc <- sfcobj[!is.na(suppressWarnings(sf::st_is_valid(sfcobj))), ]
     sfc <- sfc[!is.na(sf::st_dimension(sfc)), ]
 
     # Try to fix any invalid geometries; remove them if we can't
-    if (any(!sf::st_is_valid(sfc))) {
+    if (any(suppressWarnings(!sf::st_is_valid(sfc)))) {
         sfc <- sf::st_buffer(sfc, 0)
         sfc <- sfc[sf::st_is_valid(sfc), ]
     }
