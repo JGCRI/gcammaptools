@@ -117,7 +117,7 @@ EXTENT_AFRICA <- c(-20,60,-40,40)
 #' This vector can be used as the \code{extent} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-EXTENT_LA <- c(-110, -40, -50, 30)
+EXTENT_LA <- c(-118,-33,-56,37)
 
 
 # -----------------------------------------------------------------------------

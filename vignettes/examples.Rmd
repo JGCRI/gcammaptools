@@ -93,7 +93,7 @@ plot_GCAM(map.rgn32, col='region_id', proj=na_aea, extent=EXTENT_USA,
 For superregions with a long north-south extent, the orthographic projection gives the best result. We have predefined one for Africa, but you can find others defined by proj4 strings from http://spatialreference.org as shown in the following example. Although the extent parameter is the best way to specify the view you want, you can fine-tune the final plot by adjusting the zoom.
 ```{r mp4, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map.rgn32, col='region_name', proj=af_ortho, extent=EXTENT_AFRICA,
-          title="Africa Orthographic", zoom=10) +
+          title="Africa Orthographic") +
     ggplot2::scale_fill_manual(values = gcam32_colors)
 ```
 
@@ -101,7 +101,7 @@ plot_GCAM(map.rgn32, col='region_name', proj=af_ortho, extent=EXTENT_AFRICA,
 Orthographic projection of the Latin America superregion. Notice that projection strings can also be defined by specifying an EPSG, ESRI, or SR-ORG projection code.
 ```{r mp5, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map.rgn32, col='region_name', proj=7567, proj_type='SR-ORG',
-          extent=EXTENT_LA, title="Latin America Orthographic", zoom=8) +
+          extent=EXTENT_LA, title="Latin America Orthographic") +
     ggplot2::scale_fill_manual(values = gcam32_colors)
 ```
 
@@ -123,7 +123,7 @@ plot_GCAM(map.basin235, col='basin_name', proj=eck3)
 The `plot_GCAM_grid()` function tiles gridded data over a base map.
 ```{r mp8, fig.width=4, fig.height=6, fig.align='center'}
 co2grid <- rgcam::getQuery(prj, 'Cooling Degree Days', 'Reference')
-plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, legend=T, zoom=8) + 
+plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, legend=T) + 
     ggplot2::scale_fill_gradientn(colors=c("white", "red"), 
                                   guide=ggplot2::guide_colorbar(title="Cooling Degree Days", 
                                                                 title.position="top"))
@@ -155,7 +155,7 @@ gcamchina <- add_region_ID(gcamchina, lookupfile = chn, provincefile = chn, drop
 # Highlight the provinces by filtering out values from other regions
 gcamchina[!is.na(gcamchina$id) & gcamchina$id <= 32, 'value'] <- NA
 plot_GCAM(map.chn, col='value', gcam_df=gcamchina, proj=ch_aea,
-          extent=EXTENT_CHINA, zoom = 2)
+          extent=EXTENT_CHINA)
 ```
 
 ### Example 11: GCAM USA

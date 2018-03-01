@@ -397,6 +397,12 @@ spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datu
 
   # buffer if user desires
   if (!is.null(buff_dist)) {
+    # each zoom level shrinks the map's bounding rectangle by 10% of its
+    # shortest side
+    pct_zoom <- 0.9^buff_dist
+    x <- sf::st_bbox(bb)[3] - sf::st_bbox(bb)[1]
+    y <- sf::st_bbox(bb)[4] - sf::st_bbox(bb)[2]
+    buff_dist <- min(x, y) - pct_zoom * min(x, y)
     return(suppressWarnings({suppressMessages({sf::st_buffer(bb, buff_dist)})}))
   }
   else {
@@ -422,10 +428,20 @@ reproject <- function(sdf, prj4s) {
     }
 }
 
+remove_invalid <- function(sfcobj) {
+    sfc <- sfcobj[!is.na(sf::st_is_valid(sfcobj)), ]
+    sfc <- sfc[!is.na(sf::st_dimension(sfc)), ]
 
-#---------------------------------------------------------------------------
-# DATA PROCESSING FUNCTIONS
-#---------------------------------------------------------------------------
+    # Try to fix any invalid geometries; remove them if we can't
+    if (any(!sf::st_is_valid(sfc))) {
+        sfc <- sf::st_buffer(sfc, 0)
+        sfc <- sfc[sf::st_is_valid(sfc), ]
+    }
+
+    return(sfc)
+}
+
+# DATA PROCESSING FUNCTIONS -----------------------------------------------
 
 ### TODO - modify to search for appropriate lookup, province, drop files in directory.
 #' Match GCAM ID to region using data from a lookup table.
@@ -562,9 +578,7 @@ drop_regions <- function(datatable, drops) {
 
 
 
-#-----------------------------------------------------------------
-# MAPPING FUNCTIONS
-#-----------------------------------------------------------------
+# MAPPING FUNCTIONS --------------------------------------------------
 
 #' Default GCAM theme function
 #'
@@ -603,9 +617,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 
 
 
-##-----------------------------------------------------------------
-## MAPS
-##-----------------------------------------------------------------
+# MAPS --------------------------------------------------------------------
 
 #' Primary GCAM mapping function. Can handle categorical or continuous data.
 #'
@@ -703,91 +715,53 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
                       gcam_df = NULL, gcam_key = "id", mapdata_key = "region_id",
-                      zoom = NULL, agr_type = 'constant') {
+                      zoom = 0, graticules = FALSE, agr_type = 'constant',
+                      background_color = '#ddefff',
+                      padding = all(extent == EXTENT_WORLD)) {
 
   # get proj4 string that corresponds to user selection
   p4s <- assign_prj4s(proj_type, proj)
 
-  m <- import_mapdata(mapdata)
+  # ensure that the map is an sf object
+  map <- import_mapdata(mapdata)
 
-  # create sf obj bounding box from extent and define native proj;
-  # apply buffer if needed: this is the box defining the final view of the map.
-  b <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = sf::st_crs(m))
+  # eliminate erroneous-filled polygons generated at the global extent
+  wborder <- spat_bb(EXTENT_WORLD, 0, sf::st_crs(map))
+  sf::st_agr(wborder) <- agr_type
+  sf::st_agr(map) <- agr_type
+  map <- sf::st_intersection(map, wborder)
 
-  #=============TESTS==============
-  if (grepl("+proj=ortho", p4s)) {
-      olat <- sub(".*\\+lat_0=(\\d+).*", "\\1", p4s)
-      olon <- sub(".*\\+lon_0=(\\d+).*", "\\1", p4s)
-      olat <- suppressWarnings(as.numeric(olat))
-      olon <- suppressWarnings(as.numeric(olon))
-      if (is.na(olat)) olat <- 0
-      if (is.na(olon)) olon <- 0
-      wborder.orig <- sf::st_point(x = c(olat, olon), dim = "XY") %>%
-          sf::st_sfc(crs = sf::st_crs(m)) %>%
-          sf::st_buffer(dist = 90) %>% sf::st_sf()
-  } else{
-      wborder.orig <- spat_bb(EXTENT_WORLD, 0, sf::st_crs(m))
+  # create sf obj bounding box from extent and define transformed proj;
+  # apply buffer if needed; this is the box defining the final view of the map,
+  # so convert it to a rectangle.
+  bounds <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = p4s)
+  if (!all(extent == EXTENT_WORLD)) {
+      xn <- sf::st_bbox(bounds)[['xmin']]
+      xx <- sf::st_bbox(bounds)[['xmax']]
+      yx <- sf::st_bbox(bounds)[['ymax']]
+      yn <- sf::st_bbox(bounds)[['ymin']]
+      newbbox <- sf::st_polygon(list(rbind(c(xn,yn), c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))))
+      sf::st_geometry(bounds)[[1]] <- newbbox
   }
 
-  # Get the bounding box of the final, projected map
-  mborder <- sf::st_transform(b, p4s)
-  if (!sf::st_is_valid(mborder) | is.na(sf::st_dimension(mborder))) {
-     stop("Extent is not valid for the given projection")
-  }
+  map <- reproject(map, p4s)
+  map <- remove_invalid(map)
+  map <- sf::st_intersection(map, bounds)
+  map <- sf::st_join(map, bounds, left = FALSE)
 
-  # Turn bounding box into a rectangle to match final viewing window
-  xn <- sf::st_bbox(mborder)[['xmin']]
-  xx <- sf::st_bbox(mborder)[['xmax']]
-  yx <- sf::st_bbox(mborder)[['ymax']]
-  yn <- sf::st_bbox(mborder)[['ymin']]
-  newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
-  sf::st_geometry(mborder)[[1]] <- newbbox
+  map <- join_gcam(map, mapdata_key, gcam_df, gcam_key)
+  border <- ggplot2::geom_sf(data = bounds, fill = background_color)
 
-  m <- join_gcam(m, mapdata_key, gcam_df, gcam_key)
-  m <- sf::st_intersection(m, wborder.orig) # eliminate erroneous-filled poly generated at the global extent
-  m <- reproject(m, prj4s = p4s)
-  remove_invalid <- function(sfcobj) {
-      sfcobj <- sfcobj[!is.na(sf::st_is_valid(sfcobj)), ]
-      sfc <- sfcobj[!is.na(sf::st_dimension(sfcobj)), ]
-      return(sfc)
-  }
-  m <- remove_invalid(m)
-
-  # Don't show a border past the edge of the world extent
-  if (all(extent == EXTENT_WORLD)) {
-      wborder.proj <- reproject(wborder.orig, p4s) # Reprojected world bounds
-      mborder <- sf::st_intersection(wborder.proj, mborder)
-  }
-  if (grepl("+proj=ortho", p4s)) {
-      centerx <- (sf::st_bbox(m)[1] + sf::st_bbox(m)[3]) / 2
-      centery <- (sf::st_bbox(m)[2] + sf::st_bbox(m)[4]) / 2
-      radius <- max(sf::st_bbox(m)[4] - sf::st_bbox(m)[2],
-                    sf::st_bbox(m)[3] - sf::st_bbox(m)[1]) / 2
-      mborder <- sf::st_point(x = c(centerx, centery), dim = "XY") %>%
-          sf::st_sfc(crs = sf::st_crs(m)) %>%
-          sf::st_buffer(dist = radius) %>% sf::st_sf()
-  }
-  m <- sf::st_join(m, mborder, left = FALSE)
-
-  # Create geom for background and outline
-  border <- ggplot2::geom_sf(data = mborder, fill = '#ddefff')
-  #================================
-
-  # import spatial data; join gcam data; get only features in bounds; transform projection
-  # m <- join_gcam(m, mapdata_key, gcam_df, gcam_key) %>%
-  #   filter_spatial(b, p4s, extent, col, agr_type) %>%
-  #   reproject(prj4s = p4s)
-
-  # create object to control map zoom extent
-  # map_zoom <- zoom_bounds(m, b, extent, p4s)
+  dtm <- if (graticules) wgs84 else NA
+  map_opts <- ggplot2::coord_sf(expand = padding, datum = dtm)
 
   # generate plot object
-  if (is.null(col)) gsf <- ggplot2::geom_sf(data = m, fill = '#222222', color = alpha('#888888', 0.5))
-  else gsf <- ggplot2::geom_sf(data = m, aes_string(fill = col), alpha = 1, color = alpha('#000000', 0.5))
-  # else gsf <- ggplot2::geom_sf(data = m, aes_string(fill = col), color = '#666666')
-  mp <- ggplot() + border +
+  if (is.null(col)) gsf <- ggplot2::geom_sf(data = map, fill = '#222222', color = alpha('#888888', 0.5))
+  else gsf <- ggplot2::geom_sf(data = map, aes_string(fill = col), alpha = 1, color = alpha('#000000', 0.5))
+  mp <- ggplot() +
+    border +
     gsf +
-    # map_zoom +
+    map_opts +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend)
 
