@@ -81,6 +81,9 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
                       })
     } else {
         finaltable <- dplyr::full_join(datatable, lookuptable, by = "region")
+        if (any(duplicated(finaltable$region))) {
+           warning("Data contains multiple values for the same region")
+        }
     }
 
     # Set column name and type for id column

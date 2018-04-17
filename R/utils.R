@@ -90,14 +90,17 @@ assign_prj4s <- function(proj_type, proj) {
     }
 }
 
-#' Create a rectangluar sf polygon from numeric extent.
+#' Create a rectangluar sf polygon from numeric extent or sf bbox.
 #'
-#' @param ext Numeric extent [xmin, xmax, ymin, ymax]
+#' @param ext Numeric extent [xmin, xmax, ymin, ymax] or an object of class bbox
 pgon_from_extent <- function(ext) {
-    pgon <- sf::st_polygon(list(rbind(c(ext[1], ext[3]), c(ext[1], ext[4]),
-                                      c(ext[2], ext[4]), c(ext[2], ext[3]),
-                                      c(ext[1], ext[3]))))
-    return(pgon)
+    # The position of xmax and ymin are switched with a bbox-defined extent
+    xmin <- ext[1]
+    xmax <- ext[(class(ext) == "bbox") + 2]
+    ymin <- ext[(class(ext) != "bbox") + 2]
+    ymax <- ext[4]
+    return(sf::st_polygon(list(rbind(c(xmin, ymin), c(xmin, ymax), c(xmax, ymax),
+                                     c(xmax, ymin), c(xmin, ymin)))))
 }
 
 
@@ -120,8 +123,8 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
   pgon <- sf::st_segmentize(pgon, 1)
   geom <- sf::st_sfc(pgon)
 
-  # make sf object; 1 is the arbitrary value; assign default
-  # WGS84 proj; transform projection to that of the input mapdata
+  # make sf object, assign default WGS84 proj, and transform projection to that
+  # of the input mapdata
   bb <- sf::st_sf(geometry = geom) %>%
     sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
     sf::st_transform(proj4s)
@@ -138,14 +141,21 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
   # the bounding extent in this call.
 
   # buffer if user desires
-  if (!is.null(buff_dist)) {
+  if (buff_dist) {
     # each zoom level shrinks the map's bounding rectangle by 10% of its
     # shortest side
-    pct_zoom <- 0.9^buff_dist
+    pct_zoom <- 0.1 * buff_dist
     x <- sf::st_bbox(bb)[3] - sf::st_bbox(bb)[1]
     y <- sf::st_bbox(bb)[4] - sf::st_bbox(bb)[2]
     buff_dist <- min(x, y) - pct_zoom * min(x, y)
-    return(suppressWarnings({suppressMessages({sf::st_buffer(bb, buff_dist)})}))
+    buffered_bb <- sf::st_buffer(bb, buff_dist, nQuadSegs = 2)
+
+    # if we are zooming out, remove rounded corners from the buffer
+    if (buff_dist > 0) {
+       buffered_bb <- spat_bb(buffered_bb)
+    }
+    return(buffered_bb)
+    # return(suppressWarnings({suppressMessages({sf::st_buffer(bb, buff_dist)})}))
   }
   else {
     return(bb)
