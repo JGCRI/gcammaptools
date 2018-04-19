@@ -164,18 +164,12 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
 #' Clean spatial data.
 #'
 #' Removes empty, corrupt, or invalid geometries from an sfc object.
-#' supressWarnings call should not be necessary: sf commit edd578 fixes it.
 #'
 #' @param sfcobj Object of class \code{sf} or \code{sfc}
 remove_invalid <- function(sfcobj) {
-    sfc <- sfcobj[!is.na(suppressWarnings(sf::st_is_valid(sfcobj))), ]
-    sfc <- sfc[!is.na(sf::st_dimension(sfc)), ]
+    invalids <- sf::st_is_valid(sfcobj, reason = T)
 
-    # Try to fix any invalid geometries; remove them if we can't
-    if (any(suppressWarnings(!sf::st_is_valid(sfc)))) {
-        sfc <- sf::st_buffer(sfc, 0)
-        sfc <- sfc[sf::st_is_valid(sfc), ]
-    }
-
-    return(sfc)
+    sfcobj[grepl("Self-intersection", invalids), ] <- sf::st_buffer(sfcobj[grepl("Self-intersection", invalids), ], 0)
+    sfcobj <- sfcobj[!is.na(invalids), ]
+    return(sfcobj)
 }

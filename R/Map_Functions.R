@@ -478,7 +478,8 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE,
                   panel.background = element_rect(fill = PANEL_FILL),
                   panel.grid.major = PANEL_GRID,
                   axis.ticks = AXIS_TICKS,
-                  axis.text = AXIS_TEXT)
+                  axis.text = AXIS_TEXT,
+                  legend.position = "none")
 
     if (legend) {
         tm <- tm +
@@ -492,30 +493,8 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE,
     if (overlay_graticules) {
         tm <- tm + theme(panel.background = element_blank(), panel.ontop = T)
     }
+
     return(tm)
-
-    if (legend) {
-        theme_bw(base_size = base_size, base_family = base_family) %+replace%
-            theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
-                  panel.background = PANEL_BACKGROUND,
-                  panel.grid.major = PANEL_GRID,
-                  axis.ticks = AXIS_TICKS,
-                  axis.text = AXIS_TEXT,
-                  legend.key.size = unit(0.75, "cm"),
-                  legend.text = element_text(size = 12),
-                  legend.title = element_text(size = 13, face = "bold"),
-                  legend.position = LEGEND_POSITION,
-                  legend.key = element_rect(color = "black"))
-
-    } else {
-        theme_bw(base_size = base_size, base_family = base_family) %+replace%
-            theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
-                  panel.background = element_rect(fill = '#eeeeee'),
-                  panel.grid.major = PANEL_GRID,
-                  axis.ticks = AXIS_TICKS,
-                  axis.text = AXIS_TEXT,
-                  legend.position = "none")
-    }
 }
 
 
