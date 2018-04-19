@@ -99,6 +99,9 @@ pgon_from_extent <- function(ext) {
     xmax <- ext[(class(ext) == "bbox") + 2]
     ymin <- ext[(class(ext) != "bbox") + 2]
     ymax <- ext[4]
+
+    # calling st_segmentize with a 1 degree resolution makes reprojections of
+    # the rectangle look smooth
     return(sf::st_polygon(list(rbind(c(xmin, ymin), c(xmin, ymax), c(xmax, ymax),
                                      c(xmax, ymin), c(xmin, ymin)))))
 }
@@ -116,12 +119,12 @@ pgon_from_extent <- function(ext) {
 #'   of the bounds
 spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") {
 
-  # create polygon from bounding box, segmentize it to 1 degree resolution so
-  # that reprojections of it look smooth, then convert bounding box to simple
+  # create a rectangular polygon from bounding box, segmentize it to 1 degree
+  # resultion so that reprojections of it look smooth, then convert it to simple
   # features polygon collection
-  pgon <- pgon_from_extent(b_ext)
-  pgon <- sf::st_segmentize(pgon, 1)
-  geom <- sf::st_sfc(pgon)
+  geom <- pgon_from_extent(b_ext) %>%
+      sf::st_segmentize(1) %>%
+      sf::st_sfc()
 
   # make sf object, assign default WGS84 proj, and transform projection to that
   # of the input mapdata
@@ -144,16 +147,11 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
   if (buff_dist) {
     # each zoom level shrinks the map's bounding rectangle by 10% of its
     # shortest side
-    pct_zoom <- 0.1 * buff_dist
     x <- sf::st_bbox(bb)[3] - sf::st_bbox(bb)[1]
     y <- sf::st_bbox(bb)[4] - sf::st_bbox(bb)[2]
-    buff_dist <- min(x, y) - pct_zoom * min(x, y)
-    buffered_bb <- sf::st_buffer(bb, buff_dist, nQuadSegs = 2)
+    zoom <- buff_dist * -0.1 * min(x, y)
+    buffered_bb <- sf::st_buffer(bb, zoom, nQuadSegs = 5)
 
-    # if we are zooming out, remove rounded corners from the buffer
-    if (buff_dist > 0) {
-       buffered_bb <- spat_bb(buffered_bb)
-    }
     return(buffered_bb)
     # return(suppressWarnings({suppressMessages({sf::st_buffer(bb, buff_dist)})}))
   }

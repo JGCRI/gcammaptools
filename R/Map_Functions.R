@@ -275,6 +275,10 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 #'   mapdata.
 #' @param zoom A distance to buffer the bounding box extent by for on-the-fly
 #'   adjustments needed when fitting area to maps.
+#' @param graticules Where to position any graticules. One of 'top', 'bottom',
+#'   or '' (empty string). Note that 'bottom' places them under the map
+#'   background and will not be visible without a setting the
+#'   \code{background_color} parameter to NA or transparent.
 #' @param agr_type Aggregate-geometry-relationship type.  Either 'constant'
 #'   (default), 'aggregate', or 'identity' classified as follows:  [constant] a
 #'   variable that has a constant value at every location over a spatial extent;
@@ -284,6 +288,8 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 #'   whole of) this and only this geometry. See the
 #'   \href{https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries}{sf
 #'   vignette} for further explanation.
+#' @param background_color Color for the areas with no regions (the oceans)
+#' @param padding Boolean flag: Add space between map edge and plot edge?
 #' @importFrom grDevices gray
 #' @examples \dontrun{
 #'
@@ -308,7 +314,7 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
                       gcam_df = NULL, gcam_key = "id", mapdata_key = "region_id",
-                      zoom = 0, graticules = FALSE, agr_type = 'constant',
+                      zoom = 0, graticules = "bottom", agr_type = 'constant',
                       background_color = MAP_BACKGROUND,
                       padding = all(extent == EXTENT_WORLD)) {
 
@@ -329,8 +335,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   # the map edge may be rounded).
   bounds <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = p4s)
   if (!all(extent == EXTENT_WORLD)) {
-      bbox <- sf::st_bbox(bounds)[c(1,3,2,4)]
-      sf::st_geometry(bounds)[[1]] <- pgon_from_extent(bbox)
+      sf::st_geometry(bounds)[[1]] <- pgon_from_extent(sf::st_bbox(bounds))
   }
 
   # reproject map into user-specified crs, filter to extent, then join user data
@@ -340,20 +345,38 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   map <- join_gcam(map, mapdata_key, gcam_df, gcam_key)
 
   # datum = wgs84 means that graticules are drawn based on first layer's crs
-  dtm <- if (graticules) wgs84 else NA
+  dtm <- if (graticules == "top" | graticules == "bottom") wgs84 else NA
 
+  # Because graticules are drawn as ggplot gridlines, we cannot have them both
+  # on top of map and still have a solid panel background. We can get around
+  # this problem by making our own background. By default, coord_sf(expand = T)
+  # multiplies the panel's x and y ranges by 0.05, which we'll do here manually.
+  panel_background <- NULL
+  if (padding & graticules == "top") {
+      padding <- FALSE
+      panel <- st_bbox(bounds)
+      panel[c(1,3,2,4)] <- c(scales::expand_range(c(panel[1], panel[3]), 0.05),
+                             scales::expand_range(c(panel[2], panel[4]), 0.05))
+      panel <- panel %>% st_as_sfc() %>% st_sf()
+      panel_background <- ggplot2::geom_sf(data = panel, fill = PANEL_FILL)
+  }
+
+  # set different aesthetics depending on whether there is region-specific data
   if (is.null(col))
-      gsf <- ggplot2::geom_sf(data = map, fill = FILL_COLOR, color = BORDER_LIGHT)
+      regions <- ggplot2::geom_sf(data = map, fill = FILL_COLOR,
+                                  color = BORDER_LIGHT)
   else
-      gsf <- ggplot2::geom_sf(data = map, aes_string(fill = col), alpha = 1, color = BORDER_DARK)
+      regions <- ggplot2::geom_sf(data = map, aes_string(fill = col), alpha = 1,
+                                  color = BORDER_DARK)
 
   # generate plot object
   mp <- ggplot() +
+    panel_background +
     ggplot2::geom_sf(data = bounds, fill = background_color) +
-    gsf +
+    regions +
     ggplot2::coord_sf(expand = padding, datum = dtm) +
     ggplot2::ggtitle(title) +
-    theme_GCAM(legend = legend)
+    theme_GCAM(legend = legend, overlay_graticules = graticules == "top")
 
   return(mp)
 }
@@ -447,7 +470,29 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
 #' @param base_family Base font type
 #' @param legend Boolean; whether to include a legend with default legend
 #'   formatting.
-theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
+theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE,
+                       overlay_graticules = FALSE) {
+
+    tm <- theme_bw(base_size = base_size, base_family = base_family) %+replace%
+            theme(panel.border = element_rect(color = LINE_COLOR, fill = NA),
+                  panel.background = element_rect(fill = PANEL_FILL),
+                  panel.grid.major = PANEL_GRID,
+                  axis.ticks = AXIS_TICKS,
+                  axis.text = AXIS_TEXT)
+
+    if (legend) {
+        tm <- tm +
+            theme(legend.key.size = unit(0.75, "cm"),
+                  legend.text = element_text(size = 12),
+                  legend.title = element_text(size = 13, face = "bold"),
+                  legend.position = LEGEND_POSITION,
+                  legend.key = element_rect(color = "black"))
+    }
+
+    if (overlay_graticules) {
+        tm <- tm + theme(panel.background = element_blank(), panel.ontop = T)
+    }
+    return(tm)
 
     if (legend) {
         theme_bw(base_size = base_size, base_family = base_family) %+replace%
