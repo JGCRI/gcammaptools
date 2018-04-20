@@ -172,7 +172,7 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
   filtermap <- suppressWarnings({sf::st_simplify(filtermap, preserveTopology=TRUE, dTolerance=degree_tolerance)})
 
   # if nothing was filtered just return original map
-  if (object.size(filtermap) == object.size(mapdata))
+  if (utils::object.size(filtermap) == utils::object.size(mapdata))
     return(mapdata)
 
   # When removing polygons we might be shifting the bounds of the map, which

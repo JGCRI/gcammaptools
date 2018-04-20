@@ -5,7 +5,7 @@
 \title{Plot a gridded dataset over a base map}
 \usage{
 plot_GCAM_grid(plotdata, col, map = map.rgn32, proj = robin,
-  proj_type = NULL, legend = F, alpha = 0.8, ...)
+  proj_type = NULL, extent = EXTENT_WORLD, legend = F, alpha = 0.8, ...)
 }
 \arguments{
 \item{plotdata}{Data frame with the coordinates and values to be plotted.
@@ -22,6 +22,8 @@ some frequently used projections (e.g. \code{\link{robin}} or
 
 \item{proj_type}{Either esri, epsg, or sr-org as string.  These correspond to
 available reference types hosted by \url{http://spatialreference.org/}.}
+
+\item{extent}{Numeric bounds [xmin, xmax, ymin, ymax] to zoom display to.}
 
 \item{legend}{Boolean flag: True = display map legend; False = do not display
 legend.}
