@@ -290,7 +290,6 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 #'   vignette} for further explanation.
 #' @param background_color Color for the areas with no regions (the oceans)
 #' @param padding Boolean flag: Add space between map edge and plot edge?
-#' @importFrom grDevices gray
 #' @examples \dontrun{
 #'
 #' ## Plot a map of GCAM regions; color it with the default theme palette.
@@ -341,7 +340,10 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   # reproject map into user-specified crs, filter to extent, then join user data
   map <- sf::st_transform(map, p4s)
   map <- remove_invalid(map)
-  map <- filter_spatial(map, bounds, agr_type)
+  tryCatch(
+      map <- filter_spatial(map, bounds, agr_type),
+      error = function(e) stop("Reprojection produced invalid map.")
+  )
   map <- join_gcam(map, mapdata_key, gcam_df, gcam_key)
 
   # datum = wgs84 means that graticules are drawn based on first layer's crs
@@ -354,10 +356,10 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   panel_background <- NULL
   if (padding & graticules == "top") {
       padding <- FALSE
-      panel <- st_bbox(bounds)
+      panel <- sf::st_bbox(bounds)
       panel[c(1,3,2,4)] <- c(scales::expand_range(c(panel[1], panel[3]), 0.05),
                              scales::expand_range(c(panel[2], panel[4]), 0.05))
-      panel <- panel %>% st_as_sfc() %>% st_sf()
+      panel <- panel %>% sf::st_as_sfc() %>% sf::st_sf()
       panel_background <- ggplot2::geom_sf(data = panel, fill = PANEL_FILL)
   }
 
@@ -403,7 +405,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
 #' @inheritParams plot_GCAM
 #' @export
 plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
-                           proj_type = NULL, extent = EXTENT_WORLD, legend = F,
+                           proj_type = NULL, extent = EXTENT_WORLD, zoom = 0,
                            alpha = 0.8, ...) {
 
     map.rgn32 <- gcammaptools::map.rgn32 # Silence package notes
@@ -412,10 +414,12 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
     if (!('lon' %in% names(plotdata) && 'lat' %in% names(plotdata)))
         stop("gridded data must have a 'lon' column and a 'lat' column")
 
-    # if we are in a projected crs
-    if (!sf::st_is_longlat(proj)) {
-        p4s <- assign_prj4s(proj_type, proj)
+    # get plot bounds
+    p4s <- assign_prj4s(proj_type, proj)
+    bounds <- sf::st_bbox(spat_bb(extent, zoom, proj4s = p4s))[c(1,3,2,4)]
 
+    # are we in a projected crs?
+    if (!sf::st_is_longlat(proj)) {
         # get raster extent
         e <- raster::extent(c(range(plotdata$lon), range(plotdata$lat)))
 
@@ -430,9 +434,6 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
         points <- plotdata[ , c('lon', 'lat')]
         values <- plotdata[[col]]
 
-        # get plot bounds
-        bounds <- sf::st_bbox(spat_bb(extent, proj4s = p4s))[c(1,3,2,4)]
-
         # 1. Add data values to raster cells
         # 2. Reproject the raster into the user-defined crs
         # 3. Crop out any cells not within the map extent
@@ -446,9 +447,13 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
                     data.frame() %>%
                     magrittr::set_names(c("lon", "lat", col))
     }
+    else {
+        plotdata <- dplyr::filter(plotdata, bounds[1] <= lon, lon <= bounds[2],
+                                            bounds[3] <= lat, lat <= bounds[4])
+    }
 
     # get the base map using plot_GCAM
-    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent, legend = legend, ...)
+    mp <- plot_GCAM(map, proj = proj, proj_type = proj_type, extent = extent, zoom = zoom, ...)
 
     # add the gridded data to the base map
     grid <- geom_raster(data = plotdata,
@@ -470,6 +475,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
 #' @param base_family Base font type
 #' @param legend Boolean; whether to include a legend with default legend
 #'   formatting.
+#' @param overlay_graticules Boolean; whether to place grid lines on top of plot
 theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE,
                        overlay_graticules = FALSE) {
 

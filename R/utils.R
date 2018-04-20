@@ -132,17 +132,6 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
     sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
     sf::st_transform(proj4s)
 
-  # Suppress Warning and message:
-  #     "In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) : st_buffer does not
-  #     correctly buffer longitude/latitude data, dist needs to be in decimal
-  #     degrees."
-  # This warning occurs from buffering a feature that is in a geographic
-  # coordinate system (lat/long) rather than a projection one.  This makes the
-  # the buffer not be exact due to the distance being calculated in decimal
-  # degrees rather than meters or kilometers. This is fine with us since we are
-  # simply using buffer as a way of zooming to include or exclude portions of
-  # the bounding extent in this call.
-
   # buffer if user desires
   if (buff_dist) {
     # each zoom level shrinks the map's bounding rectangle by 10% of its
@@ -150,10 +139,19 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
     x <- sf::st_bbox(bb)[3] - sf::st_bbox(bb)[1]
     y <- sf::st_bbox(bb)[4] - sf::st_bbox(bb)[2]
     zoom <- buff_dist * -0.1 * min(x, y)
-    buffered_bb <- sf::st_buffer(bb, zoom, nQuadSegs = 5)
+    if (sf::st_is_longlat(bb)) zoom <- units::set_units(zoom, degree)
 
-    return(buffered_bb)
-    # return(suppressWarnings({suppressMessages({sf::st_buffer(bb, buff_dist)})}))
+    # Suppress Warning:
+    #     "In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) : st_buffer does
+    #     not correctly buffer longitude/latitude data, dist needs to be in
+    #     decimal degrees."
+    # This warning occurs from buffering a feature that is in a geographic
+    # coordinate system (lat/long) rather than a projection one.  This makes the
+    # the buffer not be exact due to the distance being calculated in decimal
+    # degrees rather than meters or kilometers. This is fine with us since we
+    # are simply using buffer as a way of zooming to include or exclude portions
+    # of the bounding extent in this call.
+    return(suppressWarnings({ sf::st_buffer(bb, zoom, nQuadSegs = 5) }))
   }
   else {
     return(bb)
@@ -168,8 +166,13 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
 #' @param sfcobj Object of class \code{sf} or \code{sfc}
 remove_invalid <- function(sfcobj) {
     invalids <- sf::st_is_valid(sfcobj, reason = T)
+    intrscts <- grepl("Self-intersection", invalids)
 
-    sfcobj[grepl("Self-intersection", invalids), ] <- sf::st_buffer(sfcobj[grepl("Self-intersection", invalids), ], 0)
+    # See note in spat_bb about warning/message
+    sfcobj[intrscts, ] <- suppressWarnings({
+        suppressMessages({ sf::st_buffer(sfcobj[intrscts, ], 0) })
+    })
+
     sfcobj <- sfcobj[!is.na(invalids), ]
     return(sfcobj)
 }

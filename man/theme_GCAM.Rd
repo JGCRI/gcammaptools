@@ -14,6 +14,8 @@ theme_GCAM(base_size = 11, base_family = "", legend = FALSE,
 
 \item{legend}{Boolean; whether to include a legend with default legend
 formatting.}
+
+\item{overlay_graticules}{Boolean; whether to place grid lines on top of plot}
 }
 \description{
 An add-on function to any ggplot2 object. Derives from ggplot2 black and
