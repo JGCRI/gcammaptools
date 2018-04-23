@@ -56,7 +56,7 @@ Shanghai,41
 Shanxi,36
 Sichuan,55
 Tianjin,34
-Tibet,63
-Xinjiang,58
+Tibet,58
+Xinjiang,63
 Yunnan,57
 Zhejiang,43
