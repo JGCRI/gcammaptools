@@ -39,6 +39,5 @@ are optional, but if you are using one of the built-in map sets, then you
 \emph{must not} specify them if they don't exist for the map set you are
 using.  Currently, \code{rgn14} and \code{basin235} have neither drops nor
 province abbreviations.  The \code{rgn32} set has drops, but not province
-abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
-finally implemented) has both.
+abbreviations.  Only the \code{chn} set has both.
 }

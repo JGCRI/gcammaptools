@@ -7,7 +7,7 @@
 drop_regions(datatable, drops)
 }
 \arguments{
-\item{datatable}{A data frame of query from batch query CSV.}
+\item{datatable}{A data frame containing the output of a GCAM query.}
 
 \item{drops}{String; path to file containing regions to be dropped}
 }

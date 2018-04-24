@@ -18,10 +18,11 @@ filter_spatial(mapdata, bbox, p4s, extent, col, agr_type = "constant",
 
 \item{col}{Field name with target information to map.}
 
-\item{agr_type}{Inherited attribute-geometry-relationship type from plot_GCAM function params.}
+\item{agr_type}{Inherited attribute-geometry-relationship type from plot_GCAM
+function params.}
 
-\item{topo}{SF topologic function to define how the join will be conducted. Default
-is to join any feature that intersects the bounding box.}
+\item{topo}{SF topologic function to define how the join will be conducted.
+Default is to join any feature that intersects the bounding box.}
 }
 \description{
 Conducts a spatial join to retrieve spatial features that are topologically associated

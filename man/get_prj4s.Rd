@@ -20,11 +20,10 @@ get_prj4s(obj = NULL, prj_type = NULL, prj_code = NULL,
 associated proj4 string.}
 }
 \description{
-Provides a lookup list for default proj4 strings utilized.  Users
-may also specify their own lookup list.  Options also include
-providing either the EPSG, ESRI, or SR-ORG projection codes to
-retrieve the associated proj4 string from a web query from
-http://spatialreference.org.  Definitions for proj4 string
-parmeters can be referenced here:
+Provides a lookup list for default proj4 strings utilized.  Users may also
+specify their own lookup list.  Options also include providing either the
+EPSG, ESRI, or SR-ORG projection codes to retrieve the associated proj4
+string from a web query from http://spatialreference.org.  Definitions for
+proj4 string parmeters can be referenced here:
 http://proj4.org/parameters.html#parameter-list
 }

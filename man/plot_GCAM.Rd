@@ -10,9 +10,9 @@ plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
   agr_type = "constant")
 }
 \arguments{
-\item{mapdata}{The data frame containing both geometric data (lat, long, id)
-and regional metadata.  This is the only mandatory variable. If used alone,
-will produce the default map.}
+\item{mapdata}{The data frame containing both geometric data (simple features
+collection and id) and regional metadata.  This is the only mandatory
+variable. If used alone, will produce the default map.}
 
 \item{col}{If plotting categorical/continuous data, the name of the column to
 plot.  Will automatically determine type of style of plot based on type of

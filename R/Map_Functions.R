@@ -16,19 +16,19 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 
       # use map bounds instead of bounding box for zoom
       bx <- sf::st_bbox(mapdata)
-
-      return(ggplot2::coord_sf(xlim = c(bx[1], bx[3]),
-                               ylim = c(bx[2], bx[4])))
+      bx[2] <- -max(abs(bx[2]), bx[4]) # makes latitude extent equal N and S
+      bx[4] <- max(abs(bx[2]), bx[4])
+      coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]))
     }
     else {
 
       bx <- reproject(bbox, prj4s = sf::st_crs(p4s)[[2]]) %>%
         sf::st_bbox()
-
-      return(ggplot2::coord_sf(crs = p4s, datum = sf::st_crs(p4s),
-                               xlim = c(bx[1], bx[3]),
-                               ylim = c(bx[2], bx[4]), expand = TRUE))
+      coord <- ggplot2::coord_sf(xlim = c(bx[1], bx[3]), ylim = c(bx[2], bx[4]),
+                                 expand = F, crs = p4s, datum = sf::st_crs(p4s))
     }
+
+    return(coord)
 }
 
 #' Get features topologically associated with extent bounds.
@@ -41,25 +41,30 @@ zoom_bounds <- function(mapdata, bbox, extent, p4s) {
 #' @param p4s The proj4 string of the final map.
 #' @param extent Extent provided by the user or as default.
 #' @param col Field name with target information to map.
-#' @param agr_type Inherited attribute-geometry-relationship type from plot_GCAM function params.
-#' @param topo SF topologic function to define how the join will be conducted. Default
-#' is to join any feature that intersects the bounding box.
+#' @param agr_type Inherited attribute-geometry-relationship type from plot_GCAM
+#' function params.
+#' @param topo SF topologic function to define how the join will be conducted.
+#' Default is to join any feature that intersects the bounding box.
 filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant', topo=sf::st_intersects) {
   # set NULL column to index
   clm <- if (is.null(col)) 1 else col
 
-  # set attribute-geometry-relationship for input mapdata column and bounding box feature attribute
+  # set attribute-geometry-relationship for input mapdata column and bounding
+  # box feature attribute
   sf::st_agr(mapdata) <- agr_type
   sf::st_agr(bbox) <- agr_type
 
-  # Message for st_join suppressed:  "although coordinates are longitude/latitude, it is
-  #  assumed that they are planar."  This comes from the input projection being a
-  #  geographic coordinate system and not a projected one when conducting topological
-  #  operations such as st_intersects used in the st_join.  if 'longlat' appears in the
-  #  proj string ("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") then this message
-  #  will present itself due to the operation being intersect according to the source code.
-  #  There is no option to quiet this.  We are getting the expected return from the
-  #  operation due to harmonizing the map and bounding box projection pre-join.
+  # Message for st_join suppressed:
+  #     "although coordinates are longitude/latitude, it is assumed that they
+  #     are planar."
+  # This comes from the input projection being a geographic coordinate system
+  # and not a projected one when conducting topological operations such as
+  # st_intersects used in the st_join. If 'longlat' appears in the proj string
+  # ("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") then this message will
+  # present itself due to the operation being intersect according to the source
+  # code. There is no option to quiet this.  We are getting the expected return
+  # from the operation due to harmonizing the map and bounding box projection
+  # pre-join.
 
   # if extent is not world conduct spatial join; else, return all
   if (!isTRUE(all.equal(extent, EXTENT_WORLD))) {
@@ -72,15 +77,16 @@ filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant',
           yx <- sf::st_bbox(bbox)[['ymax']]
           yn <- sf::st_bbox(bbox)[['ymin']]
           newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
-          sf::st_geometry(bbox)[[1]] <- newbbox * 1.1
+          sf::st_geometry(bbox)[[1]] <- newbbox
           bbox <- sf::st_transform(bbox, sf::st_crs(mapdata), check = T)
       }
 
       return(suppressMessages({sf::st_join(mapdata[clm], bbox, left = FALSE)}))
   }
-  # conducting the intersection here eliminates erroneous-filled poly generated at the global extent
+  # conducting the intersection here eliminates erroneous-filled poly generated
+  # at the global extent
   else {
-    return(suppressMessages({sf::st_intersection(bbox, mapdata)}))
+    return(suppressMessages({sf::st_intersection(mapdata, bbox)}))
   }
 }
 
@@ -100,42 +106,43 @@ filter_spatial <- function(mapdata, bbox, p4s, extent, col, agr_type='constant',
 #' mapdata data frame.
 join_gcam <- function(mapdata, mapdata_key, gcam_df, gcam_key) {
 
-    if (!is.null(gcam_df)) {
-
-        # Make sure join keys are valid
-        if (is.null(mapdata_key) || !(mapdata_key %in% names(mapdata))) {
-            stop("You must provide a valid key for joining the spatial data")
-        }
-        if (is.null(gcam_key) || !(gcam_key %in% names(gcam_df))) {
-            stop("You must provide a valid key for joining the GCAM data")
-        }
-
-        # add pkey fields for join
-        mapdata['pkey'] <- mapdata[[mapdata_key]]
-        gcam_df['pkey'] <- gcam_df[gcam_key]
-
-        # Join the map data and gcam data using the keys provided
-        # Note that using dplyr::left_join() here can cause the result to no
-        # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343 ;
-        # to remedy until dplyr creates an sf join function cast back to sf obj
-        mapdata <- dplyr::left_join(mapdata, gcam_df, by='pkey') %>%
-                   dplyr::select(-dplyr::one_of('pkey', mapdata_key)) %>%
-                   sf::st_as_sf()
+    if (is.null(gcam_df)) {
+        return(mapdata)
     }
+
+    # Make sure join keys are valid
+    if (is.null(mapdata_key) || !(mapdata_key %in% names(mapdata))) {
+        stop("You must provide a valid key for joining the spatial data")
+    }
+    if (is.null(gcam_key) || !(gcam_key %in% names(gcam_df))) {
+        stop("You must provide a valid key for joining the GCAM data")
+    }
+
+    # add pkey fields for join
+    mapdata['pkey'] <- mapdata[[mapdata_key]]
+    gcam_df['pkey'] <- gcam_df[gcam_key]
+
+    # Join the map data and gcam data using the keys provided
+    # Note that using dplyr::left_join() here can cause the result to no
+    # longer be an sf object as documented here: https://github.com/r-spatial/sf/issues/343 ;
+    # to remedy until dplyr creates an sf join function cast back to sf obj
+    mapdata <- dplyr::left_join(mapdata, gcam_df, by='pkey') %>%
+               dplyr::select(-pkey) %>%
+               sf::st_as_sf()
+
     return(mapdata)
 }
 
 
 #' Import ESRI Shapefile or GeoJSON as sf object.
 #'
-#' Creates a Simple Feature (sf) object from full path string to ESRI Shapefile or
-#' GeoJSON file. User defines which field is supposed to represent the ID for the data.
+#' Creates a Simple Feature (sf) object from full path string to ESRI Shapefile
+#' or GeoJSON file. User defines which field is supposed to represent the ID for
+#' the data.
 #'
-#' @param file_pth Full path to shapefile with extention (.shp).  Shapefiles must contain at least
-#' .shp, .shx, and .dbf file to function properly.
+#' @param file_pth Full path to shapefile with extention (.shp). Shapefiles must
+#' contain at least .shp, .shx, and .dbf file to function properly.
 load_shp <- function(file_pth) {
-
-    # read into an sf object
     return(sf::st_read(file_pth, quiet = TRUE))
 }
 
@@ -207,30 +214,14 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
     mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
 
-  # lapply(mapdata$geometry, function(mpoly) {
-  #     mpoly.filtered <- lapply(mpoly, function(poly) {
-  #                             poly <- sf::st_polygon(poly)
-  #                             if (sf::st_area(poly) > min_area) poly else NULL
-  #                       })
-  #
-  #     mpoly.filtered <- mpoly.filtered[which(sapply(mpoly.filtered, length) != 0)]
-  #     if (length(mpoly.filtered) != 0) {
-  #         mpoly.filtered
-  #     } else { NULL }
-  # }) -> test
-  # test2 <- test[which(sapply(test,length) != 0)]
-  # test3 <- sapply(test2, sf::st_multipolygon)
-  # filtermap <- test3
-
   # filter out all polygons in the data under the minimum area
   areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
-  filtermap <- which(areafilter) %>%
-   mapdata[., ]
+  filtermap <- mapdata[which(areafilter), ]
 
   filtermap <- suppressWarnings({sf::st_simplify(filtermap, preserveTopology=TRUE, dTolerance=degree_tolerance)})
 
   # if nothing was filtered just return original map
-  if (sf::st_geometry(filtermap) %>% length == sf::st_geometry(mapdata) %>% length)
+  if (utils::object.size(filtermap) == utils::object.size(mapdata))
     return(mapdata)
 
   # When removing polygons we might be shifting the bounds of the map, which
@@ -270,12 +261,11 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 
 #' Retrieve proj4 projection string.
 #'
-#' Provides a lookup list for default proj4 strings utilized.  Users
-#' may also specify their own lookup list.  Options also include
-#' providing either the EPSG, ESRI, or SR-ORG projection codes to
-#' retrieve the associated proj4 string from a web query from
-#' http://spatialreference.org.  Definitions for proj4 string
-#' parmeters can be referenced here:
+#' Provides a lookup list for default proj4 strings utilized.  Users may also
+#' specify their own lookup list.  Options also include providing either the
+#' EPSG, ESRI, or SR-ORG projection codes to retrieve the associated proj4
+#' string from a web query from http://spatialreference.org.  Definitions for
+#' proj4 string parmeters can be referenced here:
 #' http://proj4.org/parameters.html#parameter-list
 #'
 #' @param obj Use object instead that has a predefined proj4 string.
@@ -287,12 +277,13 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 get_prj4s <- function(obj = NULL, prj_type = NULL, prj_code = NULL, prj4s_key = NULL, lu = NULL) {
 
     # default prj4 key: string lookup
-    def_lu <- list('us' = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83",
-                   'africa' = "+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0 ",
-                   'world' = "+proj=longlat +datum=WGS84 +no_defs",
-                   'ch_aea' = "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84",
-                   'eck3' = "+proj=eck3 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
-                   )
+    def_lu <- list(
+        'us'     = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83",
+        'africa' = "+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs +towgs84=0,0,0 ",
+        'world'  = "+proj=longlat +datum=WGS84 +no_defs",
+        'ch_aea' = "+proj=aea +lat_1=27 +lat_2=45 +x_0=0 +y_0=0 +lat_0=35 +lon_0=105 +ellps=WGS84 +datum=WGS84",
+        'eck3'   = "+proj=eck3 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+    )
 
     # use default lookup if none provided
     if (is.null(lu)) {
@@ -386,15 +377,16 @@ spat_bb <- function(b_ext, buff_dist, proj4s = "+proj=longlat +ellps=WGS84 +datu
     sf::st_set_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") %>%
     sf::st_transform(proj4s)
 
-  # Suppress Warning and message: In st_buffer.sfc(st_geometry(x), dist,
-  #   nQuadSegs) : st_buffer does not correctly buffer longitude/latitude data,
-  #   dist needs to be in decimal degrees.
-  #   This warning occurs from buffering a feature that is in a geographic
-  #   coordinate system (lat/long) rather than a projection one.  This makes the
-  #   the buffer not be exact due to the distance being calculated in decimal
-  #   degrees rather than meters or kilometers. This is fine with us since we are
-  #   simply using buffer as a way of zooming to include or exclude portions of
-  #   the bounding extent in this call.
+  # Suppress Warning and message:
+  #     "In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) : st_buffer does not
+  #     correctly buffer longitude/latitude data, dist needs to be in decimal
+  #     degrees."
+  # This warning occurs from buffering a feature that is in a geographic
+  # coordinate system (lat/long) rather than a projection one.  This makes the
+  # the buffer not be exact due to the distance being calculated in decimal
+  # degrees rather than meters or kilometers. This is fine with us since we are
+  # simply using buffer as a way of zooming to include or exclude portions of
+  # the bounding extent in this call.
 
   # buffer if user desires
   if (!is.null(buff_dist)) {
@@ -424,61 +416,9 @@ reproject <- function(sdf, prj4s) {
 }
 
 
-
 #---------------------------------------------------------------------------
 # DATA PROCESSING FUNCTIONS
 #---------------------------------------------------------------------------
-
-#' Extract a query from a list of queries and filter to desired output.
-#'
-#' Extract the desired table from the structure produced by
-#' \code{\link{parse_mi_output}}.  Optionally, perform some filtering
-#' and transformation on the data.  (XXX: We need _way_ more
-#' information here.  What gets filtered and transformed, and how does
-#' it work?)
-#'
-#' @param batchq The structure containing the GCAM results (produced
-#' by \code{\link{parse_mi_output}}).
-#' @param query The name of the table to extract; i.e., the name of
-#' one of the queries cointained in the GCAM output.
-#' @param scen The name of the scenario.  Partial matches are allowed.
-#' @param filters A named vector of filtering criteria in the form
-#' \code{c(header1 = value1, header2 = value2,...)}.  Headers are the
-#' names of columns in the data frame.  If aggregating data, use the
-#' value 'Aggregate'.  (XXX: Needs further explanation!)
-#' @param func Operation to apply to the aggregated data.  (XXX: Does
-#' this mean that this option is active only when using the
-#' 'Aggregate' option above?)
-#' @export
-process_batch_q <- function(batchq, query, scen, filters, func = sum) {
-
-    .Deprecated('getQuery', 'rgcam',
-                'Consider using the rgam package to manage GCAM data.')
-
-    qdata <- as.data.frame(batchq[[query]])
-
-    # Filter for scenario; allow partial lookup
-    # Bug: if partial has multiple matches, will return multiple scenarios
-    qdata <- qdata[grepl(scen, qdata$scenario), ]
-
-    # Get years and aggregate value if applicable
-    years <- grep("(X1)|(X2)", names(qdata), value = T)
-    ag <- names(filters[filters[names(filters)] == "Aggregate"])  #Super clunky
-
-    nms <- !(names(qdata) %in% years | names(qdata) %in% ag)
-
-    # Filter to query of interest using filters
-    for (name in names(filters)) {
-        if (filters[[name]] == "Aggregate") {
-            qdata <- stats::aggregate(qdata[years], by = qdata[nms], FUN = func)
-            qdata[[ag]] <- "All"
-        } else {
-            qdata <- qdata[qdata[[name]] == filters[[name]], ]
-        }
-    }
-
-    return(qdata)
-}
 
 ### TODO - modify to search for appropriate lookup, province, drop files in directory.
 #' Match GCAM ID to region using data from a lookup table.
@@ -493,8 +433,7 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' \emph{must not} specify them if they don't exist for the map set you are
 #' using.  Currently, \code{rgn14} and \code{basin235} have neither drops nor
 #' province abbreviations.  The \code{rgn32} set has drops, but not province
-#' abbreviations.  Only the \code{chn} set (and the \code{usa} set, when it is
-#' finally implemented) has both.
+#' abbreviations.  Only the \code{chn} set has both.
 #' @param datatable A table of results produced by \code{\link[rgcam]{getQuery}}
 #' @param lookupfile Name of one of the predefined map sets, OR, if you're using
 #' a custom map set, the file containing the region lookup table
@@ -510,8 +449,21 @@ process_batch_q <- function(batchq, query, scen, filters, func = sum) {
 #' @importFrom utils read.csv
 #' @export
 add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, drops = NULL, disaggregate = NULL) {
-    naReg <- "#N/A"
+
     . <- NULL # silence package notes for NSE
+    naReg <- "#N/A"
+
+    # Make sure there is a region column in the data. "Region" is okay, but will
+    # be replaced with "region".
+    names(datatable)[names(datatable) == "Region"] <- "region"
+    if (!"region" %in% names(datatable)) {
+        stop("Data must contain a 'region' column")
+    }
+
+    if ("id" %in% names(datatable)) {
+        message("id column is already present and will not be modified")
+        return(datatable)
+    }
 
     if (!is.null(provincefile)) {
         datatable <- translate_province(datatable, provincefile)
@@ -526,9 +478,6 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
     } else {
         read.csv(lookupfile, strip.white = T, stringsAsFactors = F)
     }
-
-    # Don't allow "Region"; replace with "region"
-    names(datatable)[names(datatable) == "Region"] <- "region"
 
     # Add row to end of the lookup table to account for GCAM region 0
     if (!any(lookuptable$region == naReg)) {
@@ -554,7 +503,11 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
 
     # Set column name and type for id column
     names(finaltable)[ncol(finaltable)] <- "id"
-    finaltable$id <- as.numeric(finaltable$id)
+    if (all(is.na(finaltable$id) | grepl("\\d+", finaltable$id))) {
+        finaltable$id <- as.numeric(finaltable$id)
+    } else {
+        finaltable$id <- as.character(finaltable$id)
+    }
 
     return(finaltable)
 }
@@ -570,50 +523,36 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
 #' @importFrom utils read.csv
 translate_province <- function(datatable, provincefile) {
 
-    provincetable <- if (is.symbol(provincefile)) {
-        get.internal(provincefile, "prov")
-    } else {
-        read.csv(provincefile, strip.white = T)
+    if (is.symbol(provincefile)) {
+        provincetable <- get.internal(provincefile, "prov")
+    }
+    else {
+        provincetable <- read.csv(provincefile, strip.white = T, stringsAsFactors = T)
     }
 
-    # Differentiate region-Region issue
-    if ("Region" %in% names(datatable)) {
-        rgn <- "Region"
-    } else {
-        rgn <- "region"
-    }
-
-    datatable$rgn <- as.character(datatable$rgn)
-    provincetable$province <- as.character(provincetable$province)
-    provincetable$province.name <- as.character(provincetable$province.name)
-
-    datatable$rgn <- ifelse(is.na(provincetable$province.name[match(datatable$rgn, provincetable$province)]),
-                            datatable$rgn, provincetable$province.name[match(datatable$rgn, provincetable$province)])
+    datatable <- datatable %>%
+        dplyr::left_join(provincetable, by = c("region" = "province")) %>%
+        dplyr::mutate(region = dplyr::if_else(is.na(province.name), region, province.name)) %>%
+        dplyr::select(-province.name)
 
     return(datatable)
 }
 
 #' Drop regions listed in drops file from data frame.
 #'
-#' @param datatable A data frame of query from batch query CSV.
+#' @param datatable A data frame containing the output of a GCAM query.
 #' @param drops String; path to file containing regions to be dropped
 #' @return An updated data frame with regions dropped.
 drop_regions <- function(datatable, drops) {
 
-    dr <- if (is.symbol(drops)) {
-        get.internal(drops, "drop")
-    } else {
-        read.csv(drops, strip.white = T, header = F)
+    if (is.symbol(drops)) {
+        dr <- get.internal(drops, "drop")
     }
-    dr <- as.character(dr$V1)
+    else {
+        dr <- read.csv(drops, strip.white = T, stringsAsFactors = F)
+    }
 
-    regcols <- grepl("egion", names(datatable))  # Find instances of 'region' or 'Region' columns
-    ## ^-- Technically this will also trigger on 'Legion' or 'legion'
-
-    ## XXX: Do the next step with dplyr instead of this convoluted way
-    datatable[regcols] <- lapply(datatable[regcols], function(x) replace(x, x %in% dr, NA))  #Replace drop col values with NA
-
-    datatable <- stats::na.omit(datatable)  # Remove rows containing NA
+    datatable <- dplyr::filter(datatable, !region %in% dr[[1]])
 
     return(datatable)
 }
@@ -703,9 +642,9 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 #' \code{\link{EXTENT_AFRICA}} - Africa \item \code{\link{EXTENT_LA}} - Latin
 #' America }
 #'
-#' @param mapdata The data frame containing both geometric data (lat, long, id)
-#'   and regional metadata.  This is the only mandatory variable. If used alone,
-#'   will produce the default map.
+#' @param mapdata The data frame containing both geometric data (simple features
+#'   collection and id) and regional metadata.  This is the only mandatory
+#'   variable. If used alone, will produce the default map.
 #' @param col If plotting categorical/continuous data, the name of the column to
 #'   plot.  Will automatically determine type of style of plot based on type of
 #'   data (numeric or character).
@@ -761,7 +700,7 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE) {
 plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       extent = EXTENT_WORLD, title = "", legend = F,
                       gcam_df = NULL, gcam_key = "id", mapdata_key = "region_id",
-                      zoom = NULL, agr_type='constant') {
+                      zoom = NULL, agr_type = 'constant') {
 
   # get proj4 string that corresponds to user selection
   p4s <- assign_prj4s(proj_type, proj)
@@ -779,19 +718,10 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
   # create object to control map zoom extent
   map_zoom <- zoom_bounds(m, b, extent, p4s)
 
-  bb <- sf::st_transform(b, sf::st_crs(m))
-  xn <- sf::st_bbox(bb)[['xmin']] * 1.1
-  xx <- sf::st_bbox(bb)[['xmax']] * 1.1
-  yx <- sf::st_bbox(bb)[['ymax']] * 1.1
-  yn <- sf::st_bbox(bb)[['ymin']] * 1.1
-  newbbox <- list(rbind(c(xn,yn),c(xn,yx), c(xx,yx), c(xx,yn), c(xn,yn))) %>% sf::st_polygon()
-  sf::st_geometry(bb)[[1]] <- newbbox
-
   # generate plot object
   mp <- ggplot() +
     ggplot2::geom_sf(data = m, aes_string(fill = col), color = LINE_COLOR) +
-     # geom_sf(data=bb) +
-      map_zoom +
+    map_zoom +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend)
 
@@ -908,3 +838,9 @@ basin235 <- quote(basin235)
 #' This symbol will select the chn map set
 #' @export
 chn <- quote(chn)
+
+#' Designator for the usa map set
+#'
+#' This symbol will select the usa map set
+#' @export
+usa <- quote(usa)

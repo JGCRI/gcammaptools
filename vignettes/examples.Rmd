@@ -1,7 +1,7 @@
 --- 
 title: "GCAM Mapping Tools Examples"
-author: "Catherine Ledna and Robert Link"
-date: "18 December, 2016"
+author: "Caleb Braun, Catherine Ledna, and Robert Link"
+date: "13 February, 2018"
 output:  rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{GCAM Mapping Tools Examples}
@@ -143,4 +143,26 @@ plot_GCAM(map.rgn32.simple, col='value', legend=T, gcam_df=waterdata,
                                   na.value = gray(0.9), name="km^3") +
     ggplot2::facet_wrap(~scenario)
 
+```
+
+### Example 10: GCAM China
+Data from GCAM China may contain extra regions that you want to drop as well as region name abbreviations that you want to translate into the full province name.
+```{r mp10, fig.width=6, fig.height=4, fig.align='center'}
+gcamchina <- read.csv(system.file('extdata', 'china_example.csv', package='gcammaptools'),
+                      stringsAsFactors = F)
+gcamchina <- add_region_ID(gcamchina, lookupfile = chn, provincefile = chn, drops = chn)
+
+# Highlight the provinces by filtering out values from other regions
+gcamchina[!is.na(gcamchina$id) & gcamchina$id <= 32, 'value'] <- NA
+plot_GCAM(map.chn, col='value', gcam_df=gcamchina, proj=ch_aea,
+          extent=EXTENT_CHINA, zoom = 2)
+```
+
+### Example 11: GCAM USA
+Support is also provided for GCAM USA data. The map expects states to be identified by their two letter abbreviations, which can be added on using `add_region_id()` with `lookupfile = usa`, as long as the state full names are present.
+```{r mp11, fig.width=6, fig.height=4, fig.align='center'}
+gcamusa <- read.csv(system.file('extdata', 'usa_example.csv', package='gcammaptools'),
+                    stringsAsFactors = F)
+plot_GCAM(map.usa, col='value', gcam_df=gcamusa, gcam_key='region', proj=na_aea,
+          extent=EXTENT_USA)
 ```

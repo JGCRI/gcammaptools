@@ -7,10 +7,11 @@
 load_shp(file_pth)
 }
 \arguments{
-\item{file_pth}{Full path to shapefile with extention (.shp).  Shapefiles must contain at least
-.shp, .shx, and .dbf file to function properly.}
+\item{file_pth}{Full path to shapefile with extention (.shp). Shapefiles must
+contain at least .shp, .shx, and .dbf file to function properly.}
 }
 \description{
-Creates a Simple Feature (sf) object from full path string to ESRI Shapefile or
-GeoJSON file. User defines which field is supposed to represent the ID for the data.
+Creates a Simple Feature (sf) object from full path string to ESRI Shapefile
+or GeoJSON file. User defines which field is supposed to represent the ID for
+the data.
 }
