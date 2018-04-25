@@ -126,7 +126,7 @@ EXTENT_LA <- c(-118,-33,-56,37)
 # Default Colors
 LINE_COLOR <- "#444444"
 FILL_COLOR <- "#222222"
-BORDER_LIGHT <- alpha("#888888", 0.5)
+BORDER_LIGHT <- alpha("#aaaaaa", 0.5)
 BORDER_DARK <- alpha("#000000", 0.5)
 MAP_BACKGROUND <- "#ddefff"
 
