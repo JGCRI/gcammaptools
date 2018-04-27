@@ -4,19 +4,13 @@
 \alias{filter_spatial}
 \title{Get features topologically associated with extent bounds.}
 \usage{
-filter_spatial(mapdata, bbox, p4s, extent, col, agr_type = "constant",
+filter_spatial(mapdata, bbox, agr_type = "constant",
   topo = sf::st_intersects)
 }
 \arguments{
 \item{mapdata}{The sf object containing the spatial data.}
 
 \item{bbox}{Bounding box.}
-
-\item{p4s}{The proj4 string of the final map.}
-
-\item{extent}{Extent provided by the user or as default.}
-
-\item{col}{Field name with target information to map.}
 
 \item{agr_type}{Inherited attribute-geometry-relationship type from plot_GCAM
 function params.}

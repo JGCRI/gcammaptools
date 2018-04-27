@@ -6,8 +6,9 @@
 \usage{
 plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
   extent = EXTENT_WORLD, title = "", legend = F, gcam_df = NULL,
-  gcam_key = "id", mapdata_key = "region_id", zoom = NULL,
-  agr_type = "constant")
+  gcam_key = "id", mapdata_key = "region_id", zoom = 0,
+  graticules = "bottom", agr_type = "constant",
+  background_color = MAP_BACKGROUND, padding = all(extent == EXTENT_WORLD))
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (simple features
@@ -46,6 +47,11 @@ mapdata.}
 \item{zoom}{A distance to buffer the bounding box extent by for on-the-fly
 adjustments needed when fitting area to maps.}
 
+\item{graticules}{Where to position any graticules. One of 'top', 'bottom',
+or '' (empty string). Note that 'bottom' places them under the map
+background and will not be visible without a setting the
+\code{background_color} parameter to NA or transparent.}
+
 \item{agr_type}{Aggregate-geometry-relationship type.  Either 'constant'
 (default), 'aggregate', or 'identity' classified as follows:  [constant] a
 variable that has a constant value at every location over a spatial extent;
@@ -55,6 +61,10 @@ land use.  [identity]    values identify the geometry: they refer to (the
 whole of) this and only this geometry. See the
 \href{https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#how-attributes-relate-to-geometries}{sf
 vignette} for further explanation.}
+
+\item{background_color}{Color for the areas with no regions (the oceans)}
+
+\item{padding}{Boolean flag: Add space between map edge and plot edge?}
 }
 \description{
 This function produces a map visualization of a data set containing GCAM

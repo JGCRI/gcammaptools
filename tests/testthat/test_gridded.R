@@ -52,8 +52,7 @@ test_that("gridded data plots with orthographic projection", {
                    col='value',
                    map=m,
                    proj=af_ortho,
-                   extent=EXTENT_AFRICA,
-                   zoom=10)
+                   extent=EXTENT_AFRICA)
   )
 })
 
@@ -63,8 +62,7 @@ test_that("gridded data plots with SR-ORG projection type and zoom", {
                  map=m,
                  proj=7567,
                  proj_type='SR-ORG',
-                 extent=EXTENT_LA,
-                 zoom=8)
+                 extent=EXTENT_LA)
 })
 
 test_that("gridded data plots with Robinson projection", {
@@ -82,11 +80,11 @@ test_that("gridded data plots with eck3 projection", {
 })
 
 
-test_that("grid plots and warns with incorrectly matched projections and extents", {
-  expect_warning(plot_GCAM_grid(co2grid,
-                                col="value",
-                                proj=na_aea,
-                                extent=EXTENT_WORLD)
+test_that("plotting exits with incorrectly matched projections and extents", {
+  expect_error(plot_GCAM_grid(co2grid,
+                              col="value",
+                              proj=na_aea,
+                              extent=EXTENT_WORLD)
   )
 })
 

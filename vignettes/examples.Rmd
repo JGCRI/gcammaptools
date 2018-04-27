@@ -32,7 +32,7 @@ You will need to load your own GCAM data to work with.  The best way to import G
 ```{r load_data, warning=FALSE}
 library('rgcam')
 ### Load the example scenario data.
-prj <- loadProject(system.file('sample-gcam-data','gcam-longform-sample.dat', package='gcammaptools'))
+prj <- loadProject(system.file('sample-gcam-data','gcam-longform-sample.dat',                                              package='gcammaptools'))
 listScenarios(prj)
 listQueries(prj, 'Reference')
 ```
@@ -41,16 +41,16 @@ The sample data has one scenario with 19 queries.  For demonstration purposes we
 
 ```{r get_query}
 co2 <- rgcam::getQuery(prj, 'CO2 emissions by region', 'Reference')
-co2 <- add_region_ID(co2, lookupfile=rgn32, drops=rgn32)
 co2 <- dplyr::filter(co2, year==2050)
+co2 <- add_region_ID(co2, lookupfile=rgn32, drops=rgn32)
 
-### Show the first 10 observations
-co2[1:10, ]
+### Show the first observations
+head(co2)
 ```
 The data is in long form, so using `dplyr::filter()`  helps to get just the observations for the year you want to plot.  At the end of this, `co2` is a data frame that has CO<sub>2</sub> emissions by region for the year 2050.  This structure can now be passed to `plot_GCAM()` to plot maps, as shown in the examples below.
 
 ## Loading map data
-When using `plot_GCAM()` for your GCAM data, you also need to provide the map data that it should be associated with.  You should use one of the map datasets included in the package whenever possible, because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32 regions plus China subregions map. Additionally, each of those datasets has a simplified version such as `map.rgn32.simple`, which is helpful for faster plotting or less cluttered maps. 
+When using `plot_GCAM()` for your GCAM data, you also need to provide the map data that it should be associated with.  You should use one of the map datasets included in the package whenever possible, because they correspond to the geographical units reported by GCAM.  The datasets available are `map.rgn32`, `map.rgn14`, `map.basin235`, `map.usa`, and `map.chn`.  They correspond to the 32-region and 14-region GCAM region maps, the 235 global water basin map, and the 32-region map plus states/provinces for the USA and China. Additionally, the non-provincial datasets each have a simplified version such as `map.rgn32.simple`, which is helpful for faster plotting and less cluttered maps. 
 ```{r plot.default, fig.width=3.48, fig.show='hold'}
 plot_GCAM(map.rgn32, title="Full 32-Region map")
 plot_GCAM(map.rgn32.simple, title="Simplified 32-Region map")
@@ -93,7 +93,7 @@ plot_GCAM(map.rgn32, col='region_id', proj=na_aea, extent=EXTENT_USA,
 For superregions with a long north-south extent, the orthographic projection gives the best result. We have predefined one for Africa, but you can find others defined by proj4 strings from http://spatialreference.org as shown in the following example. Although the extent parameter is the best way to specify the view you want, you can fine-tune the final plot by adjusting the zoom.
 ```{r mp4, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map.rgn32, col='region_name', proj=af_ortho, extent=EXTENT_AFRICA,
-          title="Africa Orthographic", zoom=10) +
+          title="Africa Orthographic") +
     ggplot2::scale_fill_manual(values = gcam32_colors)
 ```
 
@@ -101,7 +101,7 @@ plot_GCAM(map.rgn32, col='region_name', proj=af_ortho, extent=EXTENT_AFRICA,
 Orthographic projection of the Latin America superregion. Notice that projection strings can also be defined by specifying an EPSG, ESRI, or SR-ORG projection code.
 ```{r mp5, fig.width=4, fig.height=4, fig.align='center'}
 plot_GCAM(map.rgn32, col='region_name', proj=7567, proj_type='SR-ORG',
-          extent=EXTENT_LA, title="Latin America Orthographic", zoom=8) +
+          extent=EXTENT_LA, title="Latin America Orthographic") +
     ggplot2::scale_fill_manual(values = gcam32_colors)
 ```
 
@@ -123,7 +123,7 @@ plot_GCAM(map.basin235, col='basin_name', proj=eck3)
 The `plot_GCAM_grid()` function tiles gridded data over a base map.
 ```{r mp8, fig.width=4, fig.height=6, fig.align='center'}
 co2grid <- rgcam::getQuery(prj, 'Cooling Degree Days', 'Reference')
-plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, legend=T, zoom=8) + 
+plot_GCAM_grid(co2grid, col='value', proj=robin, extent=EXTENT_LA, legend=T) + 
     ggplot2::scale_fill_gradientn(colors=c("white", "red"), 
                                   guide=ggplot2::guide_colorbar(title="Cooling Degree Days", 
                                                                 title.position="top"))
@@ -139,8 +139,10 @@ waterdata <- add_region_ID(waterdata, disaggregate = 'scenario')
 
 plot_GCAM(map.rgn32.simple, col='value', legend=T, gcam_df=waterdata,
           title="Water Scarcity in 2100") + 
-    ggplot2::scale_fill_gradientn(colors = c("deepskyblue", "firebrick1"),
-                                  na.value = gray(0.9), name="km^3") +
+    ggplot2::scale_fill_gradientn(colors=c("deepskyblue", "firebrick1"),
+                                  na.value=gray(0.9),
+                                  guide=ggplot2::guide_colorbar(title="km^3",
+                                                                barwidth=12)) +
     ggplot2::facet_wrap(~scenario)
 
 ```
@@ -155,7 +157,7 @@ gcamchina <- add_region_ID(gcamchina, lookupfile = chn, provincefile = chn, drop
 # Highlight the provinces by filtering out values from other regions
 gcamchina[!is.na(gcamchina$id) & gcamchina$id <= 32, 'value'] <- NA
 plot_GCAM(map.chn, col='value', gcam_df=gcamchina, proj=ch_aea,
-          extent=EXTENT_CHINA, zoom = 2)
+          extent=EXTENT_CHINA)
 ```
 
 ### Example 11: GCAM USA

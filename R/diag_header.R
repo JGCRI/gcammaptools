@@ -99,7 +99,7 @@ EXTENT_WORLD <- c(-180,180,-90,90)
 #' This vector can be used as the \code{extent} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-EXTENT_USA <- c(-120,-70,20,60)
+EXTENT_USA <- c(-120,-71,20,55)
 #' Extent vector for China
 #'
 #' This vector can be used as the \code{extent} argument to
@@ -117,17 +117,21 @@ EXTENT_AFRICA <- c(-20,60,-40,40)
 #' This vector can be used as the \code{extent} argument to
 #' \code{\link{plot_GCAM}}.
 #' @export
-EXTENT_LA <- c(-110, -40, -50, 30)
+EXTENT_LA <- c(-118,-33,-56,37)
 
 
 # -----------------------------------------------------------------------------
 # AESTHETICS
 
 # Default Colors
-LINE_COLOR <- "black"
+LINE_COLOR <- "#444444"
+FILL_COLOR <- "#222222"
+BORDER_LIGHT <- alpha("#aaaaaa", 0.5)
+BORDER_DARK <- alpha("#000000", 0.5)
+MAP_BACKGROUND <- "#ddefff"
 
 # Background
-PANEL_BACKGROUND <- ggplot2::element_blank()
+PANEL_FILL <- "#eeeeee"
 PANEL_GRID <- ggplot2::element_line(colour = "black")
 AXIS_TICKS <- ggplot2::element_blank()
 AXIS_TEXT <- ggplot2::element_blank()
