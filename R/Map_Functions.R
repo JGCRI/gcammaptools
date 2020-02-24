@@ -476,7 +476,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
 #' @param legend Boolean; whether to include a legend with default legend
 #'   formatting.
 #' @param overlay_graticules Boolean; whether to place grid lines on top of plot
-theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE,
+theme_GCAM <- function(base_font_size = 11, base_font_family = "", legend = FALSE,
                        overlay_graticules = FALSE) {
 
     tm <- theme_bw(base_size = base_size, base_family = base_family) %+replace%
