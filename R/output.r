@@ -15,7 +15,7 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
     error <- "test"
 
     tryCatch(
-    {browser()
+    { browser()
         # Shape loading
         if(is.null(shape_path))
         {
@@ -61,28 +61,34 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
 #             error <- "false"
 
         # Comapre projections
-        if(!raster::compareCRS(shape, raster))
-            error <- "not equal proj"
+        if(raster::compareCRS(shape, raster))
+            error <- "proj ok" # same projection
         else
         {
             shape <- st_transform(shape, crs(raster))
+            compare_result <- raster::compareCRS(shape, raster)
+            error <- compare_result
         }
-        compare_result <- raster::compareCRS(shape, raster)
-        error <- compare_result
 
     },
     warning = function(war)
     {
         # warning handler picks up where error was generated
         error <- war
-
     },
     error = function(err)
     {
         # error handler picks up where error was generated
         error <- err
     })
-    return(error)
+
+    output <- ggplot() + ggplot2::geom_sf(data = shape) +
+        ggplot2::geom_tile(data = raster)
+
+  #  plot(raster)
+  #  plot(shape)
+
+    return(output)
 }
 
 
