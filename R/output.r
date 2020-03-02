@@ -6,11 +6,27 @@ library(raster)
 library(sf)
 library(rgdal)
 library(rgeos)
+library(ggplot2)
 
-create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, raster_obj = NULL, dpi = 150, output_file = NULL)
+#' Single import function for compatible data types.
+#'
+#' Imports available for sf objects, spatial data frames, ESRI Shapefiles, or
+#' GeoJSON files.
+#'
+#' @param shape_path Input full path string to shape
+#' @param shape_obj Pass shape object in directly instead of path
+#' @param raster_path Input full path string to raster
+#' @param  raster_obj Pass raster object in directly instead of path
+#' @param  dpi
+#' @param  output_file
+#' @param  simplify
+#' @return A ggplot object
+#' @export
+create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, raster_obj = NULL, dpi = 150, output_file = NULL,
+                       simplify = FALSE)
 {
    # shape_path = "data/tm_world_borders_simpl-0.3.shp"
-   # raster_path = "data/sr_50m.tif"
+   # raster_path = "data/wc2.0_10m_tavg_01.tif"
 
     error <- "test"
 
@@ -60,7 +76,7 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
 #         else
 #             error <- "false"
 
-        # Comapre projections
+        # Compare projections
         if(raster::compareCRS(shape, raster))
             error <- "proj ok" # same projection
         else
@@ -69,6 +85,15 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
             compare_result <- raster::compareCRS(shape, raster)
             error <- compare_result
         }
+
+        # Convert raster
+        raster_df <- as.data.frame(raster, xy = TRUE)
+
+        # Raster operations
+        raster_df <- dplyr::mutate(raster_df, value = raster_df[[3]])
+        raster_min <- minValue(raster)
+        raster_max <- maxValue(raster)
+        raster_layers <- nlayers(raster)
 
     },
     warning = function(war)
@@ -82,16 +107,13 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         error <- err
     })
 
-    output <- ggplot() + ggplot2::geom_sf(data = shape) +
-        ggplot2::geom_tile(data = raster)
-
   #  plot(raster)
   #  plot(shape)
 
     return(output)
 }
 
-
+output <- ggplot() + ggplot2::geom_sf(data = shape) + geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 0.85)
 
 #
 #
