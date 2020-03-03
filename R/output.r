@@ -22,8 +22,8 @@ library(ggplot2)
 #' @param  simplify
 #' @return A ggplot object
 #' @export
-create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, raster_obj = NULL, dpi = 150, output_file = NULL,
-                       simplify = FALSE)
+create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, raster_obj = NULL, raster_col = NULL,
+                       dpi = 150, output_file = NULL, simplify = FALSE)
 {
    # shape_path = "data/tm_world_borders_simpl-0.3.shp"
    # raster_path = "data/wc2.0_10m_tavg_01.tif"
@@ -31,7 +31,7 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
     error <- "test"
 
     tryCatch(
-    { browser()
+    {
         # Shape loading
         if(is.null(shape_path))
         {
@@ -70,11 +70,11 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         {
             error <- "both raster NOT null"
         }
-#
-#         if(class(raster) == "raster")
-#             error <- "true"
-#         else
-#             error <- "false"
+
+        # if(class(raster) == "raster")
+        #     error <- "true"
+        # else
+        #     error <- "false"
 
         # Compare projections
         if(raster::compareCRS(shape, raster))
@@ -90,10 +90,20 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         raster_df <- as.data.frame(raster, xy = TRUE)
 
         # Raster operations
-        raster_df <- dplyr::mutate(raster_df, value = raster_df[[3]])
+        if(!is.null(raster_col))
+          raster_df <- dplyr::mutate(raster_df, value = raster_df[[raster_col]])
+        else
+          error <- "No raster column defined"
+
         raster_min <- minValue(raster)
         raster_max <- maxValue(raster)
         raster_layers <- nlayers(raster)
+
+        browser()
+
+        output <- ggplot() + ggplot2::geom_sf(data = shape) +
+          geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 0.85) +
+          coord_sf() + gcammaptools::theme_GCAM()
 
     },
     warning = function(war)
@@ -112,8 +122,6 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
 
     return(output)
 }
-
-output <- ggplot() + ggplot2::geom_sf(data = shape) + geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 0.85)
 
 #
 #
@@ -178,18 +186,7 @@ output <- ggplot() + ggplot2::geom_sf(data = shape) + geom_raster(data=raster_df
 #
 #                 )
 #             }
-#             else
-#             {
-#              if(input$input_map_compare)
-#              {
-#                  mapFill <- "\u0394 Precip. - g/m2/s"
-#                  mapVar <- "deltaPrecip"
-#              }
-#              else
-#              {
-#                  mapFill <- "Precip. - g/m2/s"
-#                  mapVar <- "Precip"
-#              }
+
 #              mapDirection <- 1
 #              mapPalette <- "Purples"
 #              # mapVar <- "Precip"
@@ -200,34 +197,13 @@ output <- ggplot() + ggplot2::geom_sf(data = shape) + geom_raster(data=raster_df
 #              #  else
 #              #  combined_data <- dplyr::mutate(coordinates, Precip = round(1000*hector_annual_gridded_t[, as.numeric(input$mapYear)-1899], 4), Lon=round(lon, 2), Lat=round(lat,2))
 #              # combined_data$Neg <- ifelse(combined_data$Precip < 0, FALSE, TRUE)
-#             }
 #
 #             combined_data <- dplyr::select(combined_data, -c(lat, lon, colnum))
-#
-#             lat_min <- -90
-#             lat_max <- 90
-#             lon_min <- -180
-#             lon_max <- 180
-#
-#             if(input$input_map_filter)
-#             {
-#              validate(need(as.numeric(input$input_lat_min) >= -90 && (as.numeric(input$input_lat_min)) <= 90 &&
-#                                (as.numeric(input$input_lat_min)) < (as.numeric(input$input_lat_max)), "Please enter a valid lat min"))
-#              validate(need(as.numeric(input$input_lat_max) >= -90 && (as.numeric(input$input_lat_max)) <= 90 &&
-#                                (as.numeric(input$input_lat_max)) > (as.numeric(input$input_lat_min)), "Please enter a valid lat max"))
-#              validate(need(as.numeric(input$input_lon_min) >= -180 && (as.numeric(input$input_lon_min)) <= 180 &&
-#                                (as.numeric(input$input_lon_min)) < (as.numeric(input$input_lon_max)), "Please enter a valid lon min"))
-#              validate(need(as.numeric(input$input_lon_max) >= -180 && (as.numeric(input$input_lon_max)) <= 180 &&
-#                                (as.numeric(input$input_lon_max)) > (as.numeric(input$input_lon_min)), "Please enter a valid lon max"))
-#
-#              lat_min <- as.numeric(input$input_lat_min)
-#              lat_max <- as.numeric(input$input_lat_max)
-#              lon_min <- as.numeric(input$input_lon_min)
-#              lon_max <- as.numeric(input$input_lon_max)
+
 #
 #              combined_data <- dplyr::filter(combined_data, Lat >= lat_min, Lat <= lat_max, Lon >= lon_min, Lon <= lon_max)
 #
-#             }
+#
 #             mapWorld <- ggplot2::borders("world",  ylim=c(lat_min, lat_max), xlim=c(lon_min, lon_max)) #  colour="black", col="white",, fill="gray100"
 #
 #             ggplotMap <- ggplot2::ggplot() +
@@ -249,20 +225,3 @@ output <- ggplot() + ggplot2::geom_sf(data = shape) + geom_raster(data=raster_df
 #             Sys.sleep(0.25)
 #             shinyjs::show(id = 'map-div')
 #
-#         }
-#     },
-#     warning = function(war)
-#     {
-#         # warning handler picks up where error was generated
-#         showModal(modalDialog(
-#             title = "Important message",
-#             paste("Warning:  ",war)
-#         ))
-#
-#     },
-#     error = function(err)
-#     {
-#         # error handler picks up where error was generated
-#         shinyalert::shinyalert("Error Detected:",print(paste('There was an error when attempting to load the graph:',err)), type = "error")
-#     })
-# }
