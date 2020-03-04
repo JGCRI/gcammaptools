@@ -168,3 +168,18 @@ gcamusa <- read.csv(system.file('extdata', 'usa_example.csv', package='gcammapto
 gcammaptools::plot_GCAM(map.usa, col='value', gcam_df=gcamusa, gcam_key='region', proj=na_aea,
           extent=EXTENT_USA)
 ```
+```{r}
+## Example 12 Plot refined liquids production by region for the year 2050
+prj <- loadProject(system.file('sample-gcam-data',
+                                'gcam-longform-sample.dat',
+                                package='gcammaptools'))
+ ref_liquids <- rgcam::getQuery(prj, 'Refined liquids production by region', 'Reference')
+ ref_liquids <- add_region_ID(ref_liquids, lookupfile=rgn32, drops=rgn32)
+ ref_liquids <- dplyr::filter(ref_liquids, year==2050)
+ plot_GCAM(map.rgn32.simple, col='value', proj=robin, title="Robinson World",
+           legend=T, gcam_df=co2, gcam_key='id', mapdata_key="region_id") +
+    ggplot2::scale_fill_gradientn(colors = c("white", "red"),
+                                  na.value = gray(0.75),
+                                  name="CO2 Emissions (MTC)")
+```
+
