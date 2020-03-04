@@ -28,8 +28,7 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
    # shape_path = "data/tm_world_borders_simpl-0.3.shp"
    # raster_path = "data/wc2.0_10m_tavg_01.tif"
 
-    error <- "test"
-    #browser()
+    error <- ""
     tryCatch(
     {
         # Shape loading - if given a path, use that, else expect an object passed in
@@ -76,8 +75,8 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
             compare_result <- raster::compareCRS(shape, raster)
             error <- compare_result
         }
-#browser()
-        # Crop shape?
+
+        # Crop shape - for extent changes (future
         # shape <- st_crop(shape, 1.2*extent(raster))
 
         # Convert raster
@@ -89,30 +88,39 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         else
           error <- "No raster column defined"
 
+        # Raster stats/information (future)
+        raster_min <- minValue(raster)
+        raster_max <- maxValue(raster)
+        raster_layers <- nlayers(raster)
+
         # Map output variables
         lat_min <- -90
         lat_max <- 90
         lon_min <- -180
         lon_max <- 180
 
-        # Raster stats/information
-        raster_min <- minValue(raster)
-        raster_max <- maxValue(raster)
-        raster_layers <- nlayers(raster)
-
-        # Build colorscale
+        # Build colorscale and options
         # Determine nature of data and apply appropriate color scale
         # Using manual scales for now
         if(data_classification == "Temp")
+        {
           map_palette <- "RdYlBu"
-        palette_direction <- -1
-        palette_type <- "seq"
-
+          palette_direction <- -1
+          palette_type <- "div"
+          na_value <- "Grey"
+        }
+        if(data_classification == "Precip")
+        {
+          map_palette <- "Purples"
+          palette_direction <- -1
+          palette_type <- "seq"
+          na_value <- "Grey"
+        }
 
         # Build Map object
         output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
           ggplot2::geom_sf(data = shape, na.rm = TRUE, fill=FALSE) +
-          ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = "Grey" ) +
+          ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value ) +
           ggplot2::coord_sf() +
           ggplot2::labs(x="\u00B0Longitude", y="\u00B0Latitude", title = "World Average Temperature", fill = "Temperature \u00B0C") +
           ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30)) +
@@ -120,7 +128,8 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
           theme(plot.title = element_text(hjust = 0.5))
 
         # Save File
-        ggplot2::ggsave(filename = paste0(output_file, ".png"), device = "png", dpi = dpi, limitsize = TRUE,
+        if(!is.null(output_file))
+          ggplot2::ggsave(filename = paste0(output_file, ".png"), device = "png", dpi = dpi, limitsize = TRUE,
                         width = 15, height = 10)
         # ggplot2::ggsave(filename =paste0(output_file, ".bmp"), device = "bmp", dpi = dpi, limitsize = TRUE,
         #                 width = 15, height = 10)
