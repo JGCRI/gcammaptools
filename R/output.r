@@ -29,7 +29,7 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
    # raster_path = "data/wc2.0_10m_tavg_01.tif"
 
     error <- "test"
-    browser()
+    #browser()
     tryCatch(
     {
         # Shape loading - if given a path, use that, else expect an object passed in
@@ -110,9 +110,9 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
 
 
         # Build Map object
-        output <- ggplot() + ggplot2::geom_sf(data = shape) +
-          geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
-          ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = "Gray" ) +
+        output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
+          ggplot2::geom_sf(data = shape, na.rm = TRUE, fill=FALSE) +
+          ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = "Grey" ) +
           ggplot2::coord_sf() +
           ggplot2::labs(x="\u00B0Longitude", y="\u00B0Latitude", title = "World Average Temperature", fill = "Temperature \u00B0C") +
           ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30)) +
@@ -125,8 +125,6 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         # ggplot2::ggsave(filename =paste0(output_file, ".bmp"), device = "bmp", dpi = dpi, limitsize = TRUE,
         #                 width = 15, height = 10)
 
-
-
     },
     error = function(err)
     {
@@ -135,6 +133,5 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         return(error)
     })
 
-
-    return(error)
+    return(output)
 }
