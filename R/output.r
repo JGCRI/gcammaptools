@@ -7,6 +7,7 @@ library(sf)
 library(rgdal)
 library(rgeos)
 library(ggplot2)
+library(RColorBrewer)
 
 #' Create a map object and return/save the output
 #'
@@ -28,7 +29,7 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
    # raster_path = "data/wc2.0_10m_tavg_01.tif"
 
     error <- "test"
-    browser()
+    #browser()
     tryCatch(
     {
         # Shape loading - if given a path, use that, else expect an object passed in
@@ -47,7 +48,6 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         {
             error <- "both shape NOT null"
         }
-
 
         # Raster loading - if given a path, use that, else expect an object passed in
         if(is.null(raster_path))
@@ -76,6 +76,9 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
             compare_result <- raster::compareCRS(shape, raster)
             error <- compare_result
         }
+#browser()
+        # Crop shape?
+        # shape <- st_crop(shape, 1.2*extent(raster))
 
         # Convert raster
         raster_df <- as.data.frame(raster, xy = TRUE)
@@ -92,21 +95,26 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         raster_layers <- nlayers(raster)
 
         # Build colorscale
-        #
-        #
+        # Determine nature of data and apply appropriate color scale
+        # Using manual scales for now
+        map_palette <- "Purples"
+        palette_direction <- -1
+        palette_type <- "seq"
+
 
         # Build Map object
-        output <- ggplot() + geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 0.85) +
-          ggplot2::geom_sf(data = shape) +
-          coord_sf()
 
+        output <- ggplot() + ggplot2::geom_sf(data = shape) +
+          geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 0.9) +
+          ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = "Gray" ) +
+          ggplot2::coord_fixed(ratio = 1) +
+          ggplot2::labs(x="\u00B0Longitude", y="\u00B0Latitude", title = "World Average Temperature", fill = value) +
+          ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30))+
+          ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
+
+        ggplot2::ggsave(filename = output_file, device = "png", dpi = dpi, limitsize = TRUE)
         # Save File
 
-    },
-    warning = function(war)
-    {
-        # warning handler picks up where error was generated
-        error <- war
     },
     error = function(err)
     {
@@ -119,3 +127,15 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
 
     return(output)
 }
+
+#
+# ggplotMap <- ggplot2::ggplot() +
+#   mapWorld +
+#   ggplot2::geom_raster(data = combined_data, ggplot2::aes_string(x="Lon", y = "Lat", fill=mapVar),interpolate = TRUE ) +
+#   # ggplot2::geom_point(data = combined_data, ggplot2::aes(x = Lon, y = Lat, color = Neg, alpha = 0.5)) +
+#   ggplot2::coord_fixed(ratio = 1) +
+#   ggplot2::scale_fill_distiller(palette = mapPalette,type = "div", direction = mapDirection, na.value = "Gray" ) +
+#   #viridis::scale_fill_viridis(direction = 1, option = "E" ) +
+#   ggplot2::labs(x="\u00B0Longitude", y="\u00B0Latitude", title = paste0(input$mapCore, " - ", input$mapYear), fill = mapFill) +
+#   ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30))+
+#   ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
