@@ -8,6 +8,7 @@ library(rgdal)
 library(rgeos)
 library(ggplot2)
 library(RColorBrewer)
+library(wesanderson)
 
 #' Create a map object and return/save the output
 #'
@@ -23,7 +24,7 @@ library(RColorBrewer)
 #' @return A ggplot object of the resulting map
 #' @export
 create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, raster_obj = NULL, raster_col = NULL,
-                       dpi = 150, output_file = NULL,  data_classification = "Temp")
+                       dpi = 150, output_file = NULL, data_classification = "Temp")
 {
    # shape_path = "data/tm_world_borders_simpl-0.3.shp"
    # raster_path = "data/wc2.0_10m_tavg_01.tif"
@@ -102,12 +103,18 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         # Build colorscale and options
         # Determine nature of data and apply appropriate color scale
         # Using manual scales for now
+        browser()
         if(data_classification == "Temp")
         {
           map_palette <- "RdYlBu"
           palette_direction <- -1
           palette_type <- "div"
           na_value <- "Grey"
+          map_guide <- "colourbar"
+          map_title <- "World Average Temperature"
+          legend_title <- "Temperature \u00B0C"
+          map_scale <-  ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30)) +
+                        ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
         }
         if(data_classification == "Precip")
         {
@@ -115,17 +122,36 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
           palette_direction <- -1
           palette_type <- "seq"
           na_value <- "Grey"
+          map_guide <- "colourbar"
+          map_title <- "World Precipitation"
+          legend_title <- "Temperature \u00B0C"
+          map_scale <-  ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30)) +
+                        ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
         }
+        if(data_classification == "Land")
+        {
+          map_palette <- "Set1"
+          palette_direction <- 1
+          palette_type <- "qual"
+          na_value <- "Grey"
+          map_guide <- "legend"
+          map_title <- "Land Usage"
+          legend_title <- "Land Use Types"
+          shape <- st_crop(shape, 1.2*extent(raster))
+          map_scale <-  ""
+        }
+
 
         # Build Map object
         output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
           ggplot2::geom_sf(data = shape, na.rm = TRUE, fill=FALSE) +
-          ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value ) +
+          ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide ) +
           ggplot2::coord_sf() +
-          ggplot2::labs(x="\u00B0Longitude", y="\u00B0Latitude", title = "World Average Temperature", fill = "Temperature \u00B0C") +
-          ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30)) +
-          ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30)) +
+          ggplot2::labs(x="\u00B0Longitude", y="\u00B0Latitude", title = map_title, fill = legend_title) +
+          map_scale +
           theme(plot.title = element_text(hjust = 0.5))
+
+         # scale_color_manual(values = wes.palette(n=3, name="GrandBudapest"))
 
         # Save File
         if(!is.null(output_file))
@@ -143,4 +169,11 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
     })
 
     return(output)
+}
+
+
+ggplotColors <- function(g){
+  d <- 360/g
+  h <- cumsum(c(15, rep(d,g - 1)))
+  hcl(h = h, c = 100, l = 65)
 }
