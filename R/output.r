@@ -9,6 +9,7 @@ library(rgeos)
 library(ggplot2)
 library(RColorBrewer)
 library(wesanderson)
+library(inlmisc)
 
 #' Create a map object and return/save the output
 #'
@@ -24,11 +25,11 @@ library(wesanderson)
 #' @return A ggplot object of the resulting map
 #' @export
 create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, raster_obj = NULL, raster_col = NULL,
-                       dpi = 150, output_file = NULL, data_classification = "Temp")
+                       dpi = 150, output_file = NULL, data_classification = "Temp", simplify = FALSE)
 {
    # shape_path = "data/tm_world_borders_simpl-0.3.shp"
    # raster_path = "data/wc2.0_10m_tavg_01.tif"
-
+#browser()
     error <- ""
     tryCatch(
     {
@@ -42,11 +43,16 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         }
         else if(is.null(shape_obj))
         {
-            shape <- rgis::import_shapefile(shape_path, quiet = TRUE)
+            shape <- gcammaptools::import_mapdata(shape_path)
         }
         else
         {
             error <- "both shape NOT null"
+        }
+
+        if(simplify)
+        {
+            shape <- gcammaptools::simplify_mapdata(shape)
         }
 
         # Raster loading - if given a path, use that, else expect an object passed in
@@ -103,7 +109,7 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
         # Build colorscale and options
         # Determine nature of data and apply appropriate color scale
         # Using manual scales for now
-        browser()
+        # browser()
         if(data_classification == "Temp")
         {
           map_palette <- "RdYlBu"
@@ -113,8 +119,9 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
           map_guide <- "colourbar"
           map_title <- "World Average Temperature"
           legend_title <- "Temperature \u00B0C"
-          map_scale <-  ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30)) +
-                        ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
+          map_y_scale <-  ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30))
+          map_x_scale <-  ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
+          map_color_scale <-  ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide )
         }
         if(data_classification == "Precip")
         {
@@ -125,8 +132,9 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
           map_guide <- "colourbar"
           map_title <- "World Precipitation"
           legend_title <- "Temperature \u00B0C"
-          map_scale <-  ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30)) +
-                        ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
+          map_y_scale <-  ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30))
+          map_x_scale <-  ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
+          map_color_scale <-  ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide )
         }
         if(data_classification == "Land")
         {
@@ -138,24 +146,27 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
           map_title <- "Land Usage"
           legend_title <- "Land Use Types"
           shape <- st_crop(shape, 1.2*extent(raster))
-          map_scale <-  ""
+          map_x_scale <-  NULL
+          map_y_scale <- NULL
+          map_color_scale <- NULL
         }
 
 
         # Build Map object
         output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
           ggplot2::geom_sf(data = shape, na.rm = TRUE, fill=FALSE) +
-          ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide ) +
+          map_color_scale +
           ggplot2::coord_sf() +
           ggplot2::labs(x="\u00B0Longitude", y="\u00B0Latitude", title = map_title, fill = legend_title) +
-          map_scale +
+          map_x_scale +
+          map_y_scale +
           theme(plot.title = element_text(hjust = 0.5))
 
          # scale_color_manual(values = wes.palette(n=3, name="GrandBudapest"))
 
         # Save File
         if(!is.null(output_file))
-          ggplot2::ggsave(filename = paste0(output_file, ".png"), device = "png", dpi = dpi, limitsize = TRUE,
+          ggplot2::ggsave(filename = paste0(output_file, "-no.png"), device = "png", dpi = dpi, limitsize = TRUE,
                         width = 15, height = 10)
         # ggplot2::ggsave(filename =paste0(output_file, ".bmp"), device = "bmp", dpi = dpi, limitsize = TRUE,
         #                 width = 15, height = 10)
@@ -171,7 +182,9 @@ create_map <- function(shape_path = NULL, shape_obj = NULL, raster_path = NULL, 
     return(output)
 }
 
-
+#test <- create_map(shape_path = "e:/repos/github/data/ri/State_Boundary_1997.shp", raster_path = "E:/Repos/github/data/ri/gaplf2011lc_v30_ri.tif", output_file = "./test", raster_col = "gaplf2011lc_v30_ri_COUNT", data_classification = "Land")
+#test <- create_map(shape_path = "e:/repos/github/data/USA_adm/USA_adm0.shp", raster_path = "E:/Repos/github/data/ri/gaplf2011lc_v30_ri.tif", output_file = "./test", raster_col = "gaplf2011lc_v30_ri_COUNT", data_classification = "Land")
+#test <- create_map(shape_path = "e:/repos/github/data/tm_world_borders_simpl-0.3.shp", raster_path = "E:/Repos/github/data/wc2.0_10m_tavg_01.tif", output_file = "./test", raster_col = "wc2.0_10m_tavg_01", data_classification = "Temp")
 ggplotColors <- function(g){
   d <- 360/g
   h <- cumsum(c(15, rep(d,g - 1)))
