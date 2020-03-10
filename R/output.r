@@ -24,6 +24,7 @@ library(inlmisc)
 #' @param dpi Settable DPI for different print/screen formats
 #' @param output_file Output file path to save the resulting plot
 #' @param output_file_type Sets default file type for saving plots. Choices restricted to those in ggsave function
+#' @param expand_xy Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)
 #' @param map_xy_min_max Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax)
 #' @param map_title Title to be displayed on the output map
 #' @param map_palette Variable to hold the type of colorscale to be used
@@ -34,7 +35,7 @@ library(inlmisc)
 #' @return A ggplot object of the resulting map
 #' @export
 create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL, data_classification = "Temp", simplify = FALSE, raster_band = 1,
-                       dpi = 150, output_file = NULL, output_file_type = "png",
+                       dpi = 150, output_file = NULL, output_file_type = "png", expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "x", map_y_label = "y")
 {
@@ -87,9 +88,7 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 
 
         # Compare projections and equalize if necessary
-        if(raster::compareCRS(shape, raster))
-            error <- "proj ok"
-        else
+        if(!raster::compareCRS(shape, raster))
         {
             shape <- st_transform(shape, crs(raster))
         }
@@ -101,15 +100,11 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
         raster_df <- raster::as.data.frame(raster, xy = TRUE)
 
         # Raster operations
-        if(!is.null(raster_col))
-        {
-          # check if passed in column is in the raster
-
-          raster_df <- dplyr::mutate(raster_df, value = raster_df[[raster_col]])
-        }
-        else
+        if(is.null(raster_col))
         {
           error <- "No raster column defined"
+          # check if passed in column is in the raster
+          # raster_df <- dplyr::mutate(raster_df, value = raster_df[[raster_col]])
         }
 
         # Raster stats/information (future)
@@ -125,17 +120,17 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
         y_max <- map_xy_min_max[4]
         map_width <- map_width_height_in[1]
         map_height <- map_width_height_in[2]
+        expand_x <- expand_xy[1]
+        expand_y <- expand_xy[2]
 
         # Build colorscale and options
         # Determine nature of data and apply appropriate color scale
-        # Using manual scales for now
-        # browser()
         palette_direction <- -1
         palette_type <- "div"
         na_value <- "Grey"
         map_guide <- "colourbar"
-        map_x_scale <-  ggplot2::scale_x_continuous(limits=c(x_min, x_max), expand = c(0, 0), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
-        map_y_scale <-  ggplot2::scale_y_continuous(limits=c(y_min, y_max), expand = c(0, 0), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
+        map_x_scale <-  ggplot2::scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+        map_y_scale <-  ggplot2::scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
         map_color_scale <-  ggplot2::scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide )
 
 
@@ -156,7 +151,7 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 
 
         # Build Map object
-        output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
+        output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=raster_col), alpha = 1.0) +
           ggplot2::geom_sf(data = shape, na.rm = TRUE, fill=FALSE) +
           map_color_scale +
           ggplot2::coord_sf() +
@@ -165,7 +160,6 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
           map_y_scale +
           theme(plot.title = element_text(hjust = 0.5))
 
-        # scale_color_manual(values = wes.palette(n=3, name="GrandBudapest"))
 
         # Save File
         if(!is.null(output_file))
