@@ -5,8 +5,8 @@
 \title{Create a map object and return/save the output}
 \usage{
 create_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
-  data_classification = "Temp", simplify = FALSE, raster_band = 1,
-  dpi = 150, output_file = NULL, output_file_type = "png",
+  simplify = FALSE, raster_band = 1, dpi = 150, output_file = NULL,
+  output_file_type = "png", expand_xy = c(0, 0),
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
   map_palette = "RdYlBu", map_width_height_in = c(15, 10),
   map_legend_title = NULL, map_x_label = "x", map_y_label = "y")
@@ -18,8 +18,6 @@ create_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 
 \item{raster_col}{Column that contains the raster object's output variable}
 
-\item{data_classification}{Possible temporary column for different map type tests}
-
 \item{simplify}{Option to reduce the number/complexity of the polygons in the shape file}
 
 \item{raster_band}{Future variable for dealing with multi band/time series rasters}
@@ -29,6 +27,8 @@ create_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 \item{output_file}{Output file path to save the resulting plot}
 
 \item{output_file_type}{Sets default file type for saving plots. Choices restricted to those in ggsave function}
+
+\item{expand_xy}{Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)}
 
 \item{map_xy_min_max}{Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax)}
 
