@@ -5,11 +5,11 @@
 \title{Create a map object and return/save the output}
 \usage{
 create_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
-  simplify = FALSE, raster_band = 1, dpi = 150, output_file = NULL,
-  output_file_type = "png", expand_xy = c(0, 0),
+  simplify = FALSE, raster_band = 1, bin_method = NULL, dpi = 150,
+  output_file = NULL, output_file_type = "png", expand_xy = c(0, 0),
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
   map_palette = "RdYlBu", map_width_height_in = c(15, 10),
-  map_legend_title = NULL, map_x_label = "x", map_y_label = "y")
+  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 }
 \arguments{
 \item{shape_data}{Either the full path string to shape file or an SF shape object}

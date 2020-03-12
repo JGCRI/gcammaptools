@@ -38,7 +38,7 @@ library(RColorBrewer)
 #' @importFrom dplyr mutate
 #' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme ggsave
 #' @export
-create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL, simplify = FALSE, raster_band = 1,
+create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL, simplify = FALSE, raster_band = 1, bin_method = NULL,
                        dpi = 150, output_file = NULL, output_file_type = "png", expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
@@ -48,76 +48,21 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 
     tryCatch(
     {
-      # Shape loading - if given a path, use that, else expect an object passed in
-      if(is.null(shape_data))
-      {
-         error <- "Shape data is NULL"
-      }
-      else if(class(shape_data)[1] == "sf")
-      {
-          shape_obj <- shape_data
-      }
-      else if(class(shape_data) == "character")
-      {
-          shape_obj <- gcammaptools::import_mapdata(shape_data)
-      }
-      else
-      {
-        error <- "Unrecognized shape data argument."
-      }
+      # Create shape and raster objects via local processing functions
+      shape_obj <- process_shape(shape_data, simplify)
+      raster_df <- process_raster(raster_data , raster_col, raster_band, bin_method)
 
-      # Raster loading - if given a path, use that, else expect an object passed in
-      if(is.null(raster_data))
-      {
-        error <- "Raster data is NULL"
-      }
-      else if(class(raster_data)[1] == "RasterLayer")
-      {
-        raster_obj <- raster_data
-      }
-      else if(class(raster_data)[1] == "character")
-      {
-        raster_obj <- import_raster(raster_data)
-      }
-      else
-      {
-        error <- "Unrecognized raster data argument."
-      }
-      if(raster_band != 1)
-      {
-        raster_obj <- raster(raster_obj, band=raster_band)
-      }
-
-
-      # Optional argument to simplify polygons via the simplify_mapdata function
-      if(simplify)
-      {
-        shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
-      }
-
-
+      # Perform shape and raster comparisons/other operations
       # Compare projections and equalize if necessary
       if(!compareCRS(shape_obj, raster_obj))
       {
           shape_obj <- st_transform(shape_obj, crs(raster_obj))
       }
-
       # Crop shape - for extent changes (future
       # shape <- st_crop(shape, 1.2*extent(raster))
 
-      # Convert raster
-      raster_df <- as.data.frame(raster_obj, xy = TRUE)
 
-      # Raster operations
-      if(is.null(raster_col))
-      {
-        error <- "No raster column defined"
-      }
-      else
-      {
-        raster_df <- mutate(raster_df, value = raster_df[[raster_col]])
-      }
-
+      # Create mapping and output variables
       # Raster stats/information (future)
       raster_min <- minValue(raster_obj)
       raster_max <- maxValue(raster_obj)
@@ -170,6 +115,90 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 
     return(output)
 }
+
+
+#' Process shape
+#'
+#' @param shape_data
+#' @param simplify
+#' @export
+process_shape <- function( shape_data, simplify)
+{
+  # Shape loading - if given a path, use that, else expect an object passed in
+  if(is.null(shape_data))
+  {
+    error <- "Shape data is NULL"
+  }
+  else if(class(shape_data)[1] == "sf")
+  {
+    shape_obj <- shape_data
+  }
+  else if(class(shape_data) == "character")
+  {
+    shape_obj <- gcammaptools::import_mapdata(shape_data)
+  }
+  else
+  {
+    error <- "Unrecognized shape data argument."
+  }
+
+  # Optional argument to simplify polygons via the simplify_mapdata function
+  if(simplify)
+  {
+    shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
+  }
+
+  return(shape_obj)
+}
+
+
+#' Process raster
+#'
+#' @param raster_data
+#' @param raster_col
+#' @param raster_band
+#' @param bin_method
+#' @export
+process_raster <- function( raster_data , raster_col, raster_band, bin_method)
+{
+  # Raster loading - if given a path, use that, else expect an object passed in
+  if(is.null(raster_data))
+  {
+    error <- "Raster data is NULL"
+  }
+  else if(class(raster_data)[1] == "RasterLayer")
+  {
+    raster_obj <- raster_data
+  }
+  else if(class(raster_data)[1] == "character")
+  {
+    raster_obj <- import_raster(raster_data)
+  }
+  else
+  {
+    error <- "Unrecognized raster data argument."
+  }
+  if(raster_band != 1)
+  {
+    raster_obj <- raster(raster_obj, band=raster_band)
+  }
+
+  # Convert raster
+  raster_df <- as.data.frame(raster_obj, xy = TRUE)
+
+  # Raster operations
+  if(is.null(raster_col))
+  {
+    error <- "No raster column defined"
+  }
+  else
+  {
+    raster_df <- mutate(raster_df, value = raster_df[[raster_col]])
+  }
+
+  return(raster_df)
+}
+
 
 #' Handles saving the map output to disk
 #'
