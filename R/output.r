@@ -41,11 +41,11 @@ library(RColorBrewer)
 create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL, simplify = FALSE, raster_band = 1,
                        dpi = 150, output_file = NULL, output_file_type = "png", expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
-                       map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "x", map_y_label = "y")
+                       map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
     error <- ""
     ouput <- "Default error"
-browser()
+
     tryCatch(
     {
       # Shape loading - if given a path, use that, else expect an object passed in
@@ -143,23 +143,6 @@ browser()
       map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
 
-
-      # if(data_classification == "Land")
-      # {
-      #   map_palette <- "Set1"
-      #   palette_direction <- 1
-      #   palette_type <- "qual"
-      #   na_value <- "Grey"
-      #   map_guide <- "legend"
-      #   map_title <- "Land Usage"
-      #   legend_title <- "Land Use Types"
-      #   shape_obj <- st_crop(shape_obj, 1.2*extent(raster_obj))
-      #   map_x_scale <-  NULL
-      #   map_y_scale <- NULL
-      #   map_color_scale <- NULL
-      # }
-
-
       # Build Map object
       output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
         geom_sf(data = shape_obj, na.rm = TRUE, fill=FALSE) +
@@ -188,6 +171,16 @@ browser()
     return(output)
 }
 
+#' Handles saving the map output to disk
+#'
+#' Initially one line of code, this function is likely to be expanded
+#'
+#' @param output_file Output file path to save the resulting plot
+#' @param output_file_type Sets default file type for saving plots. Choices restricted to those in ggsave function
+#' @param dpi Settable DPI for different print/screen formats
+#' @param map_width Map width in inches
+#' @param map_height Map height in inches
+#' @export
 save_plot <- function(output_file, output_file_type, dpi, map_width, map_height)
 {
   ggsave(filename = paste0(output_file, ".", output_file_type), device = output_file_type, dpi = dpi, limitsize = TRUE,
