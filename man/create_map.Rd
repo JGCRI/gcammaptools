@@ -5,44 +5,51 @@
 \title{Create a map object and return/save the output}
 \usage{
 create_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
-  simplify = FALSE, raster_band = 1, bin_method = NULL, dpi = 150,
-  output_file = NULL, output_file_type = "png", expand_xy = c(0, 0),
+  simplify = FALSE, raster_band = 1, bin_method = NULL,
+  bins = NULL, convert_zero = FALSE, dpi = 150, output_file = NULL,
+  output_file_type = "png", expand_xy = c(0, 0),
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
   map_palette = "RdYlBu", map_width_height_in = c(15, 10),
   map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 }
 \arguments{
-\item{shape_data}{Either the full path string to shape file or an SF shape object}
+\item{shape_data}{(SF, SP, or Character) - Either the full path string to shape file or an SF shape object}
 
-\item{raster_data}{Either the full path string to raster file or a raster object}
+\item{raster_data}{(Raster or Character) - Either the full path string to raster file or a raster object}
 
-\item{raster_col}{Column that contains the raster object's output variable}
+\item{raster_col}{(Character) - Column name that contains the raster object's output variable}
 
-\item{simplify}{Option to reduce the number/complexity of the polygons in the shape file}
+\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file}
 
-\item{raster_band}{Future variable for dealing with multi band/time series rasters}
+\item{raster_band}{(Numeric) - Future variable for dealing with multi band/time series rasters etc}
 
-\item{dpi}{Settable DPI for different print/screen formats}
+\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks}
 
-\item{output_file}{Output file path to save the resulting plot}
+\item{bins}{(Numeric) - Number of bins/segments in which to divide the raster}
 
-\item{output_file_type}{Sets default file type for saving plots. Choices restricted to those in ggsave function}
+\item{convert_zero}{(Boolean) - Convert raster 0 values to NA, default FALSE}
 
-\item{expand_xy}{Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)}
+\item{dpi}{(Numeric) - Settable DPI for different print/screen formats}
 
-\item{map_xy_min_max}{Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax)}
+\item{output_file}{(Character) - Output file path to save the resulting plot}
 
-\item{map_title}{Title to be displayed on the output map}
+\item{output_file_type}{(Character) - Sets file extension type for saving plots. Choices restricted to ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf)}
 
-\item{map_palette}{Variable to hold the type of colorscale to be used}
+\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)}
 
-\item{map_width_height_in}{Vector that describes the desired file size of output map image in the form of (width, height) in inches}
+\item{map_xy_min_max}{(c(Numeric, Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax)}
 
-\item{map_legend_title}{Text for the legend header}
+\item{map_title}{(Character) - Title to be displayed on the output map}
 
-\item{map_x_label}{Label for x axis}
+\item{map_palette}{(Character) - Variable to hold the type of colorscale to be used}
 
-\item{map_y_label}{Label for y axis}
+\item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of output map image in the form of (width, height) in inches}
+
+\item{map_legend_title}{(Character) - Text for the legend header}
+
+\item{map_x_label}{(Character) - Label for x axis}
+
+\item{map_y_label}{(Character) - Label for y axis}
 }
 \value{
 A ggplot object of the resulting map
