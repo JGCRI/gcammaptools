@@ -4,9 +4,10 @@
 \alias{create_map}
 \title{Create a map object and return/save the output}
 \usage{
-create_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
-  simplify = FALSE, raster_band = 1, bin_method = NULL,
-  bins = NULL, convert_zero = FALSE, dpi = 150, output_file = NULL,
+create_map(shape_data = NULL, shape_label_field = NULL,
+  simplify = FALSE, raster_data = NULL, raster_col = NULL,
+  raster_band = 1, bin_method = NULL, bins = NULL,
+  convert_zero = FALSE, dpi = 150, output_file = NULL,
   output_file_type = "png", expand_xy = c(0, 0),
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
   map_palette = "RdYlBu", map_width_height_in = c(15, 10),
@@ -15,11 +16,13 @@ create_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to shape file or an SF shape object}
 
+\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields}
+
+\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file}
+
 \item{raster_data}{(Raster or Character) - Either the full path string to raster file or a raster object}
 
 \item{raster_col}{(Character) - Column name that contains the raster object's output variable}
-
-\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file}
 
 \item{raster_band}{(Numeric) - Future variable for dealing with multi band/time series rasters etc}
 
@@ -52,7 +55,7 @@ create_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 \item{map_y_label}{(Character) - Label for y axis}
 }
 \value{
-A ggplot object of the resulting map
+(ggplot2) - A ggplot object of the resulting map
 }
 \description{
 This function is designed to take both a shape and raster object or path and create a standardized, congruent, output map.

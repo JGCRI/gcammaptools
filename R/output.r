@@ -11,6 +11,7 @@ library(RColorBrewer)
 #' This function is designed to take both a shape and raster object or path and create a standardized, congruent, output map.
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to shape file or an SF shape object
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields
 #' @param raster_data (Raster or Character) - Either the full path string to raster file or a raster object
 #' @param raster_col (Character) - Column name that contains the raster object's output variable
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file
@@ -29,27 +30,28 @@ library(RColorBrewer)
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis
 #' @param map_y_label (Character) - Label for y axis
-#' @return A ggplot object of the resulting map
+#' @return (ggplot2) - A ggplot object of the resulting map
 #' @importFrom sf st_transform
 #' @importFrom raster raster as.data.frame compareCRS minValue maxValue nlayers
 #' @importFrom dplyr mutate
-#' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme
+#' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @export
-create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL, simplify = FALSE, raster_band = 1, bin_method = NULL,
-                       bins = NULL, convert_zero = FALSE, dpi = 150, output_file = NULL, output_file_type = "png", expand_xy = c(0, 0),
+create_map <- function(shape_data = NULL, shape_label_field = NULL, simplify = FALSE,
+                       raster_data = NULL, raster_col = NULL,  raster_band = 1, bin_method = NULL, bins = NULL, convert_zero = FALSE,
+                       dpi = 150, output_file = NULL, output_file_type = "png", expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
     error <- ""
     ouput <- "Default error"
-    #browser()
+   # browser()
     tryCatch(
     {
 
       # Create shape and raster objects via local processing functions
-      shape_obj <- process_shape(shape_data, simplify)
-      raster_obj <- process_raster(raster_data , raster_col, raster_band, bin_method, bins)
+      shape_obj <- process_shape(shape_data, simplify, shape_label_field)
+      raster_obj <- process_raster(raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
 
       # Perform shape and raster comparisons/other operations
       # Compare projections and equalize if necessary
@@ -100,15 +102,25 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
       map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
       map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
+      if(!is.null(shape_label_field))
+      {
+        map_shape_text <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = ))
+        #map_shape_text <- geom_text(data = shape_obj, aes(x = x, y = y, label = shape_label_field), size = 4)
+      }
+      else
+      {
+        map_shape_text <- NULL
+      }
 
       # Build ggplot Map object
       output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
-        geom_sf(data = shape_obj, na.rm = TRUE, fill=FALSE) +
+        geom_sf(data = shape_obj, na.rm = TRUE, fill=NA) +
         map_color_scale +
         coord_sf() +
         labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
         map_x_scale +
         map_y_scale +
+        map_shape_text +
         theme(plot.title = element_text(hjust = 0.5))
 
       # Save File
@@ -133,8 +145,9 @@ create_map <- function(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to shape file or an SF shape object
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields
 #' @export
-process_shape <- function( shape_data, simplify)
+process_shape <- function(shape_data, simplify, shape_label_field)
 {
   # Shape loading - if given a path, use that, else expect an object passed in
   if(is.null(shape_data))
@@ -201,6 +214,18 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
   if(convert_zero == TRUE)
   {
     raster_obj[raster_obj==0] <- NA
+  }
+  if(!is.null(bin_method) && !is.null(bins))
+  {
+    # Equal interval
+    if(bin_method == 1 )
+    {
+
+    }
+    else if(bin_method == 2)
+    {
+
+    }
   }
 
   return(raster_obj)
