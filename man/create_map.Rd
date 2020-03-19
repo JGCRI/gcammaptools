@@ -8,10 +8,10 @@ create_map(shape_data = NULL, shape_label_field = NULL,
   simplify = FALSE, raster_data = NULL, raster_col = NULL,
   raster_band = 1, bin_method = NULL, bins = NULL,
   convert_zero = FALSE, dpi = 150, output_file = NULL,
-  output_file_type = "png", expand_xy = c(0, 0),
-  map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
-  map_palette = "RdYlBu", map_width_height_in = c(15, 10),
-  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+  expand_xy = c(0, 0), map_xy_min_max = c(-180, 180, -90, 90),
+  map_title = NULL, map_palette = "RdYlBu",
+  map_width_height_in = c(15, 10), map_legend_title = NULL,
+  map_x_label = "Lon", map_y_label = "Lat")
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to shape file or an SF shape object}
@@ -34,9 +34,7 @@ create_map(shape_data = NULL, shape_label_field = NULL,
 
 \item{dpi}{(Numeric) - Settable DPI for different print/screen formats}
 
-\item{output_file}{(Character) - Output file path to save the resulting plot}
-
-\item{output_file_type}{(Character) - Sets file extension type for saving plots. Choices restricted to ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg" or "wmf)}
+\item{output_file}{(Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
 
 \item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)}
 
@@ -55,7 +53,7 @@ create_map(shape_data = NULL, shape_label_field = NULL,
 \item{map_y_label}{(Character) - Label for y axis}
 }
 \value{
-(ggplot2) - A ggplot object of the resulting map
+(ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 }
 \description{
 This function is designed to take both a shape and raster object or path and create a standardized, congruent, output map.
