@@ -5,9 +5,9 @@
 \title{Create a map object and return/save the output}
 \usage{
 create_map(shape_data = NULL, shape_label_field = NULL,
-  simplify = FALSE, raster_data = NULL, raster_col = NULL,
-  raster_band = 1, bin_method = NULL, bins = NULL,
-  convert_zero = FALSE, dpi = 150, output_file = NULL,
+  shape_label_size_field = "1", simplify = FALSE, raster_data = NULL,
+  raster_col = NULL, raster_band = 1, bin_method = NULL,
+  bins = NULL, convert_zero = FALSE, dpi = 150, output_file = NULL,
   expand_xy = c(0, 0), map_xy_min_max = c(-180, 180, -90, 90),
   map_title = NULL, map_palette = "RdYlBu",
   map_width_height_in = c(15, 10), map_legend_title = NULL,
@@ -17,6 +17,8 @@ create_map(shape_data = NULL, shape_label_field = NULL,
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to shape file or an SF shape object}
 
 \item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields}
+
+\item{shape_label_size_field}{(Character) - Optional field for computing shape lable size dynamically (ie by area or amount etc.)}
 
 \item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file}
 

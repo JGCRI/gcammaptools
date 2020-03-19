@@ -15,6 +15,9 @@ save_plot(output_file, dpi, map_width, map_height)
 
 \item{map_height}{(Numeric) - Map height in inches}
 }
+\value{
+(Character) - Returns a character string with success or an error string if failed
+}
 \description{
 Initially one line of code, this function is likely to be expanded
 }

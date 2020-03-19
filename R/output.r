@@ -8,6 +8,7 @@
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to shape file or an SF shape object
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields
+#' @param shape_label_size_field (Character) - Optional field for computing shape lable size dynamically (ie by area or amount etc.)
 #' @param raster_data (Raster or Character) - Either the full path string to raster file or a raster object
 #' @param raster_col (Character) - Column name that contains the raster object's output variable
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file
@@ -33,7 +34,7 @@
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @import RColorBrewer
 #' @export
-create_map <- function(shape_data = NULL, shape_label_field = NULL, simplify = FALSE,
+create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
                        raster_data = NULL, raster_col = NULL,  raster_band = 1, bin_method = NULL, bins = NULL, convert_zero = FALSE,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
@@ -43,10 +44,20 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, simplify = F
     output <- "Default error"
     tryCatch(
     {
-
+    #browser()
       # Create shape and raster objects via local processing functions
       shape_obj <- process_shape(shape_data, simplify, shape_label_field)
+      if(!class(shape_obj) %in% "sf")
+      {
+        output <- shape_obj
+        return(output)
+      }
       raster_obj <- process_raster(raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
+      if(!class(raster_obj) %in% "RasterLayer")
+      {
+        output <- raster_obj
+        return(output)
+      }
 
       # Perform shape and raster comparisons/other operations
       # Compare projections and equalize if necessary
@@ -86,7 +97,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, simplify = F
       map_height <- map_width_height_in[2]
       expand_x <- expand_xy[1]
       expand_y <- expand_xy[2]
-
+  #browser()
       # Map colors/scales options
       palette_direction <- -1
       palette_type <- "div"
@@ -95,10 +106,14 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, simplify = F
       map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
       map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
+      map_size_guide_option <- NULL
       if(!is.null(shape_label_field))
       {
-        map_shape_text <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = 1 ))
-        #map_shape_text <- geom_text(data = shape_obj, aes(x = x, y = y, label = shape_label_field), size = 4)
+        map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = shape_label_size_field))
+        if(!is.null(shape_label_size_field))
+        {
+          map_size_guide_option <- guides(size = FALSE)
+        }
       }
       else
       {
@@ -113,13 +128,14 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, simplify = F
         labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
         map_x_scale +
         map_y_scale +
-        map_shape_text +
-        theme(plot.title = element_text(hjust = 0.5))
+        map_shape_options +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        map_size_guide_option
 
       # Save File
       if(!is.null(output_file))
       {
-        gcammaptools::save_plot(output_file, dpi, map_width, map_height)
+        result <- gcammaptools::save_plot(output_file, dpi, map_width, map_height)
       }
 
     },
@@ -139,32 +155,42 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, simplify = F
 #' @param shape_data (SF, SP, or Character) - Either the full path string to shape file or an SF shape object
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields
+#' @return (SF or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @export
 process_shape <- function(shape_data, simplify, shape_label_field)
 {
-  # Shape loading - if given a path, use that, else expect an object passed in
-  if(is.null(shape_data))
+  tryCatch(
   {
-    error <- "Shape data is NULL"
-  }
-  else if(class(shape_data)[1] == "sf")
-  {
-    shape_obj <- shape_data
-  }
-  else if(class(shape_data) == "character")
-  {
-    shape_obj <- gcammaptools::import_mapdata(shape_data)
-  }
-  else
-  {
-    error <- "Unrecognized shape data argument."
-  }
+    # Shape loading - if given a path, use that, else expect an object passed in
+    if(is.null(shape_data))
+    {
+      error <- "Shape data is NULL"
+    }
+    else if(class(shape_data)[1] == "sf")
+    {
+      shape_obj <- shape_data
+    }
+    else if(class(shape_data) == "character")
+    {
+      shape_obj <- gcammaptools::import_mapdata(shape_data)
+    }
+    else
+    {
+      error <- "Unrecognized shape data argument."
+    }
 
-  # Optional argument to simplify polygons via the simplify_mapdata function
-  if(simplify)
+    # Optional argument to simplify polygons via the simplify_mapdata function
+    if(simplify)
+    {
+      shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
+    }
+  },
+  error = function(err)
   {
-    shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
-  }
+    # error handler picks up error information
+    error <- err
+    return(error)
+  })
 
   return(shape_obj)
 }
@@ -180,46 +206,56 @@ process_shape <- function(shape_data, simplify, shape_label_field)
 #' @param convert_zero (Boolean) - Convert raster zero values to NA
 #' @importFrom rgis import_raster
 #' @importFrom ggspatial layer_spatial df_spatial
+#' @return (Raster or Character) - Returns the resulting raster object or an error string if failed
 #' @export
 process_raster <- function( raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
 {
-  # Raster loading - if given a path, use that, else expect an object passed in
-  if(is.null(raster_data))
+  tryCatch(
   {
-    error <- "Raster data is NULL"
-  }
-  else if(class(raster_data)[1] == "RasterLayer")
-  {
-    raster_obj <- raster_data
-  }
-  else if(class(raster_data)[1] == "character")
-  {
-    raster_obj <- import_raster(raster_data)
-  }
-  else
-  {
-    error <- "Unrecognized raster data argument."
-  }
-  if(raster_band != 1)
-  {
-    raster_obj <- raster(raster_obj, band=raster_band)
-  }
-  if(convert_zero == TRUE)
-  {
-    raster_obj[raster_obj==0] <- NA
-  }
-  if(!is.null(bin_method) && !is.null(bins))
-  {
-    # Equal interval
-    if(bin_method == 1 )
+    # Raster loading - if given a path, use that, else expect an object passed in
+    if(is.null(raster_data))
     {
-
+      error <- "Raster data is NULL"
     }
-    else if(bin_method == 2)
+    else if(class(raster_data)[1] == "RasterLayer")
     {
-
+      raster_obj <- raster_data
     }
-  }
+    else if(class(raster_data)[1] == "character")
+    {
+      raster_obj <- import_raster(raster_data)
+    }
+    else
+    {
+      error <- "Unrecognized raster data argument."
+    }
+    if(raster_band != 1)
+    {
+      raster_obj <- raster(raster_obj, band=raster_band)
+    }
+    if(convert_zero == TRUE)
+    {
+      raster_obj[raster_obj==0] <- NA
+    }
+    if(!is.null(bin_method) && !is.null(bins))
+    {
+      # Equal interval
+      if(bin_method == 1 )
+      {
+
+      }
+      else if(bin_method == 2)
+      {
+
+      }
+    }
+  },
+  error = function(err)
+  {
+    # error handler picks up error information
+    error <- err
+    return(error)
+  })
 
   return(raster_obj)
 }
@@ -233,17 +269,29 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
 #' @param dpi (Numeric) - Settable DPI for different print/screen formats
 #' @param map_width (Numeric) - Map width in inches
 #' @param map_height (Numeric) - Map height in inches
+#' @return (Character) - Returns a character string with success or an error string if failed
 #' @importFrom ggplot2 ggsave
 #' @export
 save_plot <- function(output_file, dpi, map_width, map_height)
-{    browser()
-
-  file_type <- substr(x = output_file, start = (nchar(output_file)-2), stop = nchar(output_file))
-  if(file_type %in% c("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg"))
+{
+  output <- "success"
+  tryCatch(
   {
-    ggsave(filename = output_file, device = file_type, dpi = dpi, limitsize = TRUE,
-           width = map_width, height = map_height)
-  }
+    file_type <- substr(x = output_file, start = (nchar(output_file)-2), stop = nchar(output_file))
+    if(file_type %in% c("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg"))
+    {
+      ggsave(filename = output_file, device = file_type, dpi = dpi, limitsize = TRUE,
+             width = map_width, height = map_height)
+    }
+  },
+  error = function(err)
+  {
+    # error handler picks up error information
+    error <- err
+    return(error)
+  })
+
+  return(output)
 
 }
 # e equal interval, quantile, natural breaks to bin the data into a certain amount of classes as provided by the user

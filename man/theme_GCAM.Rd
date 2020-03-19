@@ -4,18 +4,18 @@
 \alias{theme_GCAM}
 \title{Default GCAM theme function}
 \usage{
-theme_GCAM(base_font_size = 11, base_font_family = "", legend = FALSE,
-  overlay_graticules = FALSE)
+theme_GCAM(base_font_size = 11, base_font_family = "",
+  legend = FALSE, overlay_graticules = FALSE)
 }
 \arguments{
-\item{base_size}{Base font size}
-
-\item{base_family}{Base font type}
-
 \item{legend}{Boolean; whether to include a legend with default legend
 formatting.}
 
 \item{overlay_graticules}{Boolean; whether to place grid lines on top of plot}
+
+\item{base_size}{Base font size}
+
+\item{base_family}{Base font type}
 }
 \description{
 An add-on function to any ggplot2 object. Derives from ggplot2 black and

@@ -8,7 +8,8 @@ plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
   extent = EXTENT_WORLD, title = "", legend = F, gcam_df = NULL,
   gcam_key = "id", mapdata_key = "region_id", zoom = 0,
   graticules = "bottom", agr_type = "constant",
-  background_color = MAP_BACKGROUND, padding = all(extent == EXTENT_WORLD))
+  background_color = MAP_BACKGROUND, padding = all(extent ==
+  EXTENT_WORLD))
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (simple features
