@@ -44,7 +44,6 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
     output <- "Default error"
     tryCatch(
     {
-    #browser()
       # Create shape and raster objects via local processing functions
       shape_obj <- process_shape(shape_data, simplify, shape_label_field)
       if(!class(shape_obj) %in% "sf")
@@ -52,6 +51,8 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
         output <- shape_obj
         return(output)
       }
+
+      # Create raster
       raster_obj <- process_raster(raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
       if(!class(raster_obj) %in% "RasterLayer")
       {
@@ -80,7 +81,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       {
         raster_df <- mutate(raster_df, value = raster_df[[paste0("band", 1)]])
       }
-#browser()
+
       # Create mapping and output variables
       # Raster stats/information (future)
       raster_min <- minValue(raster_obj)
@@ -97,7 +98,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       map_height <- map_width_height_in[2]
       expand_x <- expand_xy[1]
       expand_y <- expand_xy[2]
-  #browser()
+
       # Map colors/scales options
       palette_direction <- -1
       palette_type <- "div"
@@ -106,6 +107,8 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
       map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
+
+      map_shape_options <- NULL
       map_size_guide_option <- NULL
       if(!is.null(shape_label_field))
       {
@@ -114,10 +117,6 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
         {
           map_size_guide_option <- guides(size = FALSE)
         }
-      }
-      else
-      {
-        map_shape_text <- NULL
       }
 
       # Build ggplot Map object
@@ -172,11 +171,19 @@ process_shape <- function(shape_data, simplify, shape_label_field)
     }
     else if(class(shape_data) == "character")
     {
-      shape_obj <- gcammaptools::import_mapdata(shape_data)
+      if (file.exists(shape_data))
+      {
+        shape_obj <- gcammaptools::import_mapdata(shape_data)
+      }
+      else
+      {
+        error <- paste0("Cannot open Shape file ", raster_data)
+        return(error)
+      }
     }
     else
     {
-      error <- "Unrecognized shape data argument."
+      error <- "Unrecognized shape_data argument."
     }
 
     # Optional argument to simplify polygons via the simplify_mapdata function
@@ -206,10 +213,13 @@ process_shape <- function(shape_data, simplify, shape_label_field)
 #' @param convert_zero (Boolean) - Convert raster zero values to NA
 #' @importFrom rgis import_raster
 #' @importFrom ggspatial layer_spatial df_spatial
+#' @importFrom raster raster crs
 #' @return (Raster or Character) - Returns the resulting raster object or an error string if failed
 #' @export
 process_raster <- function( raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
 {
+  # Default projection if raster is missing CRS
+  default_projection <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
   tryCatch(
   {
     # Raster loading - if given a path, use that, else expect an object passed in
@@ -223,23 +233,40 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
     }
     else if(class(raster_data)[1] == "character")
     {
-      raster_obj <- import_raster(raster_data)
+      if (file.exists(raster_data))
+      {
+        raster_obj <- import_raster(raster_data)
+      }
+      else
+      {
+        error <- paste0("Cannot open Raster file ", raster_data)
+        return(error)
+      }
     }
     else
     {
-      error <- "Unrecognized raster data argument."
+      error <- "Unrecognized raster_data argument."
     }
+    # Set raster band
     if(raster_band != 1)
     {
       raster_obj <- raster(raster_obj, band=raster_band)
     }
+    # Convert zeroes to NA if enabled
     if(convert_zero == TRUE)
     {
       raster_obj[raster_obj==0] <- NA
     }
+    # Verify raster CRS and assign default if NA
+    if(is.na(crs(raster_obj)) || is.null(crs(raster_obj)))
+    {
+      raster::crs(raster_obj) <- crs(default_projection)
+      print("Applying default CRS to raster (raster CRS was NA or NULL)")
+    }
+    # Future code
     if(!is.null(bin_method) && !is.null(bins))
     {
-      # Equal interval
+      # Equal interval, quantile, nbreaks
       if(bin_method == 1 )
       {
 
@@ -294,8 +321,4 @@ save_plot <- function(output_file, dpi, map_width, map_height)
   return(output)
 
 }
-# e equal interval, quantile, natural breaks to bin the data into a certain amount of classes as provided by the user
-#test <- create_map(shape_data = "e:/repos/github/data/ri/State_Boundary_1997.shp", raster_data = "E:/Repos/github/data/ri/gaplf2011lc_v30_ri.tif", output_file = "./test", raster_col = "gaplf2011lc_v30_ri_COUNT")
-#test <- create_map(shape_path = "e:/repos/github/data/USA_adm/USA_adm0.shp", raster_path = "E:/Repos/github/data/ri/gaplf2011lc_v30_ri.tif", output_file = "./test", raster_col = "gaplf2011lc_v30_ri_COUNT", data_classification = "Land")
-#test <- create_map(shape_data = "e:/repos/github/data/tm_world_borders_simpl-0.3.shp", raster_data = "E:/Repos/github/data/wc2.0_10m_tavg_01.tif", output_file = "./test", raster_col = "wc2.0_10m_tavg_01")
 
