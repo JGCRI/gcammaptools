@@ -149,6 +149,46 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 }
 
 
+#' Create a choropleth map object and return/save the output
+#'
+#' Choropleth map
+#'
+#' @param shape_data (SF, SP, or Character) - Either the full path string to shape file or an SF shape object
+#' @param shape_key_field (Character) - Name of field in shape file for merging with the data_obj argument
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields
+#' @param shape_label_size_field (Character) - Optional field for computing shape lable size dynamically (ie by area or amount etc.)
+#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file
+#' @param data_obj (Data Frame) - A data frame that contains the output data to map
+#' @param data_key_field (Character) - Name of field in data_obj for merging with shape_data argument
+#' @param data_col (Character) - Column name that contains the data object's output variable
+#' @param dpi (Numeric) - Settable DPI for different print/screen formats
+#' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
+#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)
+#' @param map_xy_min_max (c(Numeric, Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax)
+#' @param map_title (Character) - Title to be displayed on the output map
+#' @param map_palette (Character) - Variable to hold the type of colorscale to be used
+#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of output map image in the form of (width, height) in inches
+#' @param map_legend_title (Character) - Text for the legend header
+#' @param map_x_label (Character) - Label for x axis
+#' @param map_y_label (Character) - Label for y axis
+#' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
+#' @importFrom sf st_transform
+#' @importFrom dplyr mutate
+#' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label
+#' @importFrom ggspatial layer_spatial df_spatial
+#' @import RColorBrewer
+#' @export
+create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
+                       data_obj = NULL, data_key_field = NULL, data_col = NULL,
+                       dpi = 150, output_file = NULL, expand_xy = c(0, 0),
+                       map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
+                       map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+{
+
+
+}
+
+
 #' Process shape
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to shape file or an SF shape object
