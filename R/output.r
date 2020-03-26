@@ -176,15 +176,114 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @importFrom dplyr mutate
 #' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label
 #' @importFrom ggspatial layer_spatial df_spatial
+#' @importFrom broom tidy
 #' @import RColorBrewer
 #' @export
 create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
-                       data_obj = NULL, data_key_field = NULL, data_col = NULL,
+                       map_data = NULL, data_key_field = NULL, data_col = NULL,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
+  error <- ""
+  output <- "Default error"
+  tryCatch(
+    {
+      # Create shape object via local processing functions
+      shape_obj <- process_shape(shape_data, simplify, shape_label_field)
+      if(!class(shape_obj) %in% "sf")
+      {
+        output <- shape_obj
+        return(output)
+      }
 
+      # Read/process data object
+      map_data <- read.csv("E:/Repos/github/data/who/data.csv", stringsAsFactors = F)
+      if(!class(map_data) %in% "data.frame")
+      {
+        output <- "Data object is not of type data.frame"
+        return(output)
+      }
+
+      #shape_df <- tidy(shape_obj)
+      # Merge map and data
+      combined_df <- merge(x = shape_obj, y = data_obj, by.x = shape_key_field, by.y = data_key_field)
+      #eurEduMapDf <- eurEduMapDf[order(eurEduMapDf$order),]
+
+      # Crop shape - ?
+      # shape <- st_crop(shape, 1.2*extent(raster))
+
+      # Create mapping and output variables
+      # Data stats/information (future)
+      # data_min <- minValue(data_obj)
+      # data_max <- maxValue(data_obj)
+      # data_layers <- nlayers(data_obj)
+      # data_active_band <- data_band
+
+      # Map output variables
+      x_min <- map_xy_min_max[1]
+      x_max <- map_xy_min_max[2]
+      y_min <- map_xy_min_max[3]
+      y_max <- map_xy_min_max[4]
+      map_width <- map_width_height_in[1]
+      map_height <- map_width_height_in[2]
+      expand_x <- expand_xy[1]
+      expand_y <- expand_xy[2]
+
+      # Map colors/scales options
+      palette_direction <- -1
+      palette_type <- "qual"
+      na_value <- "Grey"
+      map_guide <- "colourbar"
+      map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+      map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
+      map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
+
+      map_shape_options <- NULL
+      map_size_guide_option <- NULL
+      if(!is.null(shape_label_field))
+      {
+        map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = shape_label_size_field))
+        if(!is.null(shape_label_size_field))
+        {
+          map_size_guide_option <- guides(size = FALSE)
+        }
+      }
+
+      #Process breaks
+      breaks_qt <- classIntervals(c(min(as.numeric(combined_df$X2000)),as.numeric(combined_df$X2000)), n = 8, style = "quantile")
+      combined_df <- mutate(combined_df, X2000 = cut(as.numeric(X2000), breaks_qt$brks))
+
+      browser()
+      # Build ggplot Map object
+      output <- ggplot(data = combined_df, aes(x=LON, y=LAT, group=REGION, fill=X2000)) +
+        geom_sf(color="grey") +
+        scale_fill_brewer(palette = map_palette)
+
+        # map_color_scale +
+        # coord_sf() +
+        # labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
+        # map_x_scale +
+        # map_y_scale +
+        # map_shape_options +
+        # theme(plot.title = element_text(hjust = 0.5)) +
+        # map_size_guide_option
+
+      # Save File
+      if(!is.null(output_file))
+      {
+        result <- gcammaptools::save_plot(output_file, dpi, map_width, map_height)
+      }
+
+    },
+    error = function(err)
+    {
+      # error handler picks up error information
+      error <- err
+      return(error)
+    })
+
+  return(output)
 
 }
 

@@ -6,7 +6,7 @@
 \usage{
 create_choropleth(shape_data = NULL, shape_key_field = NULL,
   shape_label_field = NULL, shape_label_size_field = "1",
-  simplify = FALSE, data_obj = NULL, data_key_field = NULL,
+  simplify = FALSE, map_data = NULL, data_key_field = NULL,
   data_col = NULL, dpi = 150, output_file = NULL, expand_xy = c(0,
   0), map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
   map_palette = "RdYlBu", map_width_height_in = c(15, 10),
@@ -22,8 +22,6 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
 \item{shape_label_size_field}{(Character) - Optional field for computing shape lable size dynamically (ie by area or amount etc.)}
 
 \item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file}
-
-\item{data_obj}{(Data Frame) - A data frame that contains the output data to map}
 
 \item{data_key_field}{(Character) - Name of field in data_obj for merging with shape_data argument}
 
@@ -48,6 +46,8 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
 \item{map_x_label}{(Character) - Label for x axis}
 
 \item{map_y_label}{(Character) - Label for y axis}
+
+\item{data_obj}{(Data Frame) - A data frame that contains the output data to map}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
