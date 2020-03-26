@@ -13,8 +13,6 @@
 #' @param raster_col (Character) - Column name that contains the raster object's output variable
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file
 #' @param raster_band (Numeric) - Future variable for dealing with multi band/time series rasters etc
-#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks
-#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @param convert_zero (Boolean) - Convert raster 0 values to NA, default FALSE
 #' @param dpi (Numeric) - Settable DPI for different print/screen formats
 #' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
@@ -35,7 +33,7 @@
 #' @import RColorBrewer
 #' @export
 create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
-                       raster_data = NULL, raster_col = NULL,  raster_band = 1, bin_method = NULL, bins = NULL, convert_zero = FALSE,
+                       raster_data = NULL, raster_col = NULL,  raster_band = 1,  convert_zero = FALSE,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
@@ -161,6 +159,8 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @param data_obj (Data Frame) - A data frame that contains the output data to map
 #' @param data_key_field (Character) - Name of field in data_obj for merging with shape_data argument
 #' @param data_col (Character) - Column name that contains the data object's output variable
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks
+#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @param dpi (Numeric) - Settable DPI for different print/screen formats
 #' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)
@@ -180,7 +180,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @import RColorBrewer
 #' @export
 create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
-                       map_data = NULL, data_key_field = NULL, data_col = NULL,
+                       map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = NULL, bins = NULL,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
@@ -204,11 +204,9 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
         output <- "Data object is not of type data.frame"
         return(output)
       }
-
-      #shape_df <- tidy(shape_obj)
       # Merge map and data
-      combined_df <- merge(x = shape_obj, y = data_obj, by.x = shape_key_field, by.y = data_key_field)
-      #eurEduMapDf <- eurEduMapDf[order(eurEduMapDf$order),]
+     # combined_df <- merge(x = shape_obj, y = data_obj, by.x = shape_key_field, by.y = data_key_field)
+      combined_df <- left_join(x = shape_obj, y = data_obj, by = setNames(data_key_field,  shape_key_field))
 
       # Crop shape - ?
       # shape <- st_crop(shape, 1.2*extent(raster))
@@ -231,13 +229,13 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
       expand_y <- expand_xy[2]
 
       # Map colors/scales options
-      palette_direction <- -1
+      palette_direction <- 1
       palette_type <- "qual"
       na_value <- "Grey"
       map_guide <- "colourbar"
-      map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
-      map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
-      map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
+      map_x_scale <- scale_x_discrete(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+      map_y_scale <-  scale_y_discrete(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
+      map_color_scale <-  scale_fill_brewer(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value)
 
       map_shape_options <- NULL
       map_size_guide_option <- NULL
@@ -250,24 +248,26 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
         }
       }
 
-      #Process breaks
-      breaks_qt <- classIntervals(c(min(as.numeric(combined_df$X2000)),as.numeric(combined_df$X2000)), n = 8, style = "quantile")
-      combined_df <- mutate(combined_df, X2000 = cut(as.numeric(X2000), breaks_qt$brks))
-
       browser()
-      # Build ggplot Map object
-      output <- ggplot(data = combined_df, aes(x=LON, y=LAT, group=REGION, fill=X2000)) +
-        geom_sf(color="grey") +
-        scale_fill_brewer(palette = map_palette)
+      #Process breaks
+      if(!is.null(bin_method))
+      {
+        data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)
+        combined_df <- mutate(combined_df, value = cut(as.numeric(combined_df[[data_col]]), data_breaks$brks))
+      }
 
-        # map_color_scale +
-        # coord_sf() +
-        # labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
-        # map_x_scale +
-        # map_y_scale +
-        # map_shape_options +
-        # theme(plot.title = element_text(hjust = 0.5)) +
-        # map_size_guide_option
+
+      # Build ggplot Map object
+      output <- ggplot(data = combined_df, aes(x=LON, y=LAT, group=REGION, fill=value)) +
+        geom_sf(color="grey") +
+         map_color_scale +
+         coord_sf() +
+         labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
+         map_x_scale +
+         map_y_scale +
+         map_shape_options +
+         theme(plot.title = element_text(hjust = 0.5)) +
+         map_size_guide_option
 
       # Save File
       if(!is.null(output_file))

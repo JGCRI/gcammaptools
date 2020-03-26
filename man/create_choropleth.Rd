@@ -7,10 +7,11 @@
 create_choropleth(shape_data = NULL, shape_key_field = NULL,
   shape_label_field = NULL, shape_label_size_field = "1",
   simplify = FALSE, map_data = NULL, data_key_field = NULL,
-  data_col = NULL, dpi = 150, output_file = NULL, expand_xy = c(0,
-  0), map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
-  map_palette = "RdYlBu", map_width_height_in = c(15, 10),
-  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+  data_col = NULL, bin_method = NULL, bins = NULL, dpi = 150,
+  output_file = NULL, expand_xy = c(0, 0), map_xy_min_max = c(-180,
+  180, -90, 90), map_title = NULL, map_palette = "RdYlBu",
+  map_width_height_in = c(15, 10), map_legend_title = NULL,
+  map_x_label = "Lon", map_y_label = "Lat")
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to shape file or an SF shape object}
@@ -26,6 +27,10 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
 \item{data_key_field}{(Character) - Name of field in data_obj for merging with shape_data argument}
 
 \item{data_col}{(Character) - Column name that contains the data object's output variable}
+
+\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks}
+
+\item{bins}{(Numeric) - Number of bins/segments in which to divide the raster}
 
 \item{dpi}{(Numeric) - Settable DPI for different print/screen formats}
 
