@@ -10,8 +10,8 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
   data_col = NULL, bin_method = NULL, bins = NULL, dpi = 150,
   output_file = NULL, expand_xy = c(0, 0), map_xy_min_max = c(-180,
   180, -90, 90), map_title = NULL, map_palette = "RdYlBu",
-  map_width_height_in = c(15, 10), map_legend_title = NULL,
-  map_x_label = "Lon", map_y_label = "Lat")
+  map_palette_reverse = FALSE, map_width_height_in = c(15, 10),
+  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to shape file or an SF shape object}
@@ -23,6 +23,8 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
 \item{shape_label_size_field}{(Character) - Optional field for computing shape lable size dynamically (ie by area or amount etc.)}
 
 \item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file}
+
+\item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
 
 \item{data_key_field}{(Character) - Name of field in data_obj for merging with shape_data argument}
 
@@ -44,6 +46,8 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
 
 \item{map_palette}{(Character) - Variable to hold the type of colorscale to be used}
 
+\item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
+
 \item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of output map image in the form of (width, height) in inches}
 
 \item{map_legend_title}{(Character) - Text for the legend header}
@@ -51,8 +55,6 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
 \item{map_x_label}{(Character) - Label for x axis}
 
 \item{map_y_label}{(Character) - Label for y axis}
-
-\item{data_obj}{(Data Frame) - A data frame that contains the output data to map}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed

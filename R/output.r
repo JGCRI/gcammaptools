@@ -19,7 +19,8 @@
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)
 #' @param map_xy_min_max (c(Numeric, Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax)
 #' @param map_title (Character) - Title to be displayed on the output map
-#' @param map_palette (Character) - Variable to hold the type of colorscale to be used
+#' @param map_palette (Character) - Variable to hold the type of colorscale to be
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
 #' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of output map image in the form of (width, height) in inches
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis
@@ -35,7 +36,7 @@
 create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
                        raster_data = NULL, raster_col = NULL,  raster_band = 1,  convert_zero = FALSE,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
-                       map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
+                       map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu", map_palette_reverse = FALSE,
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
     error <- ""
@@ -98,11 +99,12 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       expand_y <- expand_xy[2]
 
       # Map colors/scales options
-      palette_direction <- -1
-      palette_type <- "div"
-      na_value <- "Grey"
-      map_guide <- "colourbar"
-      map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+      palette_direction <- 1
+      if(map_palette_reverse)
+      {
+        palette_direction <- -1
+      }
+      p_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
       map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
 
@@ -156,7 +158,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields
 #' @param shape_label_size_field (Character) - Optional field for computing shape lable size dynamically (ie by area or amount etc.)
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file
-#' @param data_obj (Data Frame) - A data frame that contains the output data to map
+#' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of field in data_obj for merging with shape_data argument
 #' @param data_col (Character) - Column name that contains the data object's output variable
 #' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks
@@ -167,22 +169,23 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @param map_xy_min_max (c(Numeric, Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax)
 #' @param map_title (Character) - Title to be displayed on the output map
 #' @param map_palette (Character) - Variable to hold the type of colorscale to be used
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
 #' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of output map image in the form of (width, height) in inches
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis
 #' @param map_y_label (Character) - Label for y axis
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 #' @importFrom sf st_transform
-#' @importFrom dplyr mutate
-#' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label
+#' @importFrom dplyr mutate left_join
+#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label
 #' @importFrom ggspatial layer_spatial df_spatial
-#' @importFrom broom tidy
+#' @importFrom classInt classIntervals
 #' @import RColorBrewer
 #' @export
 create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
                        map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = NULL, bins = NULL,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
-                       map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
+                       map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu", map_palette_reverse = FALSE,
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
   error <- ""
@@ -197,26 +200,17 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
         return(output)
       }
 
+      browser()
+
       # Read/process data object
-      map_data <- read.csv("E:/Repos/github/data/who/data.csv", stringsAsFactors = F)
-      if(!class(map_data) %in% "data.frame")
-      {
-        output <- "Data object is not of type data.frame"
-        return(output)
-      }
+      map_data_obj <- process_data(map_data)
+
       # Merge map and data
      # combined_df <- merge(x = shape_obj, y = data_obj, by.x = shape_key_field, by.y = data_key_field)
-      combined_df <- left_join(x = shape_obj, y = data_obj, by = setNames(data_key_field,  shape_key_field))
+      combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))
 
       # Crop shape - ?
       # shape <- st_crop(shape, 1.2*extent(raster))
-
-      # Create mapping and output variables
-      # Data stats/information (future)
-      # data_min <- minValue(data_obj)
-      # data_max <- maxValue(data_obj)
-      # data_layers <- nlayers(data_obj)
-      # data_active_band <- data_band
 
       # Map output variables
       x_min <- map_xy_min_max[1]
@@ -230,6 +224,10 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
 
       # Map colors/scales options
       palette_direction <- 1
+      if(map_palette_reverse)
+      {
+        palette_direction <- -1
+      }
       palette_type <- "qual"
       na_value <- "Grey"
       map_guide <- "colourbar"
@@ -248,8 +246,7 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
         }
       }
 
-      browser()
-      #Process breaks
+           #Process breaks
       if(!is.null(bin_method))
       {
         data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)
@@ -312,7 +309,7 @@ process_shape <- function(shape_data, simplify, shape_label_field)
     {
       if (file.exists(shape_data))
       {
-        shape_obj <- gcammaptools::import_mapdata(shape_data)
+        shape_obj <- gcammaptools::import_mapdata(shape_data) #read.csv("E:/Repos/github/data/who/data.csv", stringsAsFactors = F)
       }
       else
       {
@@ -461,3 +458,50 @@ save_plot <- function(output_file, dpi, map_width, map_height)
 
 }
 
+
+
+#' Process data
+#'
+#' @param map_data (Data Frame or Character) - Either the full path string to data file or a DF object
+#' @return (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
+#' @export
+process_data <- function(map_data)
+{
+  tryCatch(
+    {
+      # Shape loading - if given a path, use that, else expect an object passed in
+      if(is.null(map_data))
+      {
+        error <- "Map data is NULL"
+      }
+      else if(class(map_data)[1] == "sf")
+      {
+        map_obj <- map_data
+      }
+      else if(class(map_data) == "character")
+      {
+        if (file.exists(map_data))
+        {
+          map_obj <- read.csv("E:/Repos/github/data/who/data.csv", stringsAsFactors = F)
+
+        }
+        else
+        {
+          error <- paste0("Cannot open data file ", map_data)
+          return(error)
+        }
+      }
+      else
+      {
+        error <- "Unrecognized shape_data argument."
+      }
+    },
+    error = function(err)
+    {
+      # error handler picks up error information
+      error <- err
+      return(error)
+    })
+
+  return(map_obj)
+}

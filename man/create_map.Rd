@@ -9,8 +9,9 @@ create_map(shape_data = NULL, shape_label_field = NULL,
   raster_col = NULL, raster_band = 1, convert_zero = FALSE,
   dpi = 150, output_file = NULL, expand_xy = c(0, 0),
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
-  map_palette = "RdYlBu", map_width_height_in = c(15, 10),
-  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+  map_palette = "RdYlBu", map_palette_reverse = FALSE,
+  map_width_height_in = c(15, 10), map_legend_title = NULL,
+  map_x_label = "Lon", map_y_label = "Lat")
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to shape file or an SF shape object}
@@ -39,7 +40,9 @@ create_map(shape_data = NULL, shape_label_field = NULL,
 
 \item{map_title}{(Character) - Title to be displayed on the output map}
 
-\item{map_palette}{(Character) - Variable to hold the type of colorscale to be used}
+\item{map_palette}{(Character) - Variable to hold the type of colorscale to be}
+
+\item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
 
 \item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of output map image in the form of (width, height) in inches}
 
