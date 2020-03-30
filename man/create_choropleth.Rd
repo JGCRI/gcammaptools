@@ -14,47 +14,45 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
   map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 }
 \arguments{
-\item{shape_data}{(SF, SP, or Character) - Either the full path string to shape file or an SF shape object}
+\item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
 
-\item{shape_key_field}{(Character) - Name of field in shape file for merging with the data_obj argument}
+\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
 
-\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields}
+\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 
-\item{shape_label_size_field}{(Character) - Optional field for computing shape lable size dynamically (ie by area or amount etc.)}
-
-\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file}
+\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)}
 
 \item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
 
-\item{data_key_field}{(Character) - Name of field in data_obj for merging with shape_data argument}
+\item{data_key_field}{(Character) - Name of key field in data_obj for merging with shape_data}
 
 \item{data_col}{(Character) - Column name that contains the data object's output variable}
 
-\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks}
+\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (Quantile, xxx, yyy)}
 
 \item{bins}{(Numeric) - Number of bins/segments in which to divide the raster}
 
-\item{dpi}{(Numeric) - Settable DPI for different print/screen formats}
+\item{dpi}{(Numeric) - Settable DPI for different print/screen formats (default 150)}
 
-\item{output_file}{(Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
+\item{output_file}{(Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
 
 \item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)}
 
-\item{map_xy_min_max}{(c(Numeric, Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax)}
+\item{map_xy_min_max}{(c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: -180, 180, -90, 90)}
 
 \item{map_title}{(Character) - Title to be displayed on the output map}
 
-\item{map_palette}{(Character) - Variable to hold the type of colorscale to be used}
+\item{map_palette}{(Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")}
 
 \item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
 
-\item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of output map image in the form of (width, height) in inches}
+\item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt 15, 10)}
 
 \item{map_legend_title}{(Character) - Text for the legend header}
 
-\item{map_x_label}{(Character) - Label for x axis}
+\item{map_x_label}{(Character) - Label for x axis (default Lon)}
 
-\item{map_y_label}{(Character) - Label for y axis}
+\item{map_y_label}{(Character) - Label for y axis (default Lat)}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed

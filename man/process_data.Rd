@@ -7,7 +7,7 @@
 process_data(map_data)
 }
 \arguments{
-\item{map_data}{(Data Frame or Character) - Either the full path string to data file or a DF object}
+\item{map_data}{(Data Frame or Character) - Either the full path string to data file or a data.frame object}
 }
 \value{
 (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
