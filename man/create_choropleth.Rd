@@ -2,7 +2,7 @@
 % Please edit documentation in R/output.r
 \name{create_choropleth}
 \alias{create_choropleth}
-\title{Create a choropleth map object and return/save the output}
+\title{Create a choropleth map object from shape and data object and return, save (optional) the output}
 \usage{
 create_choropleth(shape_data = NULL, shape_key_field = NULL,
   shape_label_field = NULL, shape_label_size_field = "1",
@@ -10,8 +10,9 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
   data_col = NULL, bin_method = NULL, bins = NULL, dpi = 150,
   output_file = NULL, expand_xy = c(0, 0), map_xy_min_max = c(-180,
   180, -90, 90), map_title = NULL, map_palette = "RdYlBu",
-  map_palette_reverse = FALSE, map_width_height_in = c(15, 10),
-  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+  map_palette_reverse = FALSE, map_palette_type = "seq",
+  map_width_height_in = c(15, 10), map_legend_title = NULL,
+  map_x_label = "Lon", map_y_label = "Lat")
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
@@ -45,6 +46,8 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
 \item{map_palette}{(Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")}
 
 \item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
+
+\item{map_palette_type}{(Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")}
 
 \item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt 15, 10)}
 

@@ -2,7 +2,7 @@
 #
 # This file produces output from standard functions for various maps
 
-#' Create a basic map object and return/save the output
+#' Create a basic map object from input shape/raster and return, save (optional) the output
 #'
 #' This function is designed to take both a shape and raster object/path and create a standardized output map.
 #'
@@ -16,15 +16,15 @@
 #' @param convert_zero (Boolean) - Convert values within the raster data from zero to NA (default FALSE)
 #' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
 #' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
-#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)
-#' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: -180, 180, -90, 90)
+#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
+#' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
 #' @param map_title (Character) - Title to be displayed on the output map
 #' @param map_palette (Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")
 #' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
-#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt 15, 10)
+#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))
 #' @param map_legend_title (Character) - Text for the legend header
-#' @param map_x_label (Character) - Label for x axis (default Lon)
-#' @param map_y_label (Character) - Label for y axis (default Lat)
+#' @param map_x_label (Character) - Label for x axis (default "Lon")
+#' @param map_y_label (Character) - Label for y axis (default "Lat")
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 #' @importFrom sf st_transform
 #' @importFrom raster raster as.data.frame compareCRS minValue maxValue nlayers
@@ -109,7 +109,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
         palette_direction <- -1
       }
 
-      p_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+      map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
       map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
       map_shape_options <- NULL
@@ -153,7 +153,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 }
 
 
-#' Create a choropleth map object and return/save the output
+#' Create a choropleth map object from shape and data object and return, save (optional) the output
 #'
 #' Choropleth map
 #'
@@ -168,27 +168,28 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
 #' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
-#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)
-#' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: -180, 180, -90, 90)
+#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
+#' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
 #' @param map_title (Character) - Title to be displayed on the output map
 #' @param map_palette (Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")
+#' @param map_palette_type (Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")
 #' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
-#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt 15, 10)
+#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10)cccc)
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)
 #' @param map_y_label (Character) - Label for y axis (default Lat)
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 #' @importFrom sf st_transform
 #' @importFrom dplyr mutate left_join
-#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label
+#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label theme_minimal
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
 #' @export
 create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
                        map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = NULL, bins = NULL,
-                       dpi = 150, output_file = NULL, expand_xy = c(0, 0),
-                       map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu", map_palette_reverse = FALSE,
+                       dpi = 150, output_file = NULL, expand_xy = c(0, 0),  map_xy_min_max = c(-180, 180, -90, 90),
+                       map_title = NULL,  map_palette = "RdYlBu", map_palette_reverse = FALSE, map_palette_type = "seq",
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
   error <- ""
@@ -225,20 +226,39 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
       expand_x <- expand_xy[1]
       expand_y <- expand_xy[2]
 
-      # Process map colors/scales options etc.
-      palette_direction <- 1
-
+      # Determine palette direction
       if(map_palette_reverse)
       {
         palette_direction <- -1
       }
+      else
+      {
+        palette_direction <- 1
+      }
 
-      palette_type <- "qual"
+      # Determine palette type
+      if(map_palette_type == "qual")
+      {
+        palette_type <- "qual"
+        palette_colors <- "Paired"
+      }
+      else if(map_palette_type == "div")
+      {
+        palette_type <- "div"
+        palette_colors <- "RdYlBu"
+      }
+      else
+      {
+        palette_type <- "seq"
+        palette_colors <- "Blues"
+      }
+
+      # Set additional map options and create scales
       na_value <- "Grey"
       map_guide <- "colourbar"
       map_x_scale <- scale_x_discrete(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
       map_y_scale <-  scale_y_discrete(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
-      map_color_scale <-  scale_fill_brewer(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value)
+      map_color_scale <-  scale_fill_brewer(palette = palette_colors, type = palette_type, direction = palette_direction, na.value = na_value)
       map_shape_options <- NULL
       map_size_guide_option <- NULL
 
@@ -255,8 +275,16 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
       # Process breaks/bins
       if(!is.null(bin_method) && !is.null(bins))
       {
-        data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)
-        combined_df <- mutate(combined_df, value = cut(as.numeric(combined_df[[data_col]]), data_breaks$brks))
+        if(bin_method %in% c("quantile", "pretty", "equal"))
+        {
+          data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)
+          combined_df <- mutate(combined_df, value = cut(as.numeric(combined_df[[data_col]]), data_breaks$brks))
+        }
+        else
+        {
+          error <- "bin_method type not found"
+          return(error)
+        }
       }
       else
       {
@@ -267,12 +295,12 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
       output <- ggplot(data = combined_df, aes(x=LON, y=LAT,  fill=value)) +
         geom_sf(color="grey") +
          map_color_scale +
-         coord_sf() +
+         coord_sf(datum = NULL) +
          labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
          map_x_scale +
          map_y_scale +
          map_shape_options +
-         theme(plot.title = element_text(hjust = 0.5)) +
+         theme(plot.title = element_text(hjust = 0.5)) + theme_minimal() +
          map_size_guide_option
 
       # Save File
@@ -459,7 +487,7 @@ save_plot <- function(output_file, dpi, map_width, map_height)
 
 #' Process data
 #'
-#' @param map_data (Data Frame or Character) - Either the full path string to data file or a data.frame object
+#' @param map_data (Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object
 #' @return (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @export
 process_data <- function(map_data)

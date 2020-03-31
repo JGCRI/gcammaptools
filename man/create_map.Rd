@@ -2,7 +2,7 @@
 % Please edit documentation in R/output.r
 \name{create_map}
 \alias{create_map}
-\title{Create a basic map object and return/save the output}
+\title{Create a basic map object from input shape/raster and return, save (optional) the output}
 \usage{
 create_map(shape_data = NULL, shape_label_field = NULL,
   shape_label_size_field = "1", simplify = FALSE, raster_data = NULL,
