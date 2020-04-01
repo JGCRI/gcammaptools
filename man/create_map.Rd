@@ -34,9 +34,9 @@ create_map(shape_data = NULL, shape_label_field = NULL,
 
 \item{output_file}{(Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
 
-\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y)}
+\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))}
 
-\item{map_xy_min_max}{(c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: -180, 180, -90, 90)}
+\item{map_xy_min_max}{(c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))}
 
 \item{map_title}{(Character) - Title to be displayed on the output map}
 
@@ -44,13 +44,13 @@ create_map(shape_data = NULL, shape_label_field = NULL,
 
 \item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
 
-\item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt 15, 10)}
+\item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))}
 
 \item{map_legend_title}{(Character) - Text for the legend header}
 
-\item{map_x_label}{(Character) - Label for x axis (default Lon)}
+\item{map_x_label}{(Character) - Label for x axis (default "Lon")}
 
-\item{map_y_label}{(Character) - Label for y axis (default Lat)}
+\item{map_y_label}{(Character) - Label for y axis (default "Lat")}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed

@@ -158,39 +158,45 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' Choropleth map
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
+#' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
+#' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
 #' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
+#' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
+#' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
-#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (Quantile, xxx, yyy)
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
 #' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
-#' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
+#' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
 #' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
 #' @param map_title (Character) - Title to be displayed on the output map
 #' @param map_palette (Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")
 #' @param map_palette_type (Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")
 #' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
-#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10)cccc)
+#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10))
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)
 #' @param map_y_label (Character) - Label for y axis (default Lat)
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
-#' @importFrom sf st_transform
+#' @importFrom sf st_transform st_crs
 #' @importFrom dplyr mutate left_join
 #' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label theme_minimal
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
 #' @export
-create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
-                       map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = NULL, bins = NULL,
-                       dpi = 150, output_file = NULL, expand_xy = c(0, 0),  map_xy_min_max = c(-180, 180, -90, 90),
-                       map_title = NULL,  map_palette = "RdYlBu", map_palette_reverse = FALSE, map_palette_type = "seq",
-                       map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1",
+                              shape_data_field = NULL, shape_xy_fields = c("LAT", "LON"), shape_geom_field = "geometry", simplify = FALSE,
+                              map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = NULL,
+                              dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
+                              map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL, map_palette = "RdYlBu",
+                              map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
+                              map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
   error <- ""
   output <- "Default error"
@@ -206,15 +212,18 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
         return(output)
       }
 
-      # Read/process data object via local processing function
-      map_data_obj <- process_data(map_data)
-
-      # Merge map and data
-      # combined_df <- merge(x = shape_obj, y = data_obj, by.x = shape_key_field, by.y = data_key_field)
-      combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))
-
-      # Crop shape - ?
-      # shape <- st_crop(shape, 1.2*extent(raster))
+      # Read/process map data object via local processing function
+      if(is.null(shape_data_field))
+      {
+        map_data_obj <- process_data(map_data)
+        # Merge map and data
+        combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))
+      }
+      else
+      {
+        combined_df <- as.data.frame(shape_obj)
+        data_col <- shape_data_field
+      }
 
       # Map output variables
       x_min <- map_xy_min_max[1]
@@ -261,6 +270,9 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
       map_color_scale <-  scale_fill_brewer(palette = palette_colors, type = palette_type, direction = palette_direction, na.value = na_value)
       map_shape_options <- NULL
       map_size_guide_option <- NULL
+      shape_x <- shape_xy_fields[1]
+      shape_y <- shape_xy_fields[2]
+      shape_geom <- shape_geom_field
 
       # Process optional shape label field
       if(!is.null(shape_label_field))
@@ -271,7 +283,7 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
           map_size_guide_option <- guides(size = FALSE)
         }
       }
-
+      browser()
       # Process breaks/bins
       if(!is.null(bin_method) && !is.null(bins))
       {
@@ -292,10 +304,10 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
       }
 
       # Build ggplot Map object
-      output <- ggplot(data = combined_df, aes(x=LON, y=LAT,  fill=value)) +
+      output <- ggplot(data = combined_df, aes_string(x=shape_x, y=shape_y,  fill="value", geometry=shape_geom)) +
         geom_sf(color="grey") +
          map_color_scale +
-         coord_sf(datum = NULL) +
+         coord_sf() +
          labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
          map_x_scale +
          map_y_scale +
