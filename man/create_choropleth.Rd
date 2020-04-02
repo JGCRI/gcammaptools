@@ -6,12 +6,12 @@
 \usage{
 create_choropleth(shape_data = NULL, shape_key_field = NULL,
   shape_label_field = NULL, shape_label_size_field = "1",
-  shape_data_field = NULL, shape_xy_fields = c("LAT", "LON"),
+  shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"),
   shape_geom_field = "geometry", simplify = FALSE, map_data = NULL,
   data_key_field = NULL, data_col = NULL, bin_method = "pretty",
   bins = NULL, dpi = 150, output_file = NULL, expand_xy = c(0, 0),
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
-  map_palette = "RdYlBu", map_palette_reverse = FALSE,
+  map_palette = NULL, map_palette_reverse = FALSE,
   map_palette_type = "seq", map_width_height_in = c(15, 10),
   map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 }
@@ -52,7 +52,7 @@ create_choropleth(shape_data = NULL, shape_key_field = NULL,
 
 \item{map_title}{(Character) - Title to be displayed on the output map}
 
-\item{map_palette}{(Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")}
+\item{map_palette}{(Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer}
 
 \item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
 

@@ -175,7 +175,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
 #' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
 #' @param map_title (Character) - Title to be displayed on the output map
-#' @param map_palette (Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")
+#' @param map_palette (Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer
 #' @param map_palette_type (Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")
 #' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
 #' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10))
@@ -191,10 +191,10 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @import RColorBrewer
 #' @export
 create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1",
-                              shape_data_field = NULL, shape_xy_fields = c("LAT", "LON"), shape_geom_field = "geometry", simplify = FALSE,
+                              shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
                               map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = NULL,
                               dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
-                              map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL, map_palette = "RdYlBu",
+                              map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL, map_palette = NULL,
                               map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
                               map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
@@ -262,6 +262,12 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
         palette_colors <- "Blues"
       }
 
+      # Override palette if explicitly set in map_palette argument
+      if(!is.null(map_palette))
+      {
+        palette_colors <- map_palette
+      }
+
       # Set additional map options and create scales
       na_value <- "Grey"
       map_guide <- "colourbar"
@@ -283,7 +289,7 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
           map_size_guide_option <- guides(size = FALSE)
         }
       }
-      browser()
+
       # Process breaks/bins
       if(!is.null(bin_method) && !is.null(bins))
       {
@@ -312,7 +318,7 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
          map_x_scale +
          map_y_scale +
          map_shape_options +
-         theme(plot.title = element_text(hjust = 0.5)) + theme_minimal() +
+        theme_minimal() + theme(plot.title = element_text(hjust = 0.5)) +
          map_size_guide_option
 
       # Save File
