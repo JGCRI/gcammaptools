@@ -46,25 +46,24 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       # Create shape and raster objects via local processing functions
       shape_obj <- process_shape(shape_data, simplify, shape_label_field)
 
-      if(!class(shape_obj) %in% "sf")
+      if(class(shape_obj) == "character")
       {
-        output <- shape_obj
-        return(output)
+        return("Error: Shape argument is not of type sf and could not be coerced")
       }
 
       # Create raster
       raster_obj <- process_raster(raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
 
-      if(!class(raster_obj) %in% "RasterLayer")
+      if(class(raster_obj) == "character")
       {
-        output <- raster_obj
-        return(output)
+        return("Error: Raster argument is not of type RasterLayer")
       }
 
       # Perform shape and raster comparisons/other operations
       # Compare projections and equalize if necessary
       if(!compareCRS(shape_obj, raster_obj))
       {
+        # Transform shape to match raster CRS
           shape_obj <- st_transform(shape_obj, crs(raster_df))
       }
 
@@ -77,7 +76,7 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 
       if(is.null(raster_col))
       {
-        error <- "No raster column defined"
+        return("Error: No raster column defined")
       }
       else
       {
@@ -109,12 +108,14 @@ create_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
         palette_direction <- -1
       }
 
+      # Build map x and y scales using continuous scales
       map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
       map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
       map_shape_options <- NULL
       map_size_guide_option <- NULL
 
+      # Build geometry labels if enabled by user
       if(!is.null(shape_label_field))
       {
         map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = shape_label_size_field))
@@ -206,10 +207,9 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
       shape_obj <- process_shape(shape_data, simplify, shape_label_field)
 
       # Verify object is a shape object, if not it's an error and return it
-      if(!class(shape_obj) %in% "sf")
+      if(class(shape_obj) == "character")
       {
-        output <- shape_obj
-        return(output)
+        return("Error: Shape argument is not of type sf and could not be coerced")
       }
 
       # Read/process map data object via local processing function
@@ -280,7 +280,7 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
       shape_y <- shape_xy_fields[2]
       shape_geom <- shape_geom_field
 
-      # Process optional shape label field
+      # Build geometry labels if enabled by user
       if(!is.null(shape_label_field))
       {
         map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = shape_label_size_field))
@@ -300,13 +300,12 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
         }
         else
         {
-          error <- "bin_method type not found"
-          return(error)
+          return("Error: bin_method type not in quantile, pretty, or equal")
         }
       }
       else
       {
-        error <- "bin_method and bins cannot be NULL"
+        return("Error: bin_method and bins cannot be NULL")
       }
 
       # Build ggplot Map object
@@ -338,6 +337,59 @@ create_choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_l
 }
 
 
+#' Create a distributed flow map object from shape and data object and return, save (optional) the output
+#'
+#' Distributed flow map
+#'
+#' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
+#' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
+#' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
+#' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
+#' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
+#' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
+#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
+#' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
+#' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
+#' @param data_col (Character) - Column name that contains the data object's output variable
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
+#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
+#' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
+#' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)
+#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
+#' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
+#' @param map_title (Character) - Title to be displayed on the output map
+#' @param map_palette (Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer
+#' @param map_palette_type (Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
+#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10))
+#' @param map_legend_title (Character) - Text for the legend header
+#' @param map_x_label (Character) - Label for x axis (default Lon)
+#' @param map_y_label (Character) - Label for y axis (default Lat)
+#' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
+#' @importFrom sf st_transform st_crs
+#' @importFrom dplyr mutate left_join
+#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label theme_minimal
+#' @importFrom ggspatial layer_spatial df_spatial
+#' @importFrom classInt classIntervals
+#' @import RColorBrewer
+#' @export
+create_flow_map <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1",
+                              shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
+                              map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = NULL,
+                              dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
+                              map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL, map_palette = NULL,
+                              map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
+                              map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+{
+
+
+
+
+
+}
+
+
 #' Process shape
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
@@ -352,7 +404,7 @@ process_shape <- function(shape_data, simplify, shape_label_field)
     # Shape loading - if given a path, use that, else expect an object passed in
     if(is.null(shape_data))
     {
-      error <- "Shape data is NULL"
+      return("Error: Shape data is NULL")
     }
     else if(class(shape_data) %in% "sf")
     {
@@ -366,13 +418,12 @@ process_shape <- function(shape_data, simplify, shape_label_field)
       }
       else
       {
-        error <- paste0("Cannot open Shape file ", raster_data)
-        return(error)
+        return(paste0("Cannot open Shape file ", raster_data))
       }
     }
     else
     {
-      error <- "Unrecognized shape_data argument."
+      return("Unrecognized shape_data argument.")
     }
 
     # Optional argument to simplify polygons via the simplify_mapdata function
@@ -414,7 +465,7 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
     # Raster loading - if given a path, use that, else expect an object passed in
     if(is.null(raster_data))
     {
-      error <- "Raster data is NULL"
+      return("Error: Raster data is NULL")
     }
     else if(class(raster_data) %in% "RasterLayer")
     {
@@ -428,13 +479,12 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
       }
       else
       {
-        error <- paste0("Cannot open Raster file ", raster_data)
-        return(error)
+        return(paste0("Cannot open Raster file ", raster_data))
       }
     }
     else
     {
-      error <- "Unrecognized raster_data argument."
+      return("Unrecognized raster_data argument.")
     }
 
     # Set raster band
@@ -491,6 +541,10 @@ save_plot <- function(output_file, dpi, map_width, map_height)
       ggsave(filename = output_file, device = file_type, dpi = dpi, limitsize = TRUE,
              width = map_width, height = map_height)
     }
+    else
+    {
+      return("Error: Unrecognized output file type (must be one of eps, ps, tex, pdf, jpeg, tiff, png, bmp, svg")
+    }
   },
   error = function(err)
   {
@@ -515,7 +569,7 @@ process_data <- function(map_data)
       # Map Data - if given a path to a csv, use that, else expect a data.frame object passed in
       if(is.null(map_data))
       {
-        error <- "Map data is NULL"
+        return("Error: Map data cannot be NULL")
       }
       else if(class(map_data) %in% "data.frame")
       {
@@ -529,13 +583,12 @@ process_data <- function(map_data)
         }
         else
         {
-          error <- paste0("Cannot open data file ", map_data)
-          return(error)
+          return(paste0("Error: Cannot open data file ", map_data))
         }
       }
       else
       {
-        error <- "Unrecognized map_data argument."
+         return("Error: Unrecognized map_data argument.")
       }
     },
     error = function(err)
