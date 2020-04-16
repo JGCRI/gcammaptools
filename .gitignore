@@ -65,3 +65,12 @@ xcuserdata
 .RData
 .Rproj.user
 inst/doc
+tests/testthat/test_create_map.R
+tests/testthat/raster/gaplf2011lc_v30_ri.tif.vat.cpg
+tests/testthat/raster/gaplf2011lc_v30_ri.tif.aux.xml
+tests/testthat/raster/gaplf2011lc_v30_ri.tif
+tests/testthat/raster/gaplf2011lc_v30_ri.tfw
+test.png
+R/temp.R
+tests/testthat/raster/gaplf2011lc_v30_ri.tif.vat.dbf
+test.bmp
