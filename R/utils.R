@@ -3,6 +3,134 @@
 # Contains general helper functions for the package
 
 
+#' Import ESRI Shapefile or GeoJSON as sf object.
+#'
+#' Creates a Simple Feature (sf) object from full path string to ESRI Shapefile
+#' or GeoJSON file. User defines which field is supposed to represent the ID for
+#' the data.
+#'
+#' @param file_pth Full path to shapefile with extention (.shp). Shapefiles must
+#' contain at least .shp, .shx, and .dbf file to function properly.
+load_shp <- function(file_pth) {
+  return(sf::st_read(file_pth, quiet = TRUE))
+}
+
+#' Single import function for compatible data types.
+#'
+#' Imports available for sf objects, spatial data frames, ESRI Shapefiles, or
+#' GeoJSON files.
+#'
+#' @param obj Input full path string or object.
+#' @param fld Field name to use as identifier.
+#' @param prj4s Proj4 string for projection (default WGS84).
+#' @return An sf object representation of the map data.
+#' @export
+import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
+
+  # get object class
+  cls <- class(obj)
+
+  # check for sf data frame object
+  if (cls[1] == "sf") {
+    return(obj)
+  }
+
+  # check for file path
+  else if (is.character(obj)) {
+
+    # get file extension
+    extn <- tolower(c(tools::file_ext(obj)))
+
+    # if ESRI Shapefile or GeoJSON file
+    if (extn %in% list('shp', 'geojson')) {
+
+      # load Shapefile
+      return(load_shp(file_pth = obj))
+    }
+    # catch unknown
+    else {
+      return(NULL)
+    }
+  }
+  # check for spatial data frames
+  else if (cls %in% list("SpatialPolygonsDataFrame", "SpatialPointsDataFrame",
+                         "SpatialLinesDataFrame")) {
+
+    return(sf::st_as_sf(obj))
+  }
+  else {
+    return(NULL) # catch_error: object type not understood.
+  }
+}
+
+
+
+
+#' Reduce number of polygons and size of polygons for map Shapefiles
+#'
+#' Takes a sf object representation of a map and simplifys it by removing
+#' polygons that are under a certain size.
+#'
+#' ** NOTE: This function adds two polygons to the edges of the map to prevent
+#'          the removal of polygons near the edges redefining the map bounds.
+#'
+#' @param mapdata sf object containing polygons or multipolygons to simplify.
+#' @param min_area Minimum area of polygons to keep.
+#' @param degree_tolerance Tolerance parameter for simplifying polygons.
+#' @return The simplified sf object.
+#' @export
+simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
+
+  . <- NULL                             # silence package notes for NSE.
+
+  if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
+    mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)
+
+  # filter out all polygons in the data under the minimum area
+  areafilter <- sapply(sf::st_geometry(mapdata), sf::st_area) > min_area
+  filtermap <- mapdata[which(areafilter), ]
+
+  filtermap <- suppressWarnings({sf::st_simplify(filtermap, preserveTopology=TRUE, dTolerance=degree_tolerance)})
+
+  # if nothing was filtered just return original map
+  if (utils::object.size(filtermap) == utils::object.size(mapdata))
+    return(mapdata)
+
+  # When removing polygons we might be shifting the bounds of the map, which
+  # would make it off-center when plotting. To account for this, we put tiny
+  # polygons on the edges.
+  xmin <- sf::st_bbox(mapdata)[1] %>% round
+  xmax <- sf::st_bbox(mapdata)[3] %>% round
+  height <- 0.0001 # small enough so it's not visible on plot
+
+  left_edge <- matrix(c(xmin, 0, xmin, height, xmin - height, 0, xmin, 0),
+                      byrow = TRUE, ncol = 2) %>%
+    list() %>%
+    sf::st_polygon()
+
+  right_edge <- matrix(c(xmax, 0, xmax, height, xmax + height, 0, xmax, 0),
+                       byrow = TRUE, ncol = 2) %>%
+    list() %>%
+    sf::st_polygon()
+
+  # create geometry with the two edges
+  edges <- sf::st_sfc(left_edge, right_edge, crs = sf::st_crs(mapdata))
+
+  # data frame with same names as original map, so that the two can combine
+  borders <- data.frame(matrix(ncol = length(names(mapdata)), nrow = 2)) %>%
+    magrittr::set_names(names(mapdata))
+
+  # extra polygons should be GCAM region 0
+  if ('region_id' %in% names(borders)) borders$region_id <- c(0, 0)
+
+  # convert to sf object and add new border polygons
+  sf::st_geometry(borders) <- edges
+
+  # add new polygons to filtered map and return
+  return(rbind(borders, filtermap))
+}
+
+
 #' Retrieve proj4 projection string.
 #'
 #' Provides a lookup list for default proj4 strings utilized.  Users may also
