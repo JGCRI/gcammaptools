@@ -57,8 +57,6 @@ process_shape <- function(shape_data, simplify, shape_label_field)
 }
 
 
-
-
 #' Process raster
 #'
 #' @param raster_data (Raster or Character) - Either the full path string to raster file or a raster object
