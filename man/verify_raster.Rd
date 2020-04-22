@@ -2,20 +2,27 @@
 % Please edit documentation in R/error_checking.R
 \name{verify_raster}
 \alias{verify_raster}
-\title{Verify shape data}
+\title{Verify raster data}
 \usage{
-verify_raster(shape_data, simplify, shape_label_field)
+verify_raster(raster_data, raster_col, raster_band, bin_method, bins,
+  convert_zero)
 }
 \arguments{
-\item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
+\item{raster_data}{(Raster or Character) - Either the full path string to raster file or a raster object}
 
-\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)}
+\item{raster_col}{(Character) - Column name that contains the raster object's output variable}
 
-\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
+\item{raster_band}{(Numeric) - Future variable for dealing with multi band/time series rasters etc}
+
+\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks}
+
+\item{bins}{(Numeric) - Number of bins/segments in which to divide the raster}
+
+\item{convert_zero}{(Boolean) - Convert raster zero values to NA#}
 }
 \value{
-(SF or Character) - Returns the resulting simplified SF object or an error string if failed
+(Character) - Returns a success token or an error string if failed
 }
 \description{
-This function runs a check on shape inputs and looks for errors
+This function runs a check on raster inputs and looks for errors
 }

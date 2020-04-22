@@ -2,7 +2,8 @@
 % Please edit documentation in R/error_checking.R
 \name{verify_shape}
 \alias{verify_shape}
-\title{Verify shape data}
+\title{Error checking functions for maps package
+Verify shape data}
 \usage{
 verify_shape(shape_data, simplify, shape_label_field)
 }
@@ -14,7 +15,7 @@ verify_shape(shape_data, simplify, shape_label_field)
 \item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
 }
 \value{
-(SF or Character) - Returns the resulting simplified SF object or an error string if failed
+(Character) - Returns a success token or an error string if failed
 }
 \description{
 This function runs a check on shape inputs and looks for errors

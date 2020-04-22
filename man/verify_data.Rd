@@ -2,20 +2,16 @@
 % Please edit documentation in R/error_checking.R
 \name{verify_data}
 \alias{verify_data}
-\title{Verify shape data}
+\title{Verify map data}
 \usage{
-verify_data(shape_data, simplify, shape_label_field)
+verify_data(map_data)
 }
 \arguments{
-\item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
-
-\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)}
-
-\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
+\item{map_data}{(Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object}
 }
 \value{
-(SF or Character) - Returns the resulting simplified SF object or an error string if failed
+(Character) - Returns a success token or an error string if failed
 }
 \description{
-This function runs a check on shape inputs and looks for errors
+This function runs a check on map data inputs and looks for errors
 }

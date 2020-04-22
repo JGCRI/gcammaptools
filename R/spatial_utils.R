@@ -14,35 +14,24 @@ process_shape <- function(shape_data, simplify, shape_label_field)
 {
   tryCatch(
     {
-      # Shape loading - if given a path, use that, else expect an object passed in
-      if(is.null(shape_data))
+      # Verify shape
+      result <- verify_shape(shape_data, simplify, shape_label_field)
+
+      # If shape passes verification, load and process
+      if(result == "Success")
       {
-        return("Error: Shape data is NULL")
-      }
-      else if(class(shape_data) %in% "sf")
-      {
-        shape_obj <- shape_data
-      }
-      else if(class(shape_data) %in% "character")
-      {
-        if (file.exists(shape_data))
+        # Import shape data
+        shape_obj <- gcammaptools::import_mapdata(shape_data)
+
+        # Optional argument to simplify polygons via the simplify_mapdata function
+        if(simplify)
         {
-          shape_obj <- gcammaptools::import_mapdata(shape_data)
-        }
-        else
-        {
-          return(paste0("Cannot open Shape file ", raster_data))
+          shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
         }
       }
       else
       {
-        return("Error: Unrecognized shape_data argument.")
-      }
-
-      # Optional argument to simplify polygons via the simplify_mapdata function
-      if(simplify)
-      {
-        shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
+        return(result)
       }
     },
     error = function(err)
@@ -71,33 +60,20 @@ process_shape <- function(shape_data, simplify, shape_label_field)
 #' @export
 process_raster <- function( raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
 {
-  # Default projection if raster is missing CRS
-  default_projection <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
   tryCatch(
     {
-      # Raster loading - if given a path, use that, else expect an object passed in
-      if(is.null(raster_data))
+      # Verify raster
+      result <- verify_raster(raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
+
+      # If raster passes verification, load and process
+      if(result == "Success")
       {
-        return("Error: Raster data is NULL")
-      }
-      else if(class(raster_data) %in% "RasterLayer")
-      {
-        raster_obj <- raster_data
-      }
-      else if(class(raster_data) %in% "character")
-      {
-        if (file.exists(raster_data))
-        {
-          raster_obj <- import_raster(raster_data)
-        }
-        else
-        {
-          return(paste0("Cannot open Raster file ", raster_data))
-        }
+        # Import raster data
+        raster_obj <- import_raster(raster_data)
       }
       else
       {
-        return("Unrecognized raster_data argument.")
+        return(result)
       }
 
       # Set raster band
@@ -110,13 +86,6 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
       if(convert_zero == TRUE)
       {
         raster_obj[raster_obj==0] <- NA
-      }
-
-      # Verify raster CRS and assign default if NA
-      if(is.na(crs(raster_obj)) || is.null(crs(raster_obj)))
-      {
-        raster::crs(raster_obj) <- crs(default_projection)
-        print("Applying default CRS to raster (raster CRS was NA or NULL)")
       }
     },
     error = function(err)

@@ -9,7 +9,7 @@
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
 #' @return (Character) - Returns a success token or an error string if failed
 #' @export
-verify_shape <- function(shape_data, simplify, shape_label_field)
+verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL)
 {
     # Check shape file has projection
     # looks for the mentioned shape key field
@@ -18,6 +18,42 @@ verify_shape <- function(shape_data, simplify, shape_label_field)
 
     result <- "Success"
 
+    # Shape loading - if given a path, use that, else expect an object passed in
+    if(is.null(shape_data))
+    {
+        return("Error: Shape data is NULL")
+    }
+    else if(class(shape_data) %in% "sf")
+    {
+        shape_obj <- shape_data
+
+        # Verify raster CRS and assign default if NA
+        if(is.na(crs(shape_obj)) || is.null(crs(shape_obj)))
+        {
+            sf::st_crs(shape_obj) <- crs(default_projection)
+            print("Applying default CRS to shape (shape CRS was NA or NULL)")
+        }
+    }
+    else if(class(shape_data) %in% "character")
+    {
+        if (file.exists(shape_data))
+        {
+            shape_obj <- gcammaptools::import_mapdata(shape_data)
+        }
+        else
+        {
+            return(paste0("Cannot open Shape file ", raster_data))
+        }
+    }
+    else
+    {
+        return("Error: Unrecognized shape_data argument.")
+    }
+
+    if(!is.null(shape_data_field))
+    {
+        # look for shape data field
+    }
     return(result)
 
 }
@@ -43,7 +79,38 @@ verify_raster <- function(raster_data , raster_col, raster_band, bin_method, bin
     # verify bin method
     # verify bins
 
+    # Default projection if raster is missing CRS
+    default_projection <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
     result <- "Success"
+
+    # Raster loading - if given a path, use that, else expect an object passed in
+    if(is.null(raster_data))
+    {
+        return("Error: Raster data is NULL")
+    }
+    else if(class(raster_data) %in% "RasterLayer")
+    {
+        raster_obj <- raster_data
+    }
+    else if(class(raster_data) %in% "character")
+    {
+        if (!file.exists(raster_data))
+        {
+            return("Error: Cannon process raster file: Raster file does not exist or raster path is malformed.")
+        }
+    }
+    else
+    {
+        return("Error: Unrecognized raster_data argument.")
+    }
+
+    # Verify raster CRS and assign default if NA
+    if(is.na(crs(raster_obj)) || is.null(crs(raster_obj)))
+    {
+        raster::crs(raster_obj) <- crs(default_projection)
+        print("Applying default CRS to raster (raster CRS was NA or NULL)")
+    }
 
     return(result)
 }
@@ -76,6 +143,10 @@ verify_data <- function(map_data)
 #' @export
 verify_csv <- function(map_data)
 {
+
+    # Check csv for things like character Unicode
+    # Check field they provided there etc
+
 
     result <- "Success"
 

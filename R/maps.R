@@ -43,12 +43,24 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
     output <- "Default error"
     tryCatch(
     {
-      # Create shape and raster objects via local processing functions
-      shape_obj <- process_shape(shape_data, simplify, shape_label_field)
+      result <- verify_shape(shape_data, simplify, shape_label_field)
 
+      # If shape passes verification, load and process
+      if(result == "Success")
+      {
+        # Create shape object via local processing function
+        shape_obj <- process_shape(shape_data, simplify, shape_label_field)
+      }
+      else
+      {
+        # Verify shape failed, return result
+        return(result)
+      }
+
+      # Verify processed object is a shape object. If not, it's an error and return it
       if(class(shape_obj) == "character")
       {
-        return("Error: Shape argument is not of type sf and could not be coerced")
+        return(paste0("Error: There was an error processing the shape object: ", shape_obj))
       }
 
       # Create raster
@@ -58,6 +70,7 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       {
         return("Error: Raster argument is not of type RasterLayer")
       }
+
 
       # Perform shape and raster comparisons/other operations
       # Compare projections and equalize if necessary
@@ -186,7 +199,7 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 #' @importFrom sf st_transform st_crs
 #' @importFrom dplyr mutate left_join
-#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label theme_minimal
+#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label theme_minimal expand_scale scale_fill_brewer aes_string element_text
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
@@ -203,13 +216,25 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
   output <- "Default error"
   tryCatch(
     {
-      # Create shape object via local processing function
-      shape_obj <- process_shape(shape_data, simplify, shape_label_field)
+      # Verify shape
+      result <- verify_shape(shape_data, simplify, shape_label_field)
 
-      # Verify object is a shape object, if not it's an error and return it
+      # If shape passes verification, load and process
+      if(result == "Success")
+      {
+        # Create shape object via local processing function
+        shape_obj <- process_shape(shape_data, simplify, shape_label_field, shape_data_field)
+      }
+      else
+      {
+        # Verify shape failed, return result
+        return(result)
+      }
+
+      # Verify processed object is a shape object. If not, it's an error and return it
       if(class(shape_obj) == "character")
       {
-        return("Error: Shape argument is not of type sf and could not be coerced")
+        return(paste0("Error: There was an error processing the shape object: ", shape_obj))
       }
 
       # Read/process map data object via local processing function
