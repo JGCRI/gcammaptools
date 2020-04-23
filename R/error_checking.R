@@ -5,11 +5,16 @@
 #'
 #' This function runs a check on shape inputs and looks for errors
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
-#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
+#' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
+#' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
+#' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
+#' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
+#' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
+#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
 #' @return (Character) - Returns a success token or an error string if failed
 #' @export
-verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL)
+verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL, shape_key_field = NULL, shape_label_size, shape_xy_fields, shape_geom_field)
 {
     # Check shape file has projection
     # looks for the mentioned shape key field
@@ -62,11 +67,29 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
         }
     }
 
+    if(!is.null(shape_key_field))
+    {
+        # look for shape data field
+        if(!shape_key_field %in% shape_obj)
+        {
+            return("Error: Shape key field does not exist in shape object.")
+        }
+    }
+
+    if(!class(shape_label_size) %in% "character" )
+    {
+        return("Error: Shape label size argument must be of type character (e.g. '1')")
+    }
+
     if(!simplify %in% c(TRUE, FALSE, NULL))
     {
         return("Error: Invalid value for simplify argument: Must be one of TRUE, FALSE, NULL.")
     }
 
+    if(class(shape_xy_fields))
+      {
+
+    }
     return(result)
 
 }
@@ -149,6 +172,8 @@ verify_data <- function(map_data)
     #  	Warning that pops up to the user about null values
 
     result <- "Success"
+
+
 
     return(result)
 }

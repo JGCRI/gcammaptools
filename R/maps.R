@@ -195,7 +195,7 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
 #' @export
-choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1",
+choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = "1",
                               shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
                               map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = NULL,
                               dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
@@ -207,7 +207,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
   tryCatch(
     {
       # Verify shape
-      result <- verify_shape(shape_data, simplify, shape_label_field)
+      result <- verify_shape(shape_data, simplify, shape_label_field, shape_key_field, shape_label_size)
 
       # If shape passes verification, load and process
       if(result == "Success")
@@ -313,8 +313,8 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       # Build geometry labels if enabled by user
       if(!is.null(shape_label_field))
       {
-        map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = shape_label_size_field))
-        if(!is.null(shape_label_size_field))
+        map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = shape_label_size))
+        if(!is.null(shape_label_size))
         {
           map_size_guide_option <- guides(size = FALSE)
         }
