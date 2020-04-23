@@ -83,18 +83,9 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       # Crop shape - for extent changes (future
       # shape <- st_crop(shape, 1.2*extent(raster))
 
-      # Raster operations
-      # Convert raster
+      # Raster operations/Convert raster
       raster_df <- df_spatial(raster_obj)  #raster_df <- as.data.frame(raster_obj, xy=TRUE) compare performance
-
-      if(is.null(raster_col))
-      {
-        return("Error: No raster column defined")
-      }
-      else
-      {
-        raster_df <- mutate(raster_df, value = raster_df[[paste0("band", 1)]])
-      }
+      raster_df <- mutate(raster_df, value = raster_df[[paste0("band", 1)]])
 
       # Create mapping and output variables
       # Raster stats/information (future)
@@ -212,7 +203,6 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
                               map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
                               map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
-  error <- ""
   output <- "Default error"
   tryCatch(
     {
@@ -227,7 +217,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       }
       else
       {
-        # Verify shape failed, return result
+        # Verification failed, return result
         return(result)
       }
 
@@ -240,8 +230,22 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       # Read/process map data object via local processing function
       if(is.null(shape_data_field))
       {
-        map_data_obj <- process_data(map_data)
-        if(class(map_data_obj) == "character")
+        # Verify map_data first and if not Success then return error now
+        if(verify_data(map_data) == "Success")
+        {
+          map_data_obj <- process_data(map_data)
+          if(class(map_data_obj) == "character")
+          {
+            # Process_data must have caught an error
+            return(map_data_obj)
+          }
+        }
+        else
+        {
+          # Verification failed, return result
+          return(map_data)
+        }
+
         # Merge map and data
         combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))
       }
@@ -355,8 +359,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
     error = function(err)
     {
       # error handler picks up error information
-      error <- err
-      return(error)
+      return(err)
     })
 
   return(output)

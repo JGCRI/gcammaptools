@@ -25,24 +25,18 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
     }
     else if(class(shape_data) %in% "sf")
     {
-        shape_obj <- shape_data
-
         # Verify raster CRS and assign default if NA
-        if(is.na(crs(shape_obj)) || is.null(crs(shape_obj)))
+        if(is.na(crs(shape_data)) || is.null(crs(shape_data)))
         {
-            sf::st_crs(shape_obj) <- crs(default_projection)
+            sf::st_crs(shape_data) <- crs(default_projection)
             print("Applying default CRS to shape (shape CRS was NA or NULL)")
         }
     }
     else if(class(shape_data) %in% "character")
     {
-        if (file.exists(shape_data))
+        if (!file.exists(shape_data))
         {
-            shape_obj <- gcammaptools::import_mapdata(shape_data)
-        }
-        else
-        {
-            return(paste0("Cannot open Shape file ", raster_data))
+            return("Error: Cannot open shape file or shape file path does not exist ")
         }
     }
     else
@@ -53,7 +47,26 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
     if(!is.null(shape_data_field))
     {
         # look for shape data field
+        if(!shape_data_field %in% shape_obj)
+        {
+            return("Error: Shape data field does not exist in shape object.")
+        }
     }
+
+    if(!is.null(shape_label_field))
+    {
+        # look for shape data field
+        if(!shape_label_field %in% shape_obj)
+        {
+            return("Error: Shape label field does not exist in shape object.")
+        }
+    }
+
+    if(!simplify %in% c(TRUE, FALSE, NULL))
+    {
+        return("Error: Invalid value for simplify argument: Must be one of TRUE, FALSE, NULL.")
+    }
+
     return(result)
 
 }
@@ -103,6 +116,12 @@ verify_raster <- function(raster_data , raster_col, raster_band, bin_method, bin
     else
     {
         return("Error: Unrecognized raster_data argument.")
+    }
+
+    # Check raster_col argument to make sure it exists
+    if(is.null(raster_col)) # || raster_obj[raster_col] !exists
+    {
+        return("Error: No raster column defined")
     }
 
     # Verify raster CRS and assign default if NA

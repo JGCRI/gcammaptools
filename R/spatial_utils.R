@@ -10,7 +10,7 @@
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
 #' @return (SF or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @export
-process_shape <- function(shape_data, simplify, shape_label_field)
+process_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL)
 {
   tryCatch(
     {

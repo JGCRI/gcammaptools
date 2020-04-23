@@ -4,7 +4,8 @@
 \alias{process_shape}
 \title{Process shape}
 \usage{
-process_shape(shape_data, simplify, shape_label_field)
+process_shape(shape_data, simplify, shape_label_field,
+  shape_data_field = NULL)
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
