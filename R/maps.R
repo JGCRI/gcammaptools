@@ -206,55 +206,51 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
   output <- "Default error"
   tryCatch(
     {
-      # Verify shape
-      result <- verify_shape(shape_data, simplify, shape_label_field, shape_key_field, shape_label_size)
 
-      # If shape passes verification, load and process
-      if(result == "Success")
+  # ------- Shape processing
+
+      # Create shape object via local processing function
+      shape_obj <- process_shape(shape_data, simplify, shape_label_field, shape_data_field, shape_key_field, shape_label_size, shape_xy_fields, shape_geom_field)
+      if(!class(shape_obj) == "sf")
       {
-        # Create shape object via local processing function
-        shape_obj <- process_shape(shape_data, simplify, shape_label_field, shape_data_field)
+        # Verification failed, return result
+        return(paste0("Error: There was an error processing the shape object: ", shape_obj))
       }
-      else
+
+  # ------- End shape processing
+
+  # ------- Data processing
+      result <- verify_data(map_data, data_key_field, data_col, bin_method, bins)
+
+      # Verify map_data first and if not Success then return error now
+      if(result != "Success")
       {
         # Verification failed, return result
         return(result)
       }
 
-      # Verify processed object is a shape object. If not, it's an error and return it
-      if(class(shape_obj) == "character")
-      {
-        return(paste0("Error: There was an error processing the shape object: ", shape_obj))
-      }
-
       # Read/process map data object via local processing function
       if(is.null(shape_data_field))
       {
-        # Verify map_data first and if not Success then return error now
-        if(verify_data(map_data) == "Success")
-        {
-          map_data_obj <- process_data(map_data)
-          if(class(map_data_obj) == "character")
-          {
-            # Process_data must have caught an error
-            return(map_data_obj)
-          }
-        }
-        else
-        {
-          # Verification failed, return result
-          return(map_data)
-        }
+        map_data_obj <- process_data(map_data)
 
+        if(class(map_data_obj) == "character")
+        {
+          # Process_data must have caught an error
+          return(map_data_obj)
+        }
         # Merge map and data
         combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))
       }
+
       else
       {
         combined_df <- as.data.frame(shape_obj)
         data_col <- shape_data_field
       }
+  # ------- End data processing
 
+  # ------- Map data and options processing
       # Map output variables
       x_min <- map_xy_min_max[1]
       x_max <- map_xy_min_max[2]
@@ -337,6 +333,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       {
         return("Error: bin_method and bins cannot be NULL")
       }
+  # ------- End map data and options processing
 
       # Build ggplot Map object
       output <- ggplot(data = combined_df, aes_string(x=shape_x, y=shape_y,  fill="value", geometry=shape_geom)) +

@@ -14,7 +14,8 @@
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
 #' @return (Character) - Returns a success token or an error string if failed
 #' @export
-verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL, shape_key_field = NULL, shape_label_size, shape_xy_fields, shape_geom_field)
+verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL, shape_key_field = NULL,
+                         shape_label_size, shape_xy_fields, shape_geom_field)
 {
     # Check shape file has projection
     # looks for the mentioned shape key field
@@ -52,7 +53,7 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
     if(!is.null(shape_data_field))
     {
         # look for shape data field
-        if(!shape_data_field %in% shape_obj)
+        if(!shape_data_field %in% names(shape_data))
         {
             return("Error: Shape data field does not exist in shape object.")
         }
@@ -70,7 +71,7 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
     if(!is.null(shape_key_field))
     {
         # look for shape data field
-        if(!shape_key_field %in% shape_obj)
+        if(!shape_key_field %in% names(shape_data))
         {
             return("Error: Shape key field does not exist in shape object.")
         }
@@ -86,10 +87,15 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
         return("Error: Invalid value for simplify argument: Must be one of TRUE, FALSE, NULL.")
     }
 
-    if(class(shape_xy_fields))
-      {
-
+    if(!shape_geom_field %in% names(shape_data))
+    {
+        return("Error: Shape geometry field does not exist in shape object.")
     }
+
+    # if(class(shape_xy_fields))
+    #   {
+    #
+    # }
     return(result)
 
 }

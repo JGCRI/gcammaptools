@@ -5,7 +5,8 @@
 \title{Process shape}
 \usage{
 process_shape(shape_data, simplify, shape_label_field,
-  shape_data_field = NULL)
+  shape_data_field = NULL, shape_key_field = NULL, shape_label_size,
+  shape_xy_fields, shape_geom_field)
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
