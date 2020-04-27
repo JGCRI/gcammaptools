@@ -4,10 +4,18 @@
 \alias{verify_data}
 \title{Verify map data}
 \usage{
-verify_data(map_data)
+verify_data(map_data, data_key_field, data_col, bin_method, bins)
 }
 \arguments{
-\item{map_data}{(Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object}
+\item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
+
+\item{data_key_field}{(Character) - Name of key field in data_obj for merging with shape_data}
+
+\item{data_col}{(Character) - Column name that contains the data object's output variable}
+
+\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")}
+
+\item{bins}{(Numeric) - Number of bins/segments in which to divide the raster}
 }
 \value{
 (Character) - Returns a success token or an error string if failed

@@ -130,10 +130,14 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
 
 #' Process data
 #'
-#' @param map_data (Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object
+#' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
+#' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
+#' @param data_col (Character) - Column name that contains the data object's output variable
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
+#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @return (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @export
-process_data <- function(map_data)
+process_data <- function(map_data, data_key_field, data_col, bin_method, bins)
 {
   tryCatch(
     {
@@ -161,6 +165,8 @@ process_data <- function(map_data)
       {
         return("Error: Unrecognized map_data argument.")
       }
+
+      verify_data(map_data, data_key_field, data_col, bin_method, bins)
     },
     error = function(err)
     {

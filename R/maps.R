@@ -83,6 +83,7 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       # Crop shape - for extent changes (future
       # shape <- st_crop(shape, 1.2*extent(raster))
 
+
       # Raster operations/Convert raster
       raster_df <- df_spatial(raster_obj)  #raster_df <- as.data.frame(raster_obj, xy=TRUE) compare performance
       raster_df <- mutate(raster_df, value = raster_df[[paste0("band", 1)]])
@@ -145,6 +146,10 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       if(!is.null(output_file))
       {
         result <- gcammaptools::save_plot(output_file, dpi, map_width, map_height)
+        if(result != "Success")
+        {
+          # throw some kind of warning
+        }
       }
     },
     error = function(err)
@@ -232,7 +237,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       # Read/process map data object via local processing function
       if(is.null(shape_data_field))
       {
-        map_data_obj <- process_data(map_data)
+        map_data_obj <- process_data(map_data, data_key_field, data_col, bin_method, bins)
 
         if(class(map_data_obj) == "character")
         {
@@ -251,6 +256,15 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
   # ------- End data processing
 
   # ------- Map data and options processing
+
+      result <- verify_map_params(dpi, expand_xy, map_xy_min_max , map_title, map_palette, map_palette_reverse,
+                                  map_palette_type, map_width_height_in, map_legend_title, map_x_label, map_y_label)
+
+      if(result != "Success")
+      {
+        return(result)
+      }
+
       # Map output variables
       x_min <- map_xy_min_max[1]
       x_max <- map_xy_min_max[2]

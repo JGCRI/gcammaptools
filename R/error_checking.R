@@ -167,10 +167,14 @@ verify_raster <- function(raster_data , raster_col, raster_band, bin_method, bin
 #' Verify map data
 #'
 #' This function runs a check on map data inputs and looks for errors
-#' @param map_data (Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object
+#' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
+#' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
+#' @param data_col (Character) - Column name that contains the data object's output variable
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
+#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @return (Character) - Returns a success token or an error string if failed
 #' @export
-verify_data <- function(map_data)
+verify_data <- function(map_data, data_key_field, data_col, bin_method, bins)
 {
     # Future
     # 	Does it have nulls?
@@ -204,3 +208,83 @@ verify_csv <- function(map_data)
 
 }
 
+
+#' Verify map parameters
+#'
+#' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
+#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
+#' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
+#' @param map_title (Character) - Title to be displayed on the output map
+#' @param map_palette (Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
+#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10))
+#' @param map_legend_title (Character) - Text for the legend header
+#' @param map_x_label (Character) - Label for x axis (default Lon)
+#' @param map_y_label (Character) - Label for y axis (default Lat)
+verify_map_params <- function(dpi, expand_xy, map_xy_min_max , map_title, map_palette, map_palette_reverse,
+                               map_palette_type, map_width_height_in, map_legend_title, map_x_label, map_y_label)
+{
+    output <- "Success"
+
+    # verify dpi
+    if(!(class(dpi) %in% "numeric") || dpi < 30 || dpi > 300)
+    {
+        return("Error: DPI argument must be a numeric value between 30 and 300")
+    }
+
+    # Verify expand_xy
+    if(!(class(expand_xy) %in% c("Vector", "numeric")) || length(expand_xy) != 2)
+    {
+        return("Error: expand_xy argument must be a numeric vector of length 2")
+    }
+
+    # Verify map_xy_min_max
+    if(!(class(map_xy_min_max) %in% c("Vector", "numeric")) || length(map_xy_min_max) != 4)
+    {
+        return("Error: map_xy_min_max argument must be a numeric vector of length 4")
+    }
+
+    # Verify title
+    if(!class(map_title) %in% "character" && !is.null(map_title))
+    {
+        return("Error: map_title must be of class character")
+    }
+
+    # Verify map_palette
+    if(!is.null(map_palette) && (!class(map_palette) %in% "character" || !(map_palette %in% row.names(brewer.pal.info)) ))
+    {
+        return("Error: map_palette must be of class character and a valid entry in the RColorBrewer palette (see brewer.pal.info")
+    }
+
+    # Verify palette_reverse
+    if(!class(map_palette_reverse) %in% "logical" )
+    {
+        return("Error: map_palette_reverse must be of type logical (TRUE or FALSE)")
+    }
+
+    # Verify map_width_height_in
+    if(!(class(map_width_height_in) %in% c("Vector", "numeric")) || length(map_width_height_in) != 2)
+    {
+        return("Error: map_width_height_in argument must be a numeric vector of length 2")
+    }
+
+    # Verify map_legend_title
+    if(!class(map_legend_title) %in% "character" && !is.null(map_legend_title))
+    {
+        return("Error: map_legend_title must be of class character")
+    }
+
+    # Verify map_x_label
+    if(!class(map_x_label) %in% "character" && !is.null(map_x_label))
+    {
+        return("Error: map_x_label must be of class character")
+    }
+
+    # Verify map_y_label
+    if(!class(map_y_label) %in% "character" && !is.null(map_y_label))
+    {
+        return("Error: map_y_label must be of class character")
+    }
+
+    return(output)
+}
