@@ -29,7 +29,7 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
     {
         return("Error: Shape data is NULL")
     }
-    else if(class(shape_data) %in% "sf")
+    else if(suppressWarnings({"sf" %in% class(shape_obj)}))
     {
         # Verify raster CRS and assign default if NA
         if(is.na(crs(shape_data)) || is.null(crs(shape_data)))
@@ -327,4 +327,20 @@ verify_map_params <- function(bin_method, bins, dpi, expand_xy, map_xy_min_max ,
     }
 
     return(output)
+}
+
+
+#' Return and output errors
+#'
+#' This function runs a check on csv data inputs and looks for errors
+#' @param error (Character) - Specific error string for output
+#' @param location (Character) - Location the error was caught
+#' @return (Character) - Prints the error to console and also returns it to caller
+#' @export
+return_error <- function(error, location)
+{
+    print(paste0("There was an error at - ", location, " - building your map:"))
+    print(error)
+
+    return(error)
 }

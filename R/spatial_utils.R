@@ -36,7 +36,7 @@ process_shape <- function(shape_data, simplify, shape_label_field, shape_data_fi
       # Import shape data
       shape_obj <- gcammaptools::import_mapdata(shape_data)
 
-      if(!class(shape_obj) %in% "sf")
+      if(suppressWarnings({!"sf" %in% class(shape_obj)}))
       {
         return(paste0("Error: There was an unknown error processing the shape object: ", shape_obj))
       }
@@ -170,7 +170,11 @@ process_data <- function(map_data, data_key_field, data_col, shape_key_field)
         return("Error: Unrecognized map_data argument.")
       }
 
-      verify_data(map_data, data_key_field, data_col)
+      result <- verify_data(map_data, data_key_field, data_col)
+      if(result != "Success")
+      {
+        return(result)
+      }
     },
     error = function(err)
     {

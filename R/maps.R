@@ -54,13 +54,15 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
       else
       {
         # Verify shape failed, return result
-        return(result)
+        return_error(result)
+        return("Error - see console for output")
       }
 
       # Verify processed object is a shape object. If not, it's an error and return it
       if(class(shape_obj) == "character")
       {
-        return(paste0("Error: There was an error processing the shape object: ", shape_obj))
+        return_error(paste0("Error: There was an error processing the shape object: ", shape_obj))
+        return("Error - see console for output")
       }
 
       # Create raster
@@ -68,7 +70,8 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 
       if(class(raster_obj) == "character")
       {
-        return("Error: Raster argument is not of type RasterLayer")
+        return_error("Error: Raster argument is not of type RasterLayer")
+        return("Error - see console for output")
       }
 
 
@@ -156,7 +159,8 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
     {
         # error handler picks up error information
         error <- err
-        return(error)
+        return_error(error)
+        return("Error - see console for output")
     })
 
     return(output)
@@ -216,10 +220,11 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 
       # Create shape object via local processing function
       shape_obj <- process_shape(shape_data, simplify, shape_label_field, shape_data_field, shape_key_field, shape_label_size, shape_xy_fields, shape_geom_field)
-      if(!class(shape_obj) == "sf")
+      if(suppressWarnings({!"sf" %in% class(shape_obj)}))
       {
         # Verification failed, return result
-        return(paste0("Error: There was an error processing the shape object: ", shape_obj))
+        return_error(paste0("Error: There was an error processing the shape object: ", shape_obj), "Process Shape")
+        return("Error - see console for output")
       }
 
   # ------- End shape processing
@@ -235,7 +240,8 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
         if(class(map_data_obj) == "character")
         {
           # Process_data must have caught an error
-          return(map_data_obj)
+          return_error(map_data_obj, "Process Data")
+          return("Error - see console for output")
         }
         # Merge map and data
         combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))
@@ -255,7 +261,8 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 
       if(result != "Success")
       {
-        return(result)
+        return_error(result, "Verify Map Parameters")
+        return("Error - see console for output")
       }
 
       # Map output variables
@@ -329,10 +336,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
           data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)
           combined_df <- mutate(combined_df, value = cut(as.numeric(combined_df[[data_col]]), data_breaks$brks))
       }
-      else
-      {
-        return("Error: bin_method and bins cannot be NULL")
-      }
+
   # ------- End map data and options processing
 
       # Build ggplot Map object
@@ -356,7 +360,8 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
     error = function(err)
     {
       # error handler picks up error information
-      return(err)
+      return_error(err, "General")
+      return("Error - see console for output")
     })
 
   return(output)
