@@ -183,7 +183,48 @@ verify_data <- function(map_data, data_key_field, data_col, bin_method, bins)
 
     result <- "Success"
 
+    # Verify map_data
+    if(!is.null(map_data))
+    {
+        if(!class(map_data) %in% c("data.frame", "character"))
+        {
+            return("Error: map_data argument must be of type data.frame or a character path to a csv file")
+        }
 
+        # Verify data_key_field
+        if(!is.null(data_key_field))
+        {
+            if(!class(data_key_field) %in% "character")
+                return("Error: data_key_field argument must be of type character")
+            if(!data_key_field %in% colnames(map_data))
+                return("Error: data_key_field was not found in the map_data data frame")
+        }
+
+        # Verify data_col
+        if(!is.null(data_col))
+        {
+            if(!class(data_col) %in% "character")
+                return("Error: data_col argument must be of type character")
+            if(!data_col %in% colnames(map_data))
+                return("Error: data_col was not found in the map_data data frame")
+        }
+    }
+
+    # Verify bin_method
+    if(!bin_method %in% c("quantile", "pretty", "equal"))
+    {
+        return("Error: bin_method argument must be one of 'quantile', 'pretty', 'equal'")
+    }
+
+    # Verify bins
+    if(is.null(bins) || class(bins) != "numeric")
+    {
+        return("Error: bins argument must be a positive integer and not NULL")
+    }
+    if(bins < 1 || bins > 100)
+    {
+        return("Error: bins argument must be a valid integer between 1-100")
+    }
 
     return(result)
 }

@@ -225,6 +225,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
   # ------- End shape processing
 
   # ------- Data processing
+
       result <- verify_data(map_data, data_key_field, data_col, bin_method, bins)
 
       # Verify map_data first and if not Success then return error now
@@ -247,12 +248,12 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
         # Merge map and data
         combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))
       }
-
       else
       {
         combined_df <- as.data.frame(shape_obj)
         data_col <- shape_data_field
       }
+
   # ------- End data processing
 
   # ------- Map data and options processing
