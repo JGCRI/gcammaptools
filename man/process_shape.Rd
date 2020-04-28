@@ -14,6 +14,16 @@ process_shape(shape_data, simplify, shape_label_field,
 \item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)}
 
 \item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
+
+\item{shape_data_field}{(Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable}
+
+\item{shape_key_field}{(Character) - Name of key field in shape object for merging with map_data object}
+
+\item{shape_xy_fields}{(c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))}
+
+\item{shape_geom_field}{(Character) - Specifies field within shape object that contains needed geometry (default "geometry")}
+
+\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 }
 \value{
 (SF or Character) - Returns the resulting simplified SF object or an error string if failed

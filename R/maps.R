@@ -226,19 +226,11 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 
   # ------- Data processing
 
-      result <- verify_data(map_data, data_key_field, data_col, bin_method, bins)
-
       # Verify map_data first and if not Success then return error now
-      if(result != "Success")
-      {
-        # Verification failed, return result
-        return(result)
-      }
-
-      # Read/process map data object via local processing function
       if(is.null(shape_data_field))
       {
-        map_data_obj <- process_data(map_data, data_key_field, data_col, bin_method, bins)
+        # Read/process map data object via local processing function
+        map_data_obj <- process_data(map_data, data_key_field, data_col)
 
         if(class(map_data_obj) == "character")
         {
@@ -258,7 +250,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 
   # ------- Map data and options processing
 
-      result <- verify_map_params(dpi, expand_xy, map_xy_min_max , map_title, map_palette, map_palette_reverse,
+      result <- verify_map_params(bin_method, bins, dpi, expand_xy, map_xy_min_max , map_title, map_palette, map_palette_reverse,
                                   map_palette_type, map_width_height_in, map_legend_title, map_x_label, map_y_label)
 
       if(result != "Success")
@@ -334,15 +326,8 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       # Process breaks/bins
       if(!is.null(bin_method) && !is.null(bins))
       {
-        if(bin_method %in% c("quantile", "pretty", "equal"))
-        {
           data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)
           combined_df <- mutate(combined_df, value = cut(as.numeric(combined_df[[data_col]]), data_breaks$brks))
-        }
-        else
-        {
-          return("Error: bin_method type not in quantile, pretty, or equal")
-        }
       }
       else
       {

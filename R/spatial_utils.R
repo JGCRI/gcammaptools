@@ -6,8 +6,13 @@
 #' Process shape
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
-#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
+#' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
+#' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
+#' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
+#' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
+#' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
+#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
 #' @return (SF or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @export
 process_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL, shape_key_field = NULL,
@@ -125,23 +130,22 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
 }
 
 
-
-
-
 #' Process data
 #'
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
-#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
-#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @return (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @export
-process_data <- function(map_data, data_key_field, data_col, bin_method, bins)
+process_data <- function(map_data, data_key_field, data_col, shape_key_field)
 {
   tryCatch(
     {
       # Map Data - if given a path to a csv, use that, else expect a data.frame object passed in
+      if(!class(map_data) %in% c("data.frame", "character"))
+      {
+        return("Error: map_data argument must be of type data.frame or a character path to a csv file")
+      }
       if(is.null(map_data))
       {
         return("Error: Map data cannot be NULL")
@@ -166,7 +170,7 @@ process_data <- function(map_data, data_key_field, data_col, bin_method, bins)
         return("Error: Unrecognized map_data argument.")
       }
 
-      verify_data(map_data, data_key_field, data_col, bin_method, bins)
+      verify_data(map_data, data_key_field, data_col)
     },
     error = function(err)
     {

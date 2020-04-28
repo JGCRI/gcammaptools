@@ -101,7 +101,6 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
 }
 
 
-
 #' Verify raster data
 #'
 #' This function runs a check on raster inputs and looks for errors
@@ -170,11 +169,9 @@ verify_raster <- function(raster_data , raster_col, raster_band, bin_method, bin
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
-#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
-#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @return (Character) - Returns a success token or an error string if failed
 #' @export
-verify_data <- function(map_data, data_key_field, data_col, bin_method, bins)
+verify_data <- function(map_data, data_key_field, data_col)
 {
     # Future
     # 	Does it have nulls?
@@ -186,11 +183,6 @@ verify_data <- function(map_data, data_key_field, data_col, bin_method, bins)
     # Verify map_data
     if(!is.null(map_data))
     {
-        if(!class(map_data) %in% c("data.frame", "character"))
-        {
-            return("Error: map_data argument must be of type data.frame or a character path to a csv file")
-        }
-
         # Verify data_key_field
         if(!is.null(data_key_field))
         {
@@ -208,23 +200,12 @@ verify_data <- function(map_data, data_key_field, data_col, bin_method, bins)
             if(!data_col %in% colnames(map_data))
                 return("Error: data_col was not found in the map_data data frame")
         }
+
+        # Verify shape key = data key
+
     }
 
-    # Verify bin_method
-    if(!bin_method %in% c("quantile", "pretty", "equal"))
-    {
-        return("Error: bin_method argument must be one of 'quantile', 'pretty', 'equal'")
-    }
 
-    # Verify bins
-    if(is.null(bins) || class(bins) != "numeric")
-    {
-        return("Error: bins argument must be a positive integer and not NULL")
-    }
-    if(bins < 1 || bins > 100)
-    {
-        return("Error: bins argument must be a valid integer between 1-100")
-    }
 
     return(result)
 }
@@ -252,6 +233,8 @@ verify_csv <- function(map_data)
 
 #' Verify map parameters
 #'
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
+#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
 #' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
 #' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
@@ -262,10 +245,26 @@ verify_csv <- function(map_data)
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)
 #' @param map_y_label (Character) - Label for y axis (default Lat)
-verify_map_params <- function(dpi, expand_xy, map_xy_min_max , map_title, map_palette, map_palette_reverse,
+verify_map_params <- function(bin_method, bins, dpi, expand_xy, map_xy_min_max , map_title, map_palette, map_palette_reverse,
                                map_palette_type, map_width_height_in, map_legend_title, map_x_label, map_y_label)
 {
     output <- "Success"
+
+    # Verify bin_method
+    if(!bin_method %in% c("quantile", "pretty", "equal"))
+    {
+        return("Error: bin_method argument must be one of 'quantile', 'pretty', 'equal'")
+    }
+
+    # Verify bins
+    if(is.null(bins) || class(bins) != "numeric")
+    {
+        return("Error: bins argument must be a positive integer and not NULL")
+    }
+    if(bins < 1 || bins > 100)
+    {
+        return("Error: bins argument must be a valid integer between 1-100")
+    }
 
     # verify dpi
     if(!(class(dpi) %in% "numeric") || dpi < 30 || dpi > 300)

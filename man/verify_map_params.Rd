@@ -4,11 +4,15 @@
 \alias{verify_map_params}
 \title{Verify map parameters}
 \usage{
-verify_map_params(dpi, expand_xy, map_xy_min_max, map_title, map_palette,
-  map_palette_reverse, map_palette_type, map_width_height_in,
-  map_legend_title, map_x_label, map_y_label)
+verify_map_params(bin_method, bins, dpi, expand_xy, map_xy_min_max,
+  map_title, map_palette, map_palette_reverse, map_palette_type,
+  map_width_height_in, map_legend_title, map_x_label, map_y_label)
 }
 \arguments{
+\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")}
+
+\item{bins}{(Numeric) - Number of bins/segments in which to divide the raster}
+
 \item{dpi}{(Numeric) - Settable DPI for different print/screen formats (default 150)}
 
 \item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))}
