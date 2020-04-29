@@ -29,7 +29,7 @@
 #' @importFrom sf st_transform
 #' @importFrom raster raster as.data.frame compareCRS minValue maxValue nlayers
 #' @importFrom dplyr mutate
-#' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label
+#' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label guides
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @import RColorBrewer
 #' @export

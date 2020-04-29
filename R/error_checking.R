@@ -29,7 +29,7 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
     {
         return("Error: Shape data is NULL")
     }
-    else if(suppressWarnings({"sf" %in% class(shape_obj)}))
+    else if(suppressWarnings({"sf" %in% class(shape_data)}))
     {
         # Verify raster CRS and assign default if NA
         if(is.na(crs(shape_data)) || is.null(crs(shape_data)))
@@ -62,7 +62,7 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
     if(!is.null(shape_label_field))
     {
         # look for shape data field
-        if(!shape_label_field %in% shape_obj)
+        if(!shape_label_field %in% names(shape_data))
         {
             return("Error: Shape label field does not exist in shape object.")
         }
@@ -175,7 +175,6 @@ verify_data <- function(map_data, data_key_field, data_col)
 {
     # Future
     # 	Does it have nulls?
-    #  	Is the field there?
     #  	Warning that pops up to the user about null values
 
     result <- "Success"

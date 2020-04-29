@@ -141,16 +141,18 @@ process_data <- function(map_data, data_key_field, data_col, shape_key_field)
 {
   tryCatch(
     {
+      if(is.null(map_data))
+      {
+        return("Error: Map data cannot be NULL")
+      }
+
       # Map Data - if given a path to a csv, use that, else expect a data.frame object passed in
       if(!class(map_data) %in% c("data.frame", "character"))
       {
         return("Error: map_data argument must be of type data.frame or a character path to a csv file")
       }
-      if(is.null(map_data))
-      {
-        return("Error: Map data cannot be NULL")
-      }
-      else if("data.frame" %in% class(map_data) )
+
+      if("data.frame" %in% class(map_data) )
       {
         map_obj <- map_data
       }
@@ -169,7 +171,7 @@ process_data <- function(map_data, data_key_field, data_col, shape_key_field)
       {
         return("Error: Unrecognized map_data argument.")
       }
-
+1
       result <- verify_data(map_obj, data_key_field, data_col)
       if(result != "Success")
       {
