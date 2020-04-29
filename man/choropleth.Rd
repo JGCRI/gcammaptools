@@ -5,7 +5,7 @@
 \title{Create a choropleth map object from shape and data object and return, save (optional) the output}
 \usage{
 choropleth(shape_data = NULL, shape_key_field = NULL,
-  shape_label_field = NULL, shape_label_size = "1",
+  shape_label_field = NULL, shape_label_size = 1,
   shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"),
   shape_geom_field = "geometry", simplify = FALSE, map_data = NULL,
   data_key_field = NULL, data_col = NULL, bin_method = "pretty",
@@ -13,7 +13,8 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
   map_palette = NULL, map_palette_reverse = FALSE,
   map_palette_type = "seq", map_width_height_in = c(15, 10),
-  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat",
+  map_font_adjust = 1)
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
@@ -21,6 +22,8 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
 \item{shape_key_field}{(Character) - Name of key field in shape object for merging with map_data object}
 
 \item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
+
+\item{shape_label_size}{(Numric) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 
 \item{shape_data_field}{(Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable}
 
@@ -64,7 +67,7 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
 
 \item{map_y_label}{(Character) - Label for y axis (default Lat)}
 
-\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
+\item{map_font_adjust}{(Numeric) - A number between 0.1 and 10 that scales the map fonts either up or down (0.1 = 90% smaller, 10 = 1000% bigger)}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed

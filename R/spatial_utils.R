@@ -19,58 +19,58 @@ process_shape <- function(shape_data, simplify, shape_label_field, shape_data_fi
                           shape_label_size, shape_xy_fields, shape_geom_field)
 {
   tryCatch(
+  {
+    # Initial processing of shape object so that a completed shape object can be sent to the error check function
+    if(is.null(shape_data))
     {
-      # Initial processing of shape object so that a completed shape object can be sent to the error check function
-      if(is.null(shape_data))
-      {
-        return("Error: Shape data is NULL")
-      }
-      else if("character" %in% class(shape_data))
-      {
-        if (!file.exists(shape_data))
-        {
-          return("Error: Cannot open shape file or shape file path does not exist ")
-        }
-      }
-
-      # Import shape data
-      shape_obj <- gcammaptools::import_mapdata(shape_data)
-
-      if(suppressWarnings({!"sf" %in% class(shape_obj)}))
-      {
-        return(paste0("Error: There was an unknown error processing the shape object: ", shape_obj))
-      }
-
-      result <- verify_shape(shape_obj, simplify, shape_label_field, shape_data_field, shape_key_field, shape_label_size, shape_xy_fields, shape_geom_field)
-
-      if(result != "Success")
-      {
-        return(result)
-      }
-
-      # Verify raster CRS and assign default if NA
-      if(is.na(crs(shape_obj)) || is.null(crs(shape_obj)))
-      {
-        sf::st_crs(shape_obj) <- crs(default_projection)
-        print("Applying default CRS to shape (shape CRS was NA or NULL)")
-      }
-
-      # Optional argument to simplify polygons via the simplify_mapdata function
-      if(simplify)
-      {
-        shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
-      }
-      else
-      {
-        return(result)
-      }
-    },
-    error = function(err)
+      return("Error: Shape data is NULL")
+    }
+    else if("character" %in% class(shape_data))
     {
-      # error handler picks up error information
-      error <- err
-      return(error)
-    })
+      if (!file.exists(shape_data))
+      {
+        return("Error: Cannot open shape file or shape file path does not exist ")
+      }
+    }
+
+    # Import shape data
+    shape_obj <- gcammaptools::import_mapdata(shape_data)
+
+    if(suppressWarnings({!"sf" %in% class(shape_obj)}))
+    {
+      return(paste0("Error: There was an unknown error processing the shape object: ", shape_obj))
+    }
+
+    result <- verify_shape(shape_obj, simplify, shape_label_field, shape_data_field, shape_key_field, shape_label_size, shape_xy_fields, shape_geom_field)
+
+    if(result != "Success")
+    {
+      return(result)
+    }
+
+    # Verify raster CRS and assign default if NA
+    if(is.na(crs(shape_obj)) || is.null(crs(shape_obj)))
+    {
+      sf::st_crs(shape_obj) <- crs(default_projection)
+      print("Applying default CRS to shape (shape CRS was NA or NULL)")
+    }
+
+    # Optional argument to simplify polygons via the simplify_mapdata function
+    if(simplify)
+    {
+      shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
+    }
+    else
+    {
+      return(result)
+    }
+  },
+  error = function(err)
+  {
+    # error handler picks up error information
+    error <- err
+    return(error)
+  })
 
   return(shape_obj)
 }

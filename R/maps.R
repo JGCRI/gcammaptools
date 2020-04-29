@@ -33,11 +33,11 @@
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @import RColorBrewer
 #' @export
-custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_size_field = "1", simplify = FALSE,
+custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_size = "1", simplify = FALSE,
                        raster_data = NULL, raster_col = NULL,  raster_band = 1,  convert_zero = FALSE,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu", map_palette_reverse = FALSE,
-                       map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+                       map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Longitude", map_y_label = "Latitude")
 {
     error <- ""
     output <- "Default error"
@@ -175,7 +175,7 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
 #' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
-#' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
+#' @param shape_label_size (Numric) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
@@ -196,25 +196,32 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)
 #' @param map_y_label (Character) - Label for y axis (default Lat)
+#' @param map_font_adjust (Numeric) - A number between 0.1 and 10 that scales the map fonts either up or down (0.1 = 90% smaller, 10 = 1000% bigger)
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 #' @importFrom sf st_transform st_crs
 #' @importFrom dplyr mutate left_join
-#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label theme_minimal expand_scale scale_fill_brewer aes_string element_text
+#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label theme_minimal expand_scale scale_fill_brewer aes_string element_text rel theme_update
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
 #' @export
-choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = "1",
+choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = 1,
                               shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
                               map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = 8,
                               dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
                               map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL, map_palette = NULL,
                               map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
-                              map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
+                              map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
 {
   output <- "There was an unknown error while processing your map"
   tryCatch(
     {
+      # Initial check catches common mistake early, saves processing
+      if(!is.null(shape_data_field) && !is.null(data_col))
+      {
+        return_error("Error: Both of the shape_data_field and data_col arguments cannot have a value (you may use only one)", "Duplicate arguments")
+        return("Error - see console for output")
+      }
 
   # ------- Shape processing
 
@@ -323,7 +330,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       # Build geometry labels if enabled by user
       if(!is.null(shape_label_field))
       {
-        map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = shape_label_size))
+        map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = as.character(shape_label_size)))
         if(!is.null(shape_label_size))
         {
           map_size_guide_option <- guides(size = FALSE)
@@ -348,7 +355,9 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
          map_x_scale +
          map_y_scale +
          map_shape_options +
-        theme_minimal() + theme(plot.title = element_text(hjust = 0.5)) +
+        theme_minimal() +
+        theme(text = element_text(size=rel(map_font_adjust))) +
+         theme(plot.title = element_text(hjust = 0.5)) +
          map_size_guide_option
 
       # Save File

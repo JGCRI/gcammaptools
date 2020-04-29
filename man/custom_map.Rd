@@ -5,20 +5,18 @@
 \title{Create a basic map object from input shape/raster and return, save (optional) the output}
 \usage{
 custom_map(shape_data = NULL, shape_label_field = NULL,
-  shape_label_size_field = "1", simplify = FALSE, raster_data = NULL,
+  shape_label_size = "1", simplify = FALSE, raster_data = NULL,
   raster_col = NULL, raster_band = 1, convert_zero = FALSE,
   dpi = 150, output_file = NULL, expand_xy = c(0, 0),
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
   map_palette = "RdYlBu", map_palette_reverse = FALSE,
   map_width_height_in = c(15, 10), map_legend_title = NULL,
-  map_x_label = "Lon", map_y_label = "Lat")
+  map_x_label = "Longitude", map_y_label = "Latitude")
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
 
 \item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
-
-\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 
 \item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)}
 
@@ -51,6 +49,8 @@ custom_map(shape_data = NULL, shape_label_field = NULL,
 \item{map_x_label}{(Character) - Label for x axis (default "Lon")}
 
 \item{map_y_label}{(Character) - Label for y axis (default "Lat")}
+
+\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
