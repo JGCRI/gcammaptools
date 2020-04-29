@@ -16,28 +16,33 @@
 #' @export
 save_plot <- function(output_file, dpi, map_width, map_height)
 {
-    output <- "success"
+    output <- "Success"
     tryCatch(
+    {
+        if(is.null(output_file) || !"character" %in% class(output_file))
         {
-            # Get file type dynamically and save to path
-            file_type <- substr(x = output_file, start = (nchar(output_file)-2), stop = nchar(output_file))
+            return("Error: output_file argument must be a valid character path")
+        }
 
-            if(file_type %in% c("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg"))
-            {
-                ggsave(filename = output_file, device = file_type, dpi = dpi, limitsize = TRUE,
-                       width = map_width, height = map_height)
-            }
-            else
-            {
-                return("Error: Unrecognized output file type (must be one of eps, ps, tex, pdf, jpeg, tiff, png, bmp, svg")
-            }
-        },
-        error = function(err)
+        # Get file type dynamically and save to path
+        file_type <- substr(x = output_file, start = (nchar(output_file)-2), stop = nchar(output_file))
+
+        if(file_type %in% c("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg"))
         {
-            # error handler picks up error information
-            error <- err
-            return(error)
-        })
+            ggsave(filename = output_file, device = file_type, dpi = dpi, limitsize = TRUE,
+                   width = map_width, height = map_height)
+        }
+        else
+        {
+            return("Error: Unrecognized output file type (must be one of eps, ps, tex, pdf, jpeg, tiff, png, bmp, svg")
+        }
+    },
+    error = function(err)
+    {
+        # error handler picks up error information
+        error <- err
+        return(error)
+    })
 
     return(output)
 }

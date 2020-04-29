@@ -206,13 +206,13 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @export
 choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = "1",
                               shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
-                              map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = NULL,
+                              map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = 8,
                               dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
                               map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL, map_palette = NULL,
                               map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
                               map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat")
 {
-  output <- "Default error"
+  output <- "There was an unknown error while processing your map"
   tryCatch(
     {
 
@@ -244,11 +244,11 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
           return("Error - see console for output")
         }
         # Merge map and data
-        combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))
+        suppressWarnings({combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))})
       }
       else
       {
-        combined_df <- as.data.frame(shape_obj)
+        suppressWarnings({combined_df <- as.data.frame(shape_obj)})
         data_col <- shape_data_field
       }
 
@@ -333,8 +333,8 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       # Process breaks/bins
       if(!is.null(bin_method) && !is.null(bins))
       {
-          data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)
-          combined_df <- mutate(combined_df, value = cut(as.numeric(combined_df[[data_col]]), data_breaks$brks))
+        suppressWarnings({data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)})
+        suppressWarnings({combined_df <- mutate(combined_df, value = cut(as.numeric(combined_df[[data_col]]), data_breaks$brks))})
       }
 
   # ------- End map data and options processing
@@ -355,6 +355,11 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       if(!is.null(output_file))
       {
         result <- gcammaptools::save_plot(output_file, dpi, map_width, map_height)
+        if(result != "Success")
+        {
+          return_error(result, "Output file")
+          return("Error - see console for output")
+        }
       }
     },
     error = function(err)

@@ -25,7 +25,7 @@ process_shape <- function(shape_data, simplify, shape_label_field, shape_data_fi
       {
         return("Error: Shape data is NULL")
       }
-      else if(class(shape_data) %in% "character")
+      else if("character" %in% class(shape_data))
       {
         if (!file.exists(shape_data))
         {
@@ -150,11 +150,11 @@ process_data <- function(map_data, data_key_field, data_col, shape_key_field)
       {
         return("Error: Map data cannot be NULL")
       }
-      else if(class(map_data) %in% "data.frame")
+      else if("data.frame" %in% class(map_data) )
       {
         map_obj <- map_data
       }
-      else if(class(map_data) %in% "character")
+      else if("character" %in% class(map_data))
       {
         if (file.exists(map_data))
         {
@@ -170,7 +170,7 @@ process_data <- function(map_data, data_key_field, data_col, shape_key_field)
         return("Error: Unrecognized map_data argument.")
       }
 
-      result <- verify_data(map_data, data_key_field, data_col)
+      result <- verify_data(map_obj, data_key_field, data_col)
       if(result != "Success")
       {
         return(result)

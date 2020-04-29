@@ -38,7 +38,7 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
             print("Applying default CRS to shape (shape CRS was NA or NULL)")
         }
     }
-    else if(class(shape_data) %in% "character")
+    else if("character" %in% class(shape_data))
     {
         if (!file.exists(shape_data))
         {
@@ -77,7 +77,7 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
         }
     }
 
-    if(!class(shape_label_size) %in% "character" )
+    if(!"character" %in% class(shape_label_size))
     {
         return("Error: Shape label size argument must be of type character (e.g. '1')")
     }
@@ -130,11 +130,11 @@ verify_raster <- function(raster_data , raster_col, raster_band, bin_method, bin
     {
         return("Error: Raster data is NULL")
     }
-    else if(class(raster_data) %in% "RasterLayer")
+    else if("RasterLayer" %in% class(raster_data))
     {
         raster_obj <- raster_data
     }
-    else if(class(raster_data) %in% "character")
+    else if("character" %in% class(raster_data))
     {
         if (!file.exists(raster_data))
         {
@@ -186,7 +186,7 @@ verify_data <- function(map_data, data_key_field, data_col)
         # Verify data_key_field
         if(!is.null(data_key_field))
         {
-            if(!class(data_key_field) %in% "character")
+            if(!"character" %in% class(data_key_field))
                 return("Error: data_key_field argument must be of type character")
             if(!data_key_field %in% colnames(map_data))
                 return("Error: data_key_field was not found in the map_data data frame")
@@ -195,17 +195,12 @@ verify_data <- function(map_data, data_key_field, data_col)
         # Verify data_col
         if(!is.null(data_col))
         {
-            if(!class(data_col) %in% "character")
+            if(!"character" %in% class(data_col))
                 return("Error: data_col argument must be of type character")
             if(!data_col %in% colnames(map_data))
                 return("Error: data_col was not found in the map_data data frame")
         }
-
-        # Verify shape key = data key
-
     }
-
-
 
     return(result)
 }
@@ -251,7 +246,7 @@ verify_map_params <- function(bin_method, bins, dpi, expand_xy, map_xy_min_max ,
     output <- "Success"
 
     # Verify bin_method
-    if(!bin_method %in% c("quantile", "pretty", "equal"))
+    if(is.null(bin_method) || !"character" %in% class(bin_method) || !bin_method %in% c("quantile", "pretty", "equal"))
     {
         return("Error: bin_method argument must be one of 'quantile', 'pretty', 'equal'")
     }
@@ -267,63 +262,63 @@ verify_map_params <- function(bin_method, bins, dpi, expand_xy, map_xy_min_max ,
     }
 
     # verify dpi
-    if(!(class(dpi) %in% "numeric") || dpi < 30 || dpi > 300)
+    if(!"numeric" %in% (class(dpi)) || dpi < 30 || dpi > 300)
     {
         return("Error: DPI argument must be a numeric value between 30 and 300")
     }
 
     # Verify expand_xy
-    if(!(class(expand_xy) %in% c("Vector", "numeric")) || length(expand_xy) != 2)
+    if(!"numeric" %in% (class(expand_xy)) || length(expand_xy) != 2)
     {
         return("Error: expand_xy argument must be a numeric vector of length 2")
     }
 
     # Verify map_xy_min_max
-    if(!(class(map_xy_min_max) %in% c("Vector", "numeric")) || length(map_xy_min_max) != 4)
+    if(!"numeric" %in% (class(map_xy_min_max)) || length(map_xy_min_max) != 4)
     {
         return("Error: map_xy_min_max argument must be a numeric vector of length 4")
     }
 
     # Verify title
-    if(!class(map_title) %in% "character" && !is.null(map_title))
+    if(!"character" %in% class(map_title) && !is.null(map_title))
     {
         return("Error: map_title must be of class character")
     }
 
     # Verify map_palette
-    if(!is.null(map_palette) && (!class(map_palette) %in% "character" || !(map_palette %in% row.names(brewer.pal.info)) ))
+    if(!is.null(map_palette) && (!"character" %in% class(map_palette) || !map_palette %in% row.names(brewer.pal.info)) )
     {
         return("Error: map_palette must be of class character and a valid entry in the RColorBrewer palette (see brewer.pal.info")
     }
 
     # Verify palette_reverse
-    if(!class(map_palette_reverse) %in% "logical" )
+    if(!"logical" %in% class(map_palette_reverse))
     {
         return("Error: map_palette_reverse must be of type logical (TRUE or FALSE)")
     }
 
     # Verify map_width_height_in
-    if(!(class(map_width_height_in) %in% c("Vector", "numeric")) || length(map_width_height_in) != 2)
+    if(!"numeric" %in% (class(map_width_height_in)) || length(map_width_height_in) != 2)
     {
         return("Error: map_width_height_in argument must be a numeric vector of length 2")
     }
 
     # Verify map_legend_title
-    if(!class(map_legend_title) %in% "character" && !is.null(map_legend_title))
+    if(!"character" %in% class(map_legend_title) && !is.null(map_legend_title))
     {
-        return("Error: map_legend_title must be of class character")
+        return("Error: map_legend_title must be of class character or NULL")
     }
 
     # Verify map_x_label
-    if(!class(map_x_label) %in% "character" && !is.null(map_x_label))
+    if(!"character" %in% class(map_x_label)  && !is.null(map_x_label))
     {
-        return("Error: map_x_label must be of class character")
+        return("Error: map_x_label must be of class character or NULL")
     }
 
     # Verify map_y_label
-    if(!class(map_y_label) %in% "character" && !is.null(map_y_label))
+    if(!"character" %in% class(map_y_label) && !is.null(map_y_label))
     {
-        return("Error: map_y_label must be of class character")
+        return("Error: map_y_label must be of class character or NULL")
     }
 
     return(output)
