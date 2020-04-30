@@ -356,7 +356,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
          map_y_scale +
          map_shape_options +
         theme_minimal() +
-        theme(text = element_text(size=rel(map_font_adjust))) +
+        # theme(text = element_text(size=rel(map_font_adjust))) +
          theme(plot.title = element_text(hjust = 0.5)) +
          map_size_guide_option
 
