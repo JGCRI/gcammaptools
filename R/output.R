@@ -3,6 +3,19 @@
 # Contains general output functions for the package
 
 
+
+#' Handles saving the map output to disk
+#'
+#' Initially one line of code, this function is likely to be expanded
+#'
+#' @importFrom packageutils version_as_character
+#' @export
+print_version <- function() {
+
+    print(version_as_character())
+}
+
+
 #' Handles saving the map output to disk
 #'
 #' Initially one line of code, this function is likely to be expanded
