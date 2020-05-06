@@ -5,7 +5,7 @@
 
 #' Handles saving the map output to disk
 #'
-#' Initially one line of code, this function is likely to be expanded
+#' Provides error handling and saving of the output map as an option to file
 #'
 #' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
 #' @param dpi (Numeric) - Settable DPI for different print/screen formats
@@ -13,6 +13,7 @@
 #' @param map_height (Numeric) - Map height in inches
 #' @return (Character) - Returns a character string with success or an error string if failed
 #' @importFrom ggplot2 ggsave
+#' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
 save_plot <- function(output_file, dpi, map_width, map_height)
 {

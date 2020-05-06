@@ -26,3 +26,6 @@ process_raster(raster_data, raster_col, raster_band, bin_method, bins,
 \description{
 Process raster
 }
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
+}

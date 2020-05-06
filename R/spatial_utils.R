@@ -14,6 +14,7 @@
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
 #' @return (SF or Character) - Returns the resulting simplified SF object or an error string if failed
+#' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
 process_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL, shape_key_field = NULL,
                           shape_label_size, shape_xy_fields, shape_geom_field)
@@ -88,6 +89,7 @@ process_shape <- function(shape_data, simplify, shape_label_field, shape_data_fi
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom raster raster crs
 #' @return (Raster or Character) - Returns the resulting raster object or an error string if failed
+#' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
 process_raster <- function( raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
 {
@@ -136,11 +138,31 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
 #' @return (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
+#' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-process_data <- function(map_data, data_key_field, data_col, shape_key_field)
+process_data <- function(map_data, data_key_field, data_col,  shape_obj, shape_data_field, shape_key_field)
 {
   tryCatch(
     {
+      if(is.null(shape_data_field))
+      {
+        # Read/process map data object via local processing function
+        map_data_obj <- process_data(map_data, data_key_field, data_col, data_key_field, shape_obj, shape_data_field, shape_key_field)
+
+        if(class(map_data_obj) == "character")
+        {
+          # Process_data must have caught an error
+          return_error(map_data_obj, "Process Data")
+          return("Error - see console for output")
+        }
+        # Merge map and data
+        suppressWarnings({combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))})
+      }
+      else
+      {
+        suppressWarnings({combined_df <- as.data.frame(shape_obj)})
+        data_col <- shape_data_field
+      }
       if(is.null(map_data))
       {
         return("Error: Map data cannot be NULL")
@@ -171,7 +193,7 @@ process_data <- function(map_data, data_key_field, data_col, shape_key_field)
       {
         return("Error: Unrecognized map_data argument.")
       }
-1
+
       result <- verify_data(map_obj, data_key_field, data_col)
       if(result != "Success")
       {

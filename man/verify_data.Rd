@@ -19,3 +19,6 @@ verify_data(map_data, data_key_field, data_col)
 \description{
 This function runs a check on map data inputs and looks for errors
 }
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
+}

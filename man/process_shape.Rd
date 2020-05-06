@@ -31,3 +31,6 @@ process_shape(shape_data, simplify, shape_label_field,
 \description{
 Process shape
 }
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
+}

@@ -11,9 +11,9 @@ verify_map_params(bin_method, bins, dpi, expand_xy, map_xy_min_max,
 \arguments{
 \item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")}
 
-\item{bins}{(Numeric) - Number of bins/segments in which to divide the raster}
+\item{bins}{(Numeric) - Number of bins in which to divide the raster}
 
-\item{dpi}{(Numeric) - Settable DPI for different print/screen formats (default 150)}
+\item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
 
 \item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))}
 
@@ -23,7 +23,7 @@ verify_map_params(bin_method, bins, dpi, expand_xy, map_xy_min_max,
 
 \item{map_palette}{(Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer}
 
-\item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
+\item{map_palette_reverse}{(Boolean) - Set palette to reverse direction - TRUE or FALSE}
 
 \item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10))}
 
@@ -34,5 +34,8 @@ verify_map_params(bin_method, bins, dpi, expand_xy, map_xy_min_max,
 \item{map_y_label}{(Character) - Label for y axis (default Lat)}
 }
 \description{
-Verify map parameters
+Verify map
+}
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
 }

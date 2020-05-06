@@ -17,3 +17,6 @@ return_error(error, location)
 \description{
 This function runs a check on csv data inputs and looks for errors
 }
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
+}

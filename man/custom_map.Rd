@@ -2,7 +2,7 @@
 % Please edit documentation in R/maps.R
 \name{custom_map}
 \alias{custom_map}
-\title{Create a basic map object from input shape/raster and return, save (optional) the output}
+\title{Create a basic map object from input shape and-or raster and return. Option to save the output to file}
 \usage{
 custom_map(shape_data = NULL, shape_label_field = NULL,
   shape_label_size = "1", simplify = FALSE, raster_data = NULL,
@@ -57,4 +57,7 @@ custom_map(shape_data = NULL, shape_label_field = NULL,
 }
 \description{
 This function is designed to take both a shape and raster object/path and create a standardized output map.
+}
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
 }

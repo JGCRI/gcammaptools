@@ -4,7 +4,8 @@
 \alias{process_data}
 \title{Process data}
 \usage{
-process_data(map_data, data_key_field, data_col, shape_key_field)
+process_data(map_data, data_key_field, data_col, shape_obj,
+  shape_data_field, shape_key_field)
 }
 \arguments{
 \item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
@@ -18,4 +19,7 @@ process_data(map_data, data_key_field, data_col, shape_key_field)
 }
 \description{
 Process data
+}
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
 }

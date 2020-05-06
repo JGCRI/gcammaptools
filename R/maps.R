@@ -2,7 +2,7 @@
 #
 # This file produces output from standard functions for various maps
 
-#' Create a basic map object from input shape/raster and return, save (optional) the output
+#' Create a basic map object from input shape and-or raster and return. Option to save the output to file
 #'
 #' This function is designed to take both a shape and raster object/path and create a standardized output map.
 #'
@@ -32,6 +32,7 @@
 #' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label guides
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @import RColorBrewer
+#' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
 custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_size = "1", simplify = FALSE,
                        raster_data = NULL, raster_col = NULL,  raster_band = 1,  convert_zero = FALSE,
@@ -204,6 +205,7 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
+#' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
 choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = 1,
                               shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
@@ -238,11 +240,10 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 
   # ------- Data processing
 
-      # Verify map_data first and if not Success then return error now
       if(is.null(shape_data_field))
       {
         # Read/process map data object via local processing function
-        map_data_obj <- process_data(map_data, data_key_field, data_col)
+        map_data_obj <- process_data(map_data, data_key_field, data_col, data_key_field, shape_obj, shape_data_field, shape_key_field)
 
         if(class(map_data_obj) == "character")
         {
@@ -348,7 +349,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 
       # Build ggplot Map object
       output <- ggplot(data = combined_df, aes_string(x=shape_x, y=shape_y,  fill="value", geometry=shape_geom)) +
-        geom_sf(color="grey") +
+        geom_sf(color="gray42") +
          map_color_scale +
          coord_sf() +
          labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
@@ -356,8 +357,12 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
          map_y_scale +
          map_shape_options +
         theme_minimal() +
+        theme(axis.text = element_text(size=rel(map_font_adjust)),
+              axis.title = element_text(size=rel(map_font_adjust))) +
+        theme(legend.text = element_text(size=rel(map_font_adjust))) +
+        theme(legend.title = element_text(size=rel(map_font_adjust))) +
         # theme(text = element_text(size=rel(map_font_adjust))) +
-         theme(plot.title = element_text(hjust = 0.5)) +
+         theme(plot.title = element_text(hjust = 0.5, size=24))
          map_size_guide_option
 
       # Save File
@@ -417,6 +422,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
+#' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
 distributed_flow <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1",
                               shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,

@@ -75,3 +75,6 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
 \description{
 Choropleth map
 }
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
+}

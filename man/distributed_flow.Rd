@@ -70,3 +70,6 @@ distributed_flow(shape_data = NULL, shape_key_field = NULL,
 \description{
 Distributed flow map
 }
+\author{
+Jason Evanoff, jason.evanoff@pnnl.gov
+}
