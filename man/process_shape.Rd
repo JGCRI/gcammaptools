@@ -29,7 +29,7 @@ process_shape(shape_data, simplify, shape_label_field,
 (SF or Character) - Returns the resulting simplified SF object or an error string if failed
 }
 \description{
-Process shape
+This function processes the shape argument for dynamic mapping functions
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov

@@ -1,6 +1,6 @@
 # output.r
 #
-# This file produces output from standard functions for various maps
+# This file produces dynamic maps from standardized functions
 
 #' Create a basic map object from input shape and-or raster and return. Option to save the output to file
 #'
@@ -168,9 +168,9 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 }
 
 
-#' Create a choropleth map object from shape and data object and return, save (optional) the output
+#' Dynamic choropleth map creation
 #'
-#' Choropleth map
+#' Create a choropleth map object from shape and data object and return, save (optional) the output
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
@@ -387,9 +387,9 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 }
 
 
-#' Create a distributed flow map object from shape and data object and return, save (optional) the output
-#'
 #' Distributed flow map
+#'
+#' Create a distributed flow map object from shape and data object and return, save (optional) the output
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object

@@ -221,7 +221,7 @@ verify_csv <- function(map_data)
 
 #' Verify map parameters
 #'
-#' Verify map
+#' Verify the set of arguments for choropleth and other map types
 #'
 #' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
 #' @param bins (Numeric) - Number of bins in which to divide the raster
@@ -323,7 +323,8 @@ verify_map_params <- function(bin_method, bins, dpi, expand_xy, map_xy_min_max ,
 
 #' Return and output errors
 #'
-#' This function runs a check on csv data inputs and looks for errors
+#' This function prints out any caught errors to the console and returns the custom error string to the calling function
+#'
 #' @param error (Character) - Specific error string for output
 #' @param location (Character) - Location the error was caught
 #' @return (Character) - Prints the error to console and also returns it to caller

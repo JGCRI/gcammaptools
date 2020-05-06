@@ -24,7 +24,7 @@ process_raster(raster_data, raster_col, raster_band, bin_method, bins,
 (Raster or Character) - Returns the resulting raster object or an error string if failed
 }
 \description{
-Process raster
+This function handles the processing of raster data for use in dynamic mapping functions
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov

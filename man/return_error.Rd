@@ -15,7 +15,7 @@ return_error(error, location)
 (Character) - Prints the error to console and also returns it to caller
 }
 \description{
-This function runs a check on csv data inputs and looks for errors
+This function prints out any caught errors to the console and returns the custom error string to the calling function
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov

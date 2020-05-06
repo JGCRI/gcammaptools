@@ -2,7 +2,7 @@
 % Please edit documentation in R/maps.R
 \name{distributed_flow}
 \alias{distributed_flow}
-\title{Create a distributed flow map object from shape and data object and return, save (optional) the output}
+\title{Distributed flow map}
 \usage{
 distributed_flow(shape_data = NULL, shape_key_field = NULL,
   shape_label_field = NULL, shape_label_size_field = "1",
@@ -68,7 +68,7 @@ distributed_flow(shape_data = NULL, shape_key_field = NULL,
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 }
 \description{
-Distributed flow map
+Create a distributed flow map object from shape and data object and return, save (optional) the output
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov

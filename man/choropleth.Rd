@@ -2,7 +2,7 @@
 % Please edit documentation in R/maps.R
 \name{choropleth}
 \alias{choropleth}
-\title{Create a choropleth map object from shape and data object and return, save (optional) the output}
+\title{Dynamic choropleth map creation}
 \usage{
 choropleth(shape_data = NULL, shape_key_field = NULL,
   shape_label_field = NULL, shape_label_size = 1,
@@ -73,7 +73,7 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 }
 \description{
-Choropleth map
+Create a choropleth map object from shape and data object and return, save (optional) the output
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov

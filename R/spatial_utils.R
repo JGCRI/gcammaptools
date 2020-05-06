@@ -5,6 +5,8 @@
 
 #' Process shape
 #'
+#' This function processes the shape argument for dynamic mapping functions
+#'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
 #' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
@@ -79,6 +81,8 @@ process_shape <- function(shape_data, simplify, shape_label_field, shape_data_fi
 
 #' Process raster
 #'
+#' This function handles the processing of raster data for use in dynamic mapping functions
+#'
 #' @param raster_data (Raster or Character) - Either the full path string to raster file or a raster object
 #' @param raster_col (Character) - Column name that contains the raster object's output variable
 #' @param raster_band (Numeric) - Future variable for dealing with multi band/time series rasters etc
@@ -133,6 +137,8 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
 
 
 #' Process data
+#'
+#' This function handles the processing of source map data for use in dynamic mapping functions
 #'
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data

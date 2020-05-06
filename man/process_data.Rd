@@ -18,7 +18,7 @@ process_data(map_data, data_key_field, data_col, shape_obj,
 (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
 }
 \description{
-Process data
+This function handles the processing of source map data for use in dynamic mapping functions
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov

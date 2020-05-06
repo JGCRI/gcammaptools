@@ -34,7 +34,7 @@ verify_map_params(bin_method, bins, dpi, expand_xy, map_xy_min_max,
 \item{map_y_label}{(Character) - Label for y axis (default Lat)}
 }
 \description{
-Verify map
+Verify the set of arguments for choropleth and other map types
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov
