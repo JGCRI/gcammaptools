@@ -14,6 +14,8 @@
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
 #' @param simplify (Boolean) - Option to reduce the number or complexity of the polygons in the shape file (default FALSE)
 #' @return (Character) - Returns a success token or an error string if failed
+#' @importFrom sf st_crs
+#' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL, shape_key_field = NULL,
                          shape_label_size = "1", shape_xy_fields = c("LAT", "LON"), shape_geom_field = "geometry")
@@ -203,6 +205,7 @@ verify_data <- function(map_data, data_key_field, data_col)
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)
 #' @param map_y_label (Character) - Label for y axis (default Lat)
+#' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand_xy = c(0,0), map_xy_min_max = c(-180, 180, -90, 90), map_title = "",
                               map_palette = NULL, map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10), map_legend_title = "",

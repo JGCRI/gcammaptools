@@ -16,8 +16,9 @@
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
 #' @return (SF or Character) - Returns the resulting simplified SF object or an error string if failed
+#' @importFrom sf st_crs
+#' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
-#' @export
 process_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL, shape_key_field = NULL,
                           shape_label_size = "1", shape_xy_fields  = c("LON", "LAT"), shape_geom_field  = "geometry")
 {
@@ -54,7 +55,7 @@ process_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL
     # Verify raster CRS and assign default if NA
     if(is.na(crs(shape_obj)) || is.null(crs(shape_obj)))
     {
-      sf::st_crs(shape_obj) <- crs(default_projection)
+      st_crs(shape_obj) <- crs(default_projection)
       print("Applying default CRS to shape (shape CRS was NA or NULL)")
     }
 
