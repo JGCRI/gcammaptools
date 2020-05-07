@@ -19,6 +19,7 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
                          shape_label_size = "1", shape_xy_fields = c("LAT", "LON"), shape_geom_field = "geometry")
 {
     result <- "Success"
+    default_projection <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 
     # Shape loading - if given a path, use that, else expect an object passed in
     if(is.null(shape_data))
@@ -27,11 +28,11 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
     }
     else if(suppressWarnings({"sf" %in% class(shape_data)}))
     {
-        # Verify shape CRS and assign default if NA
+        # Verify shape projection and assign default if NA or NULL
         if(is.na(crs(shape_data)) || is.null(crs(shape_data)))
         {
             sf::st_crs(shape_data) <- crs(default_projection)
-            print("Applying default CRS to shape (shape CRS was NA or NULL)")
+            print("Applying default projection to shape (shape projection was NA or NULL)")
         }
     }
     else if("character" %in% class(shape_data))
