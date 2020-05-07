@@ -4,8 +4,8 @@
 \alias{distributed_flow}
 \title{Distributed flow map}
 \usage{
-distributed_flow(shape_data = NULL, shape_key_field = NULL,
-  shape_label_field = NULL, shape_label_size_field = "1",
+distributed_flow(shape_data, shape_key_field = NULL,
+  shape_label_field = NULL, shape_label_size = "1",
   shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry",
   simplify = FALSE, map_data = NULL, data_key_field = NULL,
   data_col = NULL, bin_method = "pretty", bins = NULL, dpi = 150,
@@ -21,8 +21,6 @@ distributed_flow(shape_data = NULL, shape_key_field = NULL,
 \item{shape_key_field}{(Character) - Name of key field in shape object for merging with map_data object}
 
 \item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
-
-\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 
 \item{shape_xy_fields}{(c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))}
 
@@ -63,6 +61,8 @@ distributed_flow(shape_data = NULL, shape_key_field = NULL,
 \item{map_x_label}{(Character) - Label for x axis (default Lon)}
 
 \item{map_y_label}{(Character) - Label for y axis (default Lat)}
+
+\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed

@@ -7,10 +7,10 @@
 #' This function is designed to take both a shape and raster object/path and create a standardized output map.
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
-#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
-#' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
 #' @param raster_data (Raster or Character) - Either the full path string to a raster file or an object of type RasterLayer
 #' @param raster_col (Character) - Column name that contains the raster object's output variable/value
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
+#' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
 #' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
 #' @param raster_band (Numeric) - Future variable for dealing with multi band/time series rasters etc
 #' @param convert_zero (Boolean) - Convert values within the raster data from zero to NA (default FALSE)
@@ -34,8 +34,8 @@
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_size = "1", simplify = FALSE,
-                       raster_data = NULL, raster_col = NULL,  raster_band = 1,  convert_zero = FALSE,
+custom_map <- function(shape_data, raster_data,  raster_col, shape_label_field = NULL, shape_label_size = "1",
+                       simplify = FALSE, raster_band = 1,  convert_zero = FALSE,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu", map_palette_reverse = FALSE,
                        map_width_height_in = c(15, 10), map_legend_title = NULL, map_x_label = "Longitude", map_y_label = "Latitude")
@@ -207,13 +207,13 @@ custom_map <- function(shape_data = NULL, shape_label_field = NULL, shape_label_
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = 1,
+choropleth <- function(shape_data, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = 1,
                               shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
                               map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = 8,
                               dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
                               map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL, map_palette = NULL,
                               map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
-                              map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
+                              map_legend_title = "", map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
 {
   output <- "There was an unknown error while processing your map"
   tryCatch(
@@ -314,6 +314,10 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       if(!is.null(map_palette))
       {
         palette_colors <- map_palette
+      }
+      else
+      {
+        palette_colors <- "Blues"
       }
 
       # Set additional map options and create scales
@@ -424,7 +428,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-distributed_flow <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size_field = "1",
+distributed_flow <- function(shape_data, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = "1",
                               shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
                               map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = NULL,
                               dpi = 150, output_file = NULL,  expand_xy = c(0, 0),

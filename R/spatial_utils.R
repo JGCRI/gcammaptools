@@ -18,8 +18,8 @@
 #' @return (SF or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-process_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL, shape_key_field = NULL,
-                          shape_label_size, shape_xy_fields, shape_geom_field)
+process_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL, shape_key_field = NULL,
+                          shape_label_size = "1", shape_xy_fields  = c("LON", "LAT"), shape_geom_field  = "geometry")
 {
   tryCatch(
   {
@@ -85,17 +85,17 @@ process_shape <- function(shape_data, simplify, shape_label_field, shape_data_fi
 #'
 #' @param raster_data (Raster or Character) - Either the full path string to raster file or a raster object
 #' @param raster_col (Character) - Column name that contains the raster object's output variable
-#' @param raster_band (Numeric) - Future variable for dealing with multi band/time series rasters etc
-#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks
-#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
-#' @param convert_zero (Boolean) - Convert raster zero values to NA
+#' @param raster_band (Numeric) - Future variable for dealing with multi band/time series rasters etc (default 1)
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (default "pretty")
+#' @param bins (Numeric) - Number of bins/segments in which to divide the raster (default 8)
+#' @param convert_zero (Boolean) - Convert raster zero values to NA (default FALSE)
 #' @importFrom rgis import_raster
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom raster raster crs
 #' @return (Raster or Character) - Returns the resulting raster object or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-process_raster <- function( raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
+process_raster <- function(raster_data, raster_col, raster_band = 1, bin_method = "pretty", bins = 8, convert_zero = FALSE)
 {
   tryCatch(
     {
@@ -143,6 +143,9 @@ process_raster <- function( raster_data , raster_col, raster_band, bin_method, b
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
+#' @param shape_obj (SF) - An SF object
+#' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
+#' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
 #' @return (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export

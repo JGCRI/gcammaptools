@@ -4,7 +4,7 @@
 \alias{choropleth}
 \title{Dynamic choropleth map creation}
 \usage{
-choropleth(shape_data = NULL, shape_key_field = NULL,
+choropleth(shape_data, shape_key_field = NULL,
   shape_label_field = NULL, shape_label_size = 1,
   shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"),
   shape_geom_field = "geometry", simplify = FALSE, map_data = NULL,
@@ -13,7 +13,7 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
   map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
   map_palette = NULL, map_palette_reverse = FALSE,
   map_palette_type = "seq", map_width_height_in = c(15, 10),
-  map_legend_title = NULL, map_x_label = "Lon", map_y_label = "Lat",
+  map_legend_title = "", map_x_label = "Lon", map_y_label = "Lat",
   map_font_adjust = 1)
 }
 \arguments{

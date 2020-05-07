@@ -15,15 +15,9 @@
 #' @param simplify (Boolean) - Option to reduce the number or complexity of the polygons in the shape file (default FALSE)
 #' @return (Character) - Returns a success token or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
-#' @export
-verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_field = NULL, shape_key_field = NULL,
-                         shape_label_size, shape_xy_fields, shape_geom_field)
+verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL, shape_key_field = NULL,
+                         shape_label_size = "1", shape_xy_fields = c("LAT", "LON"), shape_geom_field = "geometry")
 {
-    # Check shape file has projection
-    # looks for the mentioned shape key field
-    # looks for projection
-    # check simplify for valid option (true or false)
-
     result <- "Success"
 
     # Shape loading - if given a path, use that, else expect an object passed in
@@ -105,15 +99,14 @@ verify_shape <- function(shape_data, simplify, shape_label_field, shape_data_fie
 #'
 #' @param raster_data (Raster or Character) - Either the full path string to raster file or a raster object
 #' @param raster_col (Character) - Column name that contains the raster object's output variable
-#' @param raster_band (Numeric) - Future variable for dealing with multi band or time series rasters etc
-#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks
-#' @param bins (Numeric) - Number of bins in which to divide the raster
-#' @param convert_zero (Boolean) - Convert raster zero values to NA#
+#' @param raster_band (Numeric) - Future variable for dealing with multi band or time series rasters etc (default 1)
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (default "pretty")
+#' @param bins (Numeric) - Number of bins in which to divide the raster (default 8)
+#' @param convert_zero (Boolean) - Convert raster zero values to NA (default FALSE)
 #' @return (Character) - Returns a success token or an error string if failed
 #' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
-#' @export
-verify_raster <- function(raster_data , raster_col, raster_band, bin_method, bins, convert_zero)
+verify_raster <- function(raster_data , raster_col, raster_band = 1, bin_method = "pretty", bins = 8, convert_zero = FALSE)
 {
     result <- "Success"
 
@@ -163,13 +156,8 @@ verify_raster <- function(raster_data , raster_col, raster_band, bin_method, bin
 #' @param data_col (Character) - Column name that contains the data object's output variable
 #' @return (Character) - Returns a success token or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
-#' @export
 verify_data <- function(map_data, data_key_field, data_col)
 {
-    # Future
-    # 	Does it have nulls?
-    #  	Warning that pops up to the user about null values
-
     result <- "Success"
 
     # Verify map_data
@@ -198,27 +186,6 @@ verify_data <- function(map_data, data_key_field, data_col)
 }
 
 
-#' Verify csv data
-#'
-#' This function runs a check on csv data inputs and looks for errors
-#'
-#' @param map_data (Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object
-#' @return (Character) - Returns a success token or an error string if failed
-#' @export
-verify_csv <- function(map_data)
-{
-
-    # Check csv for things like character Unicode
-    # Check field they provided there etc
-
-
-    result <- "Success"
-
-    return(result)
-
-}
-
-
 #' Verify map parameters
 #'
 #' Verify the set of arguments for choropleth and other map types
@@ -236,8 +203,9 @@ verify_csv <- function(map_data)
 #' @param map_x_label (Character) - Label for x axis (default Lon)
 #' @param map_y_label (Character) - Label for y axis (default Lat)
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
-verify_map_params <- function(bin_method, bins, dpi, expand_xy, map_xy_min_max , map_title, map_palette, map_palette_reverse,
-                               map_palette_type, map_width_height_in, map_legend_title, map_x_label, map_y_label)
+verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand_xy = c(0,0), map_xy_min_max = c(-180, 180, -90, 90), map_title = "",
+                              map_palette = NULL, map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10), map_legend_title = "",
+                              map_x_label = "Lon", map_y_label = "Lat")
 {
     output <- "Success"
 
@@ -319,6 +287,27 @@ verify_map_params <- function(bin_method, bins, dpi, expand_xy, map_xy_min_max ,
 
     return(output)
 }
+
+
+#' Verify csv data
+#'
+#' This function runs a check on csv data inputs and looks for errors
+#'
+#' @param map_data (Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object
+#' @return (Character) - Returns a success token or an error string if failed
+verify_csv <- function(map_data)
+{
+
+    # Check csv for things like character Unicode
+    # Check field they provided there etc
+
+
+    result <- "Success"
+
+    return(result)
+
+}
+
 
 
 #' Return and output errors

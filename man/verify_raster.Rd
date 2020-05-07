@@ -4,21 +4,21 @@
 \alias{verify_raster}
 \title{Verify raster data}
 \usage{
-verify_raster(raster_data, raster_col, raster_band, bin_method, bins,
-  convert_zero)
+verify_raster(raster_data, raster_col, raster_band = 1,
+  bin_method = "pretty", bins = 8, convert_zero = FALSE)
 }
 \arguments{
 \item{raster_data}{(Raster or Character) - Either the full path string to raster file or a raster object}
 
 \item{raster_col}{(Character) - Column name that contains the raster object's output variable}
 
-\item{raster_band}{(Numeric) - Future variable for dealing with multi band or time series rasters etc}
+\item{raster_band}{(Numeric) - Future variable for dealing with multi band or time series rasters etc (default 1)}
 
-\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks}
+\item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (default "pretty")}
 
-\item{bins}{(Numeric) - Number of bins in which to divide the raster}
+\item{bins}{(Numeric) - Number of bins in which to divide the raster (default 8)}
 
-\item{convert_zero}{(Boolean) - Convert raster zero values to NA#}
+\item{convert_zero}{(Boolean) - Convert raster zero values to NA (default FALSE)}
 }
 \value{
 (Character) - Returns a success token or an error string if failed
