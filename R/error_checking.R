@@ -81,9 +81,9 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
         return("Error: Shape label size argument must be numeric ")
     }
 
-    if(!simplify %in% c(TRUE, FALSE, NULL))
+    if(!simplify %in% c(TRUE, FALSE))
     {
-        return("Error: Invalid value for simplify argument: Must be one of TRUE, FALSE, NULL.")
+        return("Error: Invalid value for simplify argument: Must be one of TRUE, FALSE")
     }
 
     if(!shape_geom_field %in% names(shape_data))
