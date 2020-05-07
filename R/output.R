@@ -22,7 +22,7 @@ save_plot <- function(output_file, dpi = 150, map_width = 15, map_height = 10)
     {
         if(is.null(output_file) || !"character" %in% class(output_file))
         {
-            return("Error: output_file argument must be a valid character path")
+            return("Error: `output_file` argument must be a valid character path")
         }
 
         # Get file type dynamically and save to path

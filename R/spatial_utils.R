@@ -27,13 +27,13 @@ process_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL
     # Initial processing of shape object so that a completed shape object can be sent to the error check function
     if(is.null(shape_data))
     {
-      return("Error: Shape data is NULL")
+      return("Error: `shape_datais` NULL")
     }
     else if("character" %in% class(shape_data))
     {
       if (!file.exists(shape_data))
       {
-        return("Error: Cannot open shape file or shape file path does not exist ")
+        return(paste0("Error: Cannot open shape file - `", shape_data, "` - or shape file path does not exist "))
       }
     }
 
@@ -175,13 +175,13 @@ process_data <- function(map_data, data_key_field, data_col,  shape_obj, shape_d
       }
       if(is.null(map_data))
       {
-        return("Error: Map data cannot be NULL")
+        return("Error: `map_data` cannot be NULL")
       }
 
       # Map Data - if given a path to a csv, use that, else expect a data.frame object passed in
       if(!class(map_data) %in% c("data.frame", "character"))
       {
-        return("Error: map_data argument must be of type data.frame or a character path to a csv file")
+        return("Error: `map_data` argument must be of type data.frame or a character path to a csv file")
       }
 
       if("data.frame" %in% class(map_data) )
@@ -196,12 +196,12 @@ process_data <- function(map_data, data_key_field, data_col,  shape_obj, shape_d
         }
         else
         {
-          return(paste0("Error: Cannot open data file ", map_data))
+          return(paste0("Error: Cannot open data file - `", map_data))
         }
       }
       else
       {
-        return("Error: Unrecognized map_data argument.")
+        return("Error: Unrecognized `map_data` argument.")
       }
 
       result <- verify_data(map_obj, data_key_field, data_col)

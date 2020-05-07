@@ -41,12 +41,12 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
     {
         if (!file.exists(shape_data))
         {
-            return("Error: Cannot open shape file or shape file path does not exist ")
+            return(paste0("Error: Cannot open shape file - `", shape_data, "`` - or shape file path does not exist "))
         }
     }
     else
     {
-        return("Error: Unrecognized shape_data argument.")
+        return("Error: Unrecognized `shape_data` argument.")
     }
 
     if(!is.null(shape_data_field))
@@ -54,7 +54,7 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
         # look for shape data field
         if(!shape_data_field %in% names(shape_data))
         {
-            return("Error: Shape data field does not exist in shape object.")
+            return(paste0("Error: Shape data field `", shape_data_field, "`` does not exist in shape object."))
         }
     }
 
@@ -63,7 +63,7 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
         # look for shape data field
         if(!shape_label_field %in% names(shape_data))
         {
-            return("Error: Shape label field does not exist in shape object.")
+            return(paste0("Error: Shape label field - `", shape_label_field, "` - does not exist in shape object."))
         }
     }
 
@@ -72,23 +72,23 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
         # look for shape data field
         if(!shape_key_field %in% names(shape_data))
         {
-            return("Error: Shape key field does not exist in shape object.")
+            return(paste0("Error: `shape_key_field` - `", shape_key_field, "` - does not exist in shape object."))
         }
     }
 
     if(!"numeric" %in% class(shape_label_size))
     {
-        return("Error: Shape label size argument must be numeric ")
+        return("Error: `shape_label_size` argument must be numeric ")
     }
 
     if(!simplify %in% c(TRUE, FALSE))
     {
-        return("Error: Invalid value for simplify argument: Must be one of TRUE, FALSE")
+        return("Error: Invalid value for `simplify` argument: Must be one of TRUE, FALSE")
     }
 
     if(!shape_geom_field %in% names(shape_data))
     {
-        return("Error: Shape geometry field does not exist in shape object.")
+        return(paste0("Error: `shape_geom_field` - `", shape_geom_field, "` - does not exist in shape object."))
     }
 
     return(result)
@@ -126,7 +126,7 @@ verify_raster <- function(raster_data , raster_col, raster_band = 1, bin_method 
     {
         if (!file.exists(raster_data))
         {
-            return(paste0("Error: Cannot process raster file or path: ", raster_data, "\nRaster file does not exist or raster path is malformed."))
+            return(paste0("Error: Cannot process raster file `", raster_data, "`\nRaster file does not exist or raster path is malformed."))
         }
     }
     else
@@ -170,18 +170,18 @@ verify_data <- function(map_data, data_key_field, data_col)
         if(!is.null(data_key_field))
         {
             if(!"character" %in% class(data_key_field))
-                return("Error: `data_key_field`` argument must be of type character")
+                return(paste0("Error: `data_key_field` argument must be of type character"))
             if(!data_key_field %in% colnames(map_data))
-                return("Error: `data_key_field`` was not found in the `map_data`` data frame")
+                return(paste0("Error: `data_key_field` - `", data_key_field, "` - was not found in the `map_data` data frame"))
         }
 
         # Verify data_col
         if(!is.null(data_col))
         {
             if(!"character" %in% class(data_col))
-                return("Error: `data_col`` argument must be of type character")
+                return("Error: `data_col` argument must be of type character")
             if(!data_col %in% colnames(map_data))
-                return("Error: `data_col`` was not found in the `map_data`` data frame")
+                return(paste0("Error: `data_col` - `", data_col, "` - was not found in the `map_data` data frame"))
         }
     }
 
@@ -216,77 +216,77 @@ verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand
     # Verify bin_method
     if(is.null(bin_method) || !"character" %in% class(bin_method) || !bin_method %in% c("quantile", "pretty", "equal"))
     {
-        return("Error: `bin_method`` argument must be one of 'quantile', 'pretty', 'equal'")
+        return("Error: `bin_method` argument must be one of 'quantile', 'pretty', 'equal'")
     }
 
     # Verify bins
     if(is.null(bins) || class(bins) != "numeric")
     {
-        return("Error: `bins`` argument must be a positive integer and not NULL")
+        return("Error: `bins` argument must be a positive integer and not NULL")
     }
     if(bins < 1 || bins > 100)
     {
-        return("Error: `bins`` argument must be a valid integer between 1-100")
+        return("Error: `bins` argument must be a valid integer between 1-100")
     }
 
     # verify dpi
     if(!"numeric" %in% (class(dpi)) || dpi < 30 || dpi > 300)
     {
-        return("Error: `dpi`` argument must be a numeric value between 30 and 300")
+        return("Error: `dpi` argument must be a numeric value between 30 and 300")
     }
 
     # Verify expand_xy
     if(!"numeric" %in% (class(expand_xy)) || length(expand_xy) != 2)
     {
-        return("Error: `expand_xy`` argument must be a numeric vector of length 2")
+        return("Error: `expand_xy` argument must be a numeric vector of length 2")
     }
 
     # Verify map_xy_min_max
     if(!"numeric" %in% (class(map_xy_min_max)) || length(map_xy_min_max) != 4)
     {
-        return("Error: `map_xy_min_max`` argument must be a numeric vector of length 4")
+        return("Error: `map_xy_min_max` argument must be a numeric vector of length 4")
     }
 
     # Verify title
     if(!"character" %in% class(map_title) && !is.null(map_title))
     {
-        return("Error: `map_title`` must be of class character")
+        return("Error: `map_title` must be of class character")
     }
 
     # Verify map_palette
     if(!is.null(map_palette) && (!"character" %in% class(map_palette) || !map_palette %in% row.names(brewer.pal.info)) )
     {
-        return("Error: `map_palette`` must be of class character and a valid entry in the RColorBrewer palette (see brewer.pal.info")
+        return("Error: `map_palette` must be of class character and a valid entry in the RColorBrewer palette (see brewer.pal.info")
     }
 
     # Verify palette_reverse
     if(!"logical" %in% class(map_palette_reverse))
     {
-        return("Error: `map_palette_reverse`` must be of type logical (TRUE or FALSE)")
+        return("Error: `map_palette_reverse` must be of type logical (TRUE or FALSE)")
     }
 
     # Verify map_width_height_in
     if(!"numeric" %in% (class(map_width_height_in)) || length(map_width_height_in) != 2)
     {
-        return("Error: `map_width_height_in`` argument must be a numeric vector of length 2")
+        return("Error: `map_width_height_in` argument must be a numeric vector of length 2")
     }
 
     # Verify map_legend_title
     if(!"character" %in% class(map_legend_title) && !is.null(map_legend_title))
     {
-        return("Error: `map_legend_title`` must be of class character or NULL")
+        return("Error: `map_legend_title` must be of class character or NULL")
     }
 
     # Verify map_x_label
     if(!"character" %in% class(map_x_label)  && !is.null(map_x_label))
     {
-        return("Error: `map_x_label`` must be of class character or NULL")
+        return("Error: `map_x_label` must be of class character or NULL")
     }
 
     # Verify map_y_label
     if(!"character" %in% class(map_y_label) && !is.null(map_y_label))
     {
-        return("Error: `map_y_label`` must be of class character or NULL")
+        return("Error: `map_y_label` must be of class character or NULL")
     }
 
     return(output)
@@ -325,7 +325,7 @@ verify_csv <- function(map_data)
 #' @export
 return_error <- function(error, location)
 {
-    print(paste0("There was an error at - ", location, " - building your map:"))
+    print(paste0("There was an error at - `", location, "` - building your map:"))
     print(error)
 
     return(error)

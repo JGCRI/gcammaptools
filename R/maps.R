@@ -221,7 +221,7 @@ choropleth <- function(shape_data, shape_key_field = NULL, shape_label_field = N
       # Initial check catches common mistake early, saves processing
       if(!is.null(shape_data_field) && !is.null(data_col))
       {
-        return_error("Error: Both of the shape_data_field and data_col arguments cannot have a value (you may use only one)", "Duplicate arguments")
+        return_error("Error: Both of the `shape_data_field` and `data_col` arguments cannot have a value (you may use only one)", "Duplicate arguments")
         return("Error - see console for output")
       }
 
