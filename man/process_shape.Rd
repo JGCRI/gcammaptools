@@ -12,9 +12,9 @@ process_shape(shape_data, simplify = FALSE, shape_label_field = NULL,
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
 
-\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)}
+\item{simplify}{(Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)}
 
-\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
+\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes or fields (such as country name)}
 
 \item{shape_data_field}{(Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable}
 

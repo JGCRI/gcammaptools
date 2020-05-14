@@ -12,11 +12,11 @@ process_raster(raster_data, raster_col, raster_band = 1,
 
 \item{raster_col}{(Character) - Column name that contains the raster object's output variable}
 
-\item{raster_band}{(Numeric) - Future variable for dealing with multi band/time series rasters etc (default 1)}
+\item{raster_band}{(Numeric) - Future variable for dealing with multi band or time series rasters etc (default 1)}
 
 \item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (default "pretty")}
 
-\item{bins}{(Numeric) - Number of bins/segments in which to divide the raster (default 8)}
+\item{bins}{(Numeric) - Number of bins or segments in which to divide the raster (default 8)}
 
 \item{convert_zero}{(Boolean) - Convert raster zero values to NA (default FALSE)}
 }

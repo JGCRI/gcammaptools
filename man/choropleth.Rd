@@ -4,7 +4,7 @@
 \alias{choropleth}
 \title{Dynamic choropleth map creation}
 \usage{
-choropleth(shape_data, shape_key_field = NULL,
+choropleth(shape_data = NULL, shape_key_field = NULL,
   shape_label_field = NULL, shape_label_size = 1,
   shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"),
   shape_geom_field = "geometry", simplify = FALSE, map_data = NULL,
@@ -21,7 +21,7 @@ choropleth(shape_data, shape_key_field = NULL,
 
 \item{shape_key_field}{(Character) - Name of key field in shape object for merging with map_data object}
 
-\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
+\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes or fields (such as country name)}
 
 \item{shape_label_size}{(Numric) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 
@@ -31,7 +31,7 @@ choropleth(shape_data, shape_key_field = NULL,
 
 \item{shape_geom_field}{(Character) - Specifies field within shape object that contains needed geometry (default "geometry")}
 
-\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)}
+\item{simplify}{(Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)}
 
 \item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
 
@@ -41,11 +41,11 @@ choropleth(shape_data, shape_key_field = NULL,
 
 \item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")}
 
-\item{bins}{(Numeric) - Number of bins/segments in which to divide the raster}
+\item{bins}{(Numeric) - Number of bins, or segments, in which to divide the raster}
 
-\item{dpi}{(Numeric) - Settable DPI for different print/screen formats (default 150)}
+\item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
 
-\item{output_file}{(Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)}
+\item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)}
 
 \item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))}
 
@@ -55,7 +55,7 @@ choropleth(shape_data, shape_key_field = NULL,
 
 \item{map_palette}{(Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer}
 
-\item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
+\item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE or FALSE}
 
 \item{map_palette_type}{(Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")}
 

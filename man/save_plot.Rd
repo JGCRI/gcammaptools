@@ -4,12 +4,13 @@
 \alias{save_plot}
 \title{Handles saving the map output to disk}
 \usage{
-save_plot(output_file, dpi = 150, map_width = 15, map_height = 10)
+save_plot(output_file = NULL, dpi = 150, map_width = 15,
+  map_height = 10)
 }
 \arguments{
-\item{output_file}{(Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
+\item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
 
-\item{dpi}{(Numeric) - Settable DPI for different print/screen formats (default 150)}
+\item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
 
 \item{map_width}{(Numeric) - Map width in inches (default 15)}
 

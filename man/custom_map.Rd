@@ -4,11 +4,11 @@
 \alias{custom_map}
 \title{Create a basic map object from input shape and-or raster and return. Option to save the output to file}
 \usage{
-custom_map(shape_data, raster_data, raster_col, shape_label_field = NULL,
-  shape_label_size = "1", simplify = FALSE, raster_band = 1,
-  convert_zero = FALSE, dpi = 150, output_file = NULL,
-  expand_xy = c(0, 0), map_xy_min_max = c(-180, 180, -90, 90),
-  map_title = NULL, map_palette = "RdYlBu",
+custom_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
+  shape_label_field = NULL, shape_label_size = "1", simplify = FALSE,
+  raster_band = 1, convert_zero = FALSE, dpi = 150,
+  output_file = NULL, expand_xy = c(0, 0), map_xy_min_max = c(-180,
+  180, -90, 90), map_title = NULL, map_palette = "RdYlBu",
   map_palette_reverse = FALSE, map_width_height_in = c(15, 10),
   map_legend_title = NULL, map_x_label = "Longitude",
   map_y_label = "Latitude")
@@ -18,19 +18,19 @@ custom_map(shape_data, raster_data, raster_col, shape_label_field = NULL,
 
 \item{raster_data}{(Raster or Character) - Either the full path string to a raster file or an object of type RasterLayer}
 
-\item{raster_col}{(Character) - Column name that contains the raster object's output variable/value}
+\item{raster_col}{(Character) - Column name that contains the raster object's output variable}
 
-\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)}
+\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes and fields (such as country name)}
 
-\item{simplify}{(Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)}
+\item{simplify}{(Boolean) - Option to reduce the number or complexity of the polygons in the shape file (default FALSE)}
 
-\item{raster_band}{(Numeric) - Future variable for dealing with multi band/time series rasters etc}
+\item{raster_band}{(Numeric) - Future variable for dealing with multi band or time series rasters etc}
 
 \item{convert_zero}{(Boolean) - Convert values within the raster data from zero to NA (default FALSE)}
 
-\item{dpi}{(Numeric) - Settable DPI for different print/screen formats (default 150)}
+\item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
 
-\item{output_file}{(Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
+\item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
 
 \item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))}
 
@@ -40,7 +40,7 @@ custom_map(shape_data, raster_data, raster_col, shape_label_field = NULL,
 
 \item{map_palette}{(Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")}
 
-\item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE/FALSE}
+\item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE or FALSE}
 
 \item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))}
 
@@ -56,7 +56,7 @@ custom_map(shape_data, raster_data, raster_col, shape_label_field = NULL,
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 }
 \description{
-This function is designed to take both a shape and raster object/path and create a standardized output map.
+This function is designed to take both a shape and raster object or path and create a standardized output map.
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov
