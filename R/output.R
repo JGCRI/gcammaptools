@@ -7,8 +7,8 @@
 #'
 #' Provides error handling and saving of the output map as an option to file
 #'
-#' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
-#' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
+#' @param output_file (Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
+#' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
 #' @param map_width (Numeric) - Map width in inches (default 15)
 #' @param map_height (Numeric) - Map height in inches (default 10)
 #' @return (Character) - Returns a character string with success or an error string if failed

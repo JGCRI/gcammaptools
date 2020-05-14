@@ -4,23 +4,23 @@
 
 #' Create a basic map object from input shape and-or raster and return. Option to save the output to file
 #'
-#' This function is designed to take both a shape and raster object/path and create a standardized output map.
+#' This function is designed to take both a shape and raster object or path and create a standardized output map.
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
 #' @param raster_data (Raster or Character) - Either the full path string to a raster file or an object of type RasterLayer
-#' @param raster_col (Character) - Column name that contains the raster object's output variable/value
-#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
+#' @param raster_col (Character) - Column name that contains the raster object's output variable
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes and fields (such as country name)
 #' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
-#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
-#' @param raster_band (Numeric) - Future variable for dealing with multi band/time series rasters etc
+#' @param simplify (Boolean) - Option to reduce the number or complexity of the polygons in the shape file (default FALSE)
+#' @param raster_band (Numeric) - Future variable for dealing with multi band or time series rasters etc
 #' @param convert_zero (Boolean) - Convert values within the raster data from zero to NA (default FALSE)
-#' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
-#' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
+#' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
+#' @param output_file (Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
 #' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
 #' @param map_title (Character) - Title to be displayed on the output map
 #' @param map_palette (Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")
-#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE or FALSE
 #' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default "Lon")
@@ -76,7 +76,7 @@ custom_map <- function(shape_data, raster_data,  raster_col, shape_label_field =
       }
 
 
-      # Perform shape and raster comparisons/other operations
+      # Perform shape and raster comparisons or other operations
       # Compare projections and equalize if necessary
       if(!compareCRS(shape_obj, raster_obj))
       {
@@ -88,12 +88,12 @@ custom_map <- function(shape_data, raster_data,  raster_col, shape_label_field =
       # shape <- st_crop(shape, 1.2*extent(raster))
 
 
-      # Raster operations/Convert raster
+      # Raster operations
       raster_df <- df_spatial(raster_obj)  #raster_df <- as.data.frame(raster_obj, xy=TRUE) compare performance
       raster_df <- mutate(raster_df, value = raster_df[[paste0("band", 1)]])
 
       # Create mapping and output variables
-      # Raster stats/information (future)
+      # Raster stats and information
       raster_min <- minValue(raster_obj)
       raster_max <- maxValue(raster_obj)
       raster_layers <- nlayers(raster_obj)
@@ -109,7 +109,7 @@ custom_map <- function(shape_data, raster_data,  raster_col, shape_label_field =
       expand_x <- expand_xy[1]
       expand_y <- expand_xy[2]
 
-      # Map colors/scales options
+      # Map colors and scales options
       palette_direction <- 1
 
       if(map_palette_reverse)
@@ -175,24 +175,24 @@ custom_map <- function(shape_data, raster_data,  raster_col, shape_label_field =
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
 #' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
-#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes or fields (such as country name)
 #' @param shape_label_size (Numric) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
-#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
+#' @param simplify (Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
 #' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
-#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
-#' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
-#' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)
+#' @param bins (Numeric) - Number of bins, or segments, in which to divide the raster
+#' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
+#' @param output_file (Character) - Output file path and file name and type to save the resulting plot (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
 #' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
 #' @param map_title (Character) - Title to be displayed on the output map
 #' @param map_palette (Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer
 #' @param map_palette_type (Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")
-#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE or FALSE
 #' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10))
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)
@@ -242,7 +242,7 @@ choropleth <- function(shape_data, shape_key_field = NULL, shape_label_field = N
 
       if(is.null(shape_data_field))
       {
-        # Read/process map data object via local processing function
+        # Read and process map data object via local processing function
         map_data_obj <- process_data(map_data, data_key_field, data_col, data_key_field, shape_obj, shape_data_field, shape_key_field)
 
         if(class(map_data_obj) == "character")
@@ -342,7 +342,7 @@ choropleth <- function(shape_data, shape_key_field = NULL, shape_label_field = N
         }
       }
 
-      # Process breaks/bins
+      # Process bins
       if(!is.null(bin_method) && !is.null(bins))
       {
         suppressWarnings({data_breaks <- classIntervals(c(min(as.numeric(combined_df[[data_col]])),as.numeric(combined_df[[data_col]])), n = bins, style = bin_method)})
@@ -397,24 +397,24 @@ choropleth <- function(shape_data, shape_key_field = NULL, shape_label_field = N
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
-#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes or fields (such as country name)
 #' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
-#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
+#' @param simplify (Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
 #' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
-#' @param bins (Numeric) - Number of bins/segments in which to divide the raster
-#' @param dpi (Numeric) - Settable DPI for different print/screen formats (default 150)
-#' @param output_file (Character) - Output file path and file name/type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)
+#' @param bins (Numeric) - Number of bins or segments in which to divide the raster
+#' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
+#' @param output_file (Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))
 #' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
 #' @param map_title (Character) - Title to be displayed on the output map
 #' @param map_palette (Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer
 #' @param map_palette_type (Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")
-#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE/FALSE
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE or FALSE
 #' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10))
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)

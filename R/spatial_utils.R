@@ -10,11 +10,11 @@
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
 #' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
-#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes/fields (such as country name)
+#' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes or fields (such as country name)
 #' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
-#' @param simplify (Boolean) - Option to reduce the number/complexity of the polygons in the shape file (default FALSE)
+#' @param simplify (Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)
 #' @return (SF or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @importFrom sf st_crs
 #' @importFrom raster crs
@@ -86,9 +86,9 @@ process_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL
 #'
 #' @param raster_data (Raster or Character) - Either the full path string to raster file or a raster object
 #' @param raster_col (Character) - Column name that contains the raster object's output variable
-#' @param raster_band (Numeric) - Future variable for dealing with multi band/time series rasters etc (default 1)
+#' @param raster_band (Numeric) - Future variable for dealing with multi band or time series rasters etc (default 1)
 #' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (default "pretty")
-#' @param bins (Numeric) - Number of bins/segments in which to divide the raster (default 8)
+#' @param bins (Numeric) - Number of bins or segments in which to divide the raster (default 8)
 #' @param convert_zero (Boolean) - Convert raster zero values to NA (default FALSE)
 #' @importFrom rgis import_raster
 #' @importFrom ggspatial layer_spatial df_spatial
@@ -156,7 +156,7 @@ process_data <- function(map_data, data_key_field, data_col,  shape_obj, shape_d
     {
       if(is.null(shape_data_field))
       {
-        # Read/process map data object via local processing function
+        # Read and process map data object via local processing function
         map_data_obj <- process_data(map_data, data_key_field, data_col, data_key_field, shape_obj, shape_data_field, shape_key_field)
 
         if(class(map_data_obj) == "character")
@@ -489,10 +489,10 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
 
     # Suppress Warning:
     #     "In st_buffer.sfc(st_geometry(x), dist, nQuadSegs) : st_buffer does
-    #     not correctly buffer longitude/latitude data, dist needs to be in
+    #     not correctly buffer longitude-latitude data, dist needs to be in
     #     decimal degrees."
     # This warning occurs from buffering a feature that is in a geographic
-    # coordinate system (lat/long) rather than a projection one.  This makes the
+    # coordinate system (lat-long) rather than a projection one.  This makes the
     # the buffer not be exact due to the distance being calculated in decimal
     # degrees rather than meters or kilometers. This is fine with us since we
     # are simply using buffer as a way of zooming to include or exclude portions
@@ -514,7 +514,7 @@ remove_invalid <- function(sfcobj) {
     invalids <- sf::st_is_valid(sfcobj, reason = T)
     intrscts <- grepl("Self-intersection", invalids)
 
-    # See note in spat_bb about warning/message
+    # See note in spat_bb about warning message
     sfcobj[intrscts, ] <- suppressWarnings({
         suppressMessages({ sf::st_buffer(sfcobj[intrscts, ], 0) })
     })
