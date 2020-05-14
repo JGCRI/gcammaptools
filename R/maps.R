@@ -34,7 +34,7 @@
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-custom_map <- function(shape_data, raster_data,  raster_col, shape_label_field = NULL, shape_label_size = "1",
+custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL, shape_label_field = NULL, shape_label_size = "1",
                        simplify = FALSE, raster_band = 1,  convert_zero = FALSE,
                        dpi = 150, output_file = NULL, expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu", map_palette_reverse = FALSE,
@@ -207,7 +207,7 @@ custom_map <- function(shape_data, raster_data,  raster_col, shape_label_field =
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-choropleth <- function(shape_data, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = 1,
+choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = 1,
                               shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
                               map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = 8,
                               dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
@@ -428,7 +428,7 @@ choropleth <- function(shape_data, shape_key_field = NULL, shape_label_field = N
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-distributed_flow <- function(shape_data, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = "1",
+distributed_flow <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = "1",
                               shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
                               map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = NULL,
                               dpi = 150, output_file = NULL,  expand_xy = c(0, 0),

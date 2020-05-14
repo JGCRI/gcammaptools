@@ -15,7 +15,7 @@
 #' @importFrom ggplot2 ggsave
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-save_plot <- function(output_file, dpi = 150, map_width = 15, map_height = 10)
+save_plot <- function(output_file = NULL, dpi = 150, map_width = 15, map_height = 10)
 {
     output <- "Success"
     tryCatch(
