@@ -4,7 +4,8 @@
 \alias{verify_data}
 \title{Verify map data}
 \usage{
-verify_data(map_data, data_key_field, data_col)
+verify_data(map_data = NULL, data_key_field = NULL, data_col = NULL,
+  shape_obj = NULL, shape_data_field = NULL, shape_key_field = NULL)
 }
 \arguments{
 \item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
@@ -12,6 +13,12 @@ verify_data(map_data, data_key_field, data_col)
 \item{data_key_field}{(Character) - Name of key field in data_obj for merging with shape_data}
 
 \item{data_col}{(Character) - Column name that contains the data object's output variable}
+
+\item{shape_obj}{(SF) - An SF object}
+
+\item{shape_data_field}{(Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable}
+
+\item{shape_key_field}{(Character) - Name of key field in shape object for merging with map_data object}
 }
 \value{
 (Character) - Returns a success token or an error string if failed

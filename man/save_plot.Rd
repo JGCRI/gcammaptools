@@ -2,7 +2,7 @@
 % Please edit documentation in R/output.R
 \name{save_plot}
 \alias{save_plot}
-\title{Handles saving the map output to disk}
+\title{Saves a plot to disk}
 \usage{
 save_plot(output_file = NULL, dpi = 150, map_width = 15,
   map_height = 10)
@@ -20,7 +20,7 @@ save_plot(output_file = NULL, dpi = 150, map_width = 15,
 (Character) - Returns a character string with success or an error string if failed
 }
 \description{
-Provides error handling and saving of the output map as an option to file
+Provides basic error handling and saving of the output map to file
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov

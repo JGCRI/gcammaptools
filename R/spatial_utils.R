@@ -19,7 +19,7 @@
 #' @importFrom sf st_crs
 #' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
-process_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL, shape_key_field = NULL,
+process_shape <- function(shape_data = NULL, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL, shape_key_field = NULL,
                           shape_label_size = "1", shape_xy_fields  = c("LON", "LAT"), shape_geom_field  = "geometry")
 {
   tryCatch(
@@ -45,6 +45,7 @@ process_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL
       return(paste0("Error: There was an unknown error processing the shape object: ", shape_obj))
     }
 
+    # Verify shape
     result <- verify_shape(shape_obj, simplify, shape_label_field, shape_data_field, shape_key_field, shape_label_size, shape_xy_fields, shape_geom_field)
 
     if(result != "Success")
@@ -150,61 +151,43 @@ process_raster <- function(raster_data, raster_col, raster_band = 1, bin_method 
 #' @return (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-process_data <- function(map_data, data_key_field, data_col,  shape_obj, shape_data_field, shape_key_field)
+process_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL,  shape_obj = NULL, shape_data_field = NULL, shape_key_field = NULL)
 {
   tryCatch(
     {
-      if(is.null(shape_data_field))
-      {
-        # Read and process map data object via local processing function
-        map_data_obj <- process_data(map_data, data_key_field, data_col, data_key_field, shape_obj, shape_data_field, shape_key_field)
 
-        if(class(map_data_obj) == "character")
-        {
-          # Process_data must have caught an error
-          return_error(map_data_obj, "Process Data")
-          return("Error - see console for output")
-        }
-        # Merge map and data
-        suppressWarnings({combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))})
+      if(!is.null(shape_data_field))
+      {
+        # No shape_data_field, use map data
+        map_obj <- shape_obj
       }
       else
       {
-        suppressWarnings({combined_df <- as.data.frame(shape_obj)})
-        data_col <- shape_data_field
-      }
-      if(is.null(map_data))
-      {
-        return("Error: `map_data` cannot be NULL")
-      }
-
-      # Map Data - if given a path to a csv, use that, else expect a data.frame object passed in
-      if(!class(map_data) %in% c("data.frame", "character"))
-      {
-        return("Error: `map_data` argument must be of type data.frame or a character path to a csv file")
-      }
-
-      if("data.frame" %in% class(map_data) )
-      {
-        map_obj <- map_data
-      }
-      else if("character" %in% class(map_data))
-      {
-        if (file.exists(map_data))
+        if("data.frame" %in% class(map_data) )
         {
-          map_obj <- read.csv(map_data, stringsAsFactors = F)
+          map_obj <- map_data
+        }
+        else if("character" %in% class(map_data))
+        {
+          if (file.exists(map_data))
+          {
+            map_obj <- read.csv(map_data, stringsAsFactors = F)
+          }
+          else
+          {
+            return(paste0("Error: Cannot open data file - `", map_data))
+          }
         }
         else
         {
-          return(paste0("Error: Cannot open data file - `", map_data))
+          return("Error: Unrecognized `map_data` argument.")
         }
       }
-      else
-      {
-        return("Error: Unrecognized `map_data` argument.")
-      }
 
-      result <- verify_data(map_obj, data_key_field, data_col)
+      # Initial error checking
+      result <- verify_data(map_obj, data_key_field, data_col, shape_obj, shape_data_field, shape_key_field)
+
+      # Return error if not Success
       if(result != "Success")
       {
         return(result)

@@ -17,13 +17,11 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
   map_font_adjust = 1)
 }
 \arguments{
-\item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
+\item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object}
 
 \item{shape_key_field}{(Character) - Name of key field in shape object for merging with map_data object}
 
-\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes or fields (such as country name)}
-
-\item{shape_label_size}{(Numric) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
+\item{shape_label_field}{(Character) - Optional field for plotting map labels from the shape attributes (such as country name)}
 
 \item{shape_data_field}{(Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable}
 
@@ -45,29 +43,31 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
 
 \item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
 
-\item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (Types accepted: "pdf", "jpeg", "tiff", "png", "bmp", "svg", "eps", "ps", "tex") (default PNG)}
+\item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
 
-\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))}
+\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))}
 
 \item{map_xy_min_max}{(c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))}
 
-\item{map_title}{(Character) - Title to be displayed on the output map}
+\item{map_title}{(Character) - Title to be displayed at the top of the output map}
 
-\item{map_palette}{(Character) - Optional variable to manually set the colorscale to a specific palette from RColorbrewer}
+\item{map_palette}{(Character) - Variable to hold the type of colorscale to be used from the RColorBrewer palette (default "RdYlBu")}
 
 \item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE or FALSE}
 
 \item{map_palette_type}{(Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")}
 
-\item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (default c(15, 10))}
+\item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))}
 
-\item{map_legend_title}{(Character) - Text for the legend header}
+\item{map_legend_title}{(Character) - Text variable to be used for the legend header}
 
-\item{map_x_label}{(Character) - Label for x axis (default Lon)}
+\item{map_x_label}{(Character) - Label for x axis (default "Lon")}
 
-\item{map_y_label}{(Character) - Label for y axis (default Lat)}
+\item{map_y_label}{(Character) - Label for y axis (default "Lat")}
 
 \item{map_font_adjust}{(Numeric) - A number between 0.1 and 10 that scales the map fonts either up or down (0.1 = 90% smaller, 10 = 1000% bigger)}
+
+\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.) (Default "1")}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed

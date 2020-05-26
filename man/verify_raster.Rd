@@ -4,7 +4,7 @@
 \alias{verify_raster}
 \title{Verify raster data}
 \usage{
-verify_raster(raster_data, raster_col, raster_band = 1,
+verify_raster(raster_data = NULL, raster_col = NULL, raster_band = 1,
   bin_method = "pretty", bins = 8, convert_zero = FALSE)
 }
 \arguments{

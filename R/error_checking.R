@@ -109,7 +109,7 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
 #' @return (Character) - Returns a success token or an error string if failed
 #' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
-verify_raster <- function(raster_data , raster_col, raster_band = 1, bin_method = "pretty", bins = 8, convert_zero = FALSE)
+verify_raster <- function(raster_data = NULL, raster_col = NULL, raster_band = 1, bin_method = "pretty", bins = 8, convert_zero = FALSE)
 {
     result <- "Success"
 
@@ -157,32 +157,59 @@ verify_raster <- function(raster_data , raster_col, raster_band = 1, bin_method 
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
+#' @param shape_obj (SF) - An SF object
+#' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
+#' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
 #' @return (Character) - Returns a success token or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
-verify_data <- function(map_data, data_key_field, data_col)
+verify_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL, shape_obj = NULL, shape_data_field = NULL, shape_key_field = NULL)
 {
     result <- "Success"
 
-    # Verify map_data
-    if(!is.null(map_data))
+    # Check column arguments are not duplicative
+    if(!is.null(shape_data_field) && !is.null(data_col))
     {
-        # Verify data_key_field
-        if(!is.null(data_key_field))
-        {
-            if(!"character" %in% class(data_key_field))
-                return(paste0("Error: `data_key_field` argument must be of type character"))
-            if(!data_key_field %in% colnames(map_data))
-                return(paste0("Error: `data_key_field` - `", data_key_field, "` - was not found in the `map_data` data frame"))
-        }
+      return_error("Error: Both of the `shape_data_field` and `data_col` arguments cannot have a value (you may use only one)", "Duplicate arguments")
+      return("Error - see console for output")
+    }
 
-        # Verify data_col
-        if(!is.null(data_col))
-        {
-            if(!"character" %in% class(data_col))
-                return("Error: `data_col` argument must be of type character")
-            if(!data_col %in% colnames(map_data))
-                return(paste0("Error: `data_col` - `", data_col, "` - was not found in the `map_data` data frame"))
-        }
+    # Check data arguments are not duplicative
+    if(is.null(map_data) && is.null(shape_data_field))
+    {
+      return("Error: both `map_data` and `shape_data_field` cannot be NULL")
+    }
+
+    # Map Data - if given a path to a csv, use that, else expect a data.frame object passed in
+    if(!class(map_data) %in% c("data.frame", "character"))
+    {
+      return("Error: `map_data` argument must be of type data.frame or a character path to a csv file")
+    }
+
+    # Verify shape_data_field if not NULL
+    if(!is.null(shape_data_field))
+    {
+      if(!"character" %in% class(shape_data_field))
+        return(paste0("Error: `shape_data_field` argument must be of type character"))
+      if(!shape_data_field %in% colnames(shape_obj))
+        return(paste0("Error: `shape_data_field` - `", shape_data_field, "` - was not found in the `shape_obj` argument"))
+    }
+
+    # Verify data_key_field if not NULL
+    if(!is.null(data_key_field))
+    {
+        if(!"character" %in% class(data_key_field))
+            return(paste0("Error: `data_key_field` argument must be of type character"))
+        if(!data_key_field %in% colnames(map_data))
+            return(paste0("Error: `data_key_field` - `", data_key_field, "` - was not found in the `map_data` data frame"))
+    }
+
+    # Verify data_col
+    if(!is.null(data_col))
+    {
+        if(!"character" %in% class(data_col))
+            return("Error: `data_col` argument must be of type character")
+        if(!data_col %in% colnames(map_data))
+            return(paste0("Error: `data_col` - `", data_col, "` - was not found in the `map_data` data frame"))
     }
 
     return(result)
@@ -209,7 +236,7 @@ verify_data <- function(map_data, data_key_field, data_col)
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand_xy = c(0,0), map_xy_min_max = c(-180, 180, -90, 90), map_title = "",
                               map_palette = NULL, map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10), map_legend_title = "",
-                              map_x_label = "Lon", map_y_label = "Lat")
+                              map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
 {
     output <- "Success"
 
@@ -287,6 +314,12 @@ verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand
     if(!"character" %in% class(map_y_label) && !is.null(map_y_label))
     {
         return("Error: `map_y_label` must be of class character or NULL")
+    }
+
+    # Verify map_font_adjust
+    if(!"numeric" %in% class(map_font_adjust) || is.null(map_font_adjust))
+    {
+      return("Error: `map_font_adjust` must be of class numeric and not NULL")
     }
 
     return(output)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/maps.R
 \name{custom_map}
 \alias{custom_map}
-\title{Create a basic map object from input shape and-or raster and return. Option to save the output to file}
+\title{Create a basic map object from input shape and-or raster.}
 \usage{
 custom_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
   shape_label_field = NULL, shape_label_size = "1", simplify = FALSE,
@@ -14,17 +14,17 @@ custom_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
   map_y_label = "Latitude")
 }
 \arguments{
-\item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}
+\item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object}
 
 \item{raster_data}{(Raster or Character) - Either the full path string to a raster file or an object of type RasterLayer}
 
-\item{raster_col}{(Character) - Column name that contains the raster object's output variable}
+\item{raster_col}{(Character) - Raster field name that contains the desired output variable}
 
-\item{shape_label_field}{(Character) - Optional field for plotting data available from the shape attributes and fields (such as country name)}
+\item{shape_label_field}{(Character) - Optional field for plotting map labels from the shape attributes (such as country name)}
 
 \item{simplify}{(Boolean) - Option to reduce the number or complexity of the polygons in the shape file (default FALSE)}
 
-\item{raster_band}{(Numeric) - Future variable for dealing with multi band or time series rasters etc}
+\item{raster_band}{(Numeric) - Variable for dealing with multi band or time series rasters that specifices which raster band to use (Default 1)}
 
 \item{convert_zero}{(Boolean) - Convert values within the raster data from zero to NA (default FALSE)}
 
@@ -32,31 +32,31 @@ custom_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
 
 \item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
 
-\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scale of the map - Vector (expand x, expand y) (default c(0,0))}
+\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))}
 
 \item{map_xy_min_max}{(c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))}
 
-\item{map_title}{(Character) - Title to be displayed on the output map}
+\item{map_title}{(Character) - Title to be displayed at the top of the output map}
 
-\item{map_palette}{(Character) - Variable to hold the type of colorscale to be from the RColorBrewer palette (default "RdYlBu")}
+\item{map_palette}{(Character) - Variable to hold the type of colorscale to be used from the RColorBrewer palette (default "RdYlBu")}
 
 \item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE or FALSE}
 
 \item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))}
 
-\item{map_legend_title}{(Character) - Text for the legend header}
+\item{map_legend_title}{(Character) - Text variable to be used for the legend header}
 
 \item{map_x_label}{(Character) - Label for x axis (default "Lon")}
 
 \item{map_y_label}{(Character) - Label for y axis (default "Lat")}
 
-\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
+\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.) (Default "1")}
 }
 \value{
 (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 }
 \description{
-This function is designed to take both a shape and raster object or path and create a standardized output map.
+This function is designed to take both a shape and raster object or path and create a standardized output map. Option to save the output to file
 }
 \author{
 Jason Evanoff, jason.evanoff@pnnl.gov

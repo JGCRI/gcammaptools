@@ -3,9 +3,9 @@
 # Contains general output functions for the package
 
 
-#' Handles saving the map output to disk
+#' Saves a plot to disk
 #'
-#' Provides error handling and saving of the output map as an option to file
+#' Provides basic error handling and saving of the output map to file
 #'
 #' @param output_file (Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
 #' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
