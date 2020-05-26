@@ -28,7 +28,7 @@ verify_shape(shape_data, simplify = FALSE, shape_label_field = NULL,
 \item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 }
 \value{
-(Character) - Returns a success token or an error string if failed
+(Character) - Returns either "Success" or an error string if failed
 }
 \description{
 This function runs a check on shape inputs and looks for errors

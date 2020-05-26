@@ -21,7 +21,7 @@ verify_data(map_data = NULL, data_key_field = NULL, data_col = NULL,
 \item{shape_key_field}{(Character) - Name of key field in shape object for merging with map_data object}
 }
 \value{
-(Character) - Returns a success token or an error string if failed
+(Character) - Returns either "Success" or an error string if failed
 }
 \description{
 This function runs a check on map data inputs and looks for errors

@@ -21,7 +21,7 @@ verify_raster(raster_data = NULL, raster_col = NULL, raster_band = 1,
 \item{convert_zero}{(Boolean) - Convert raster zero values to NA (default FALSE)}
 }
 \value{
-(Character) - Returns a success token or an error string if failed
+(Character) - Returns either "Success" or an error string if failed
 }
 \description{
 This function runs a check on raster inputs and looks for errors, missing projection, or missing key fields

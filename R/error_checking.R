@@ -13,7 +13,7 @@
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
 #' @param simplify (Boolean) - Option to reduce the number or complexity of the polygons in the shape file (default FALSE)
-#' @return (Character) - Returns a success token or an error string if failed
+#' @return (Character) - Returns either "Success" or an error string if failed
 #' @importFrom sf st_crs
 #' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
@@ -49,24 +49,27 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
         return("Error: Unrecognized `shape_data` argument.")
     }
 
+    # Verify shape_data_field
     if(!is.null(shape_data_field))
     {
         # look for shape data field
         if(!shape_data_field %in% names(shape_data))
         {
-            return(paste0("Error: Shape data field `", shape_data_field, "`` does not exist in shape object."))
+            return(paste0("Error: `shape_data_field` `", shape_data_field, "`` does not exist in shape object."))
         }
     }
 
+    # Verify shape_label_field
     if(!is.null(shape_label_field))
     {
         # look for shape data field
         if(!shape_label_field %in% names(shape_data))
         {
-            return(paste0("Error: Shape label field - `", shape_label_field, "` - does not exist in shape object."))
+            return(paste0("Error: `shape_label_field` - `", shape_label_field, "` - does not exist in shape object."))
         }
     }
 
+    # Verify shape_key_field
     if(!is.null(shape_key_field))
     {
         # look for shape data field
@@ -106,7 +109,7 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
 #' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (default "pretty")
 #' @param bins (Numeric) - Number of bins in which to divide the raster (default 8)
 #' @param convert_zero (Boolean) - Convert raster zero values to NA (default FALSE)
-#' @return (Character) - Returns a success token or an error string if failed
+#' @return (Character) - Returns either "Success" or an error string if failed
 #' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 verify_raster <- function(raster_data = NULL, raster_col = NULL, raster_band = 1, bin_method = "pretty", bins = 8, convert_zero = FALSE)
@@ -160,7 +163,7 @@ verify_raster <- function(raster_data = NULL, raster_col = NULL, raster_band = 1
 #' @param shape_obj (SF) - An SF object
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
 #' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
-#' @return (Character) - Returns a success token or an error string if failed
+#' @return (Character) - Returns either "Success" or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 verify_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL, shape_obj = NULL, shape_data_field = NULL, shape_key_field = NULL)
 {
@@ -232,6 +235,8 @@ verify_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL,
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)
 #' @param map_y_label (Character) - Label for y axis (default Lat)
+#' @param map_font_adjust (Numeric) - A number between 0.1 and 10 that scales the map fonts either up or down (0.1 = 90% smaller, 10 = 1000% bigger)
+#' @return (Character) - Returns either "Success" or an error string if failed
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand_xy = c(0,0), map_xy_min_max = c(-180, 180, -90, 90), map_title = "",
