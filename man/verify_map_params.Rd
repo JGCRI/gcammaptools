@@ -36,7 +36,7 @@ verify_map_params(bin_method = "pretty", bins = 8, dpi = 150,
 
 \item{map_y_label}{(Character) - Label for y axis (default Lat)}
 
-\item{map_font_adjust}{(Numeric) - A number between 0.1 and 10 that scales the map fonts either up or down (0.1 = 90% smaller, 10 = 1000% bigger)}
+\item{map_font_adjust}{(Numeric) - A number between 0.2 and 2 that scales the map fonts either up or down (0.2 = 80% smaller, 2 = 200% bigger)}
 }
 \value{
 (Character) - Returns either "Success" or an error string if failed

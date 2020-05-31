@@ -39,7 +39,7 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
 
 \item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")}
 
-\item{bins}{(Numeric) - Number of bins, or segments, in which to divide the raster}
+\item{bins}{(Numeric) - Number of bins, or segments, in which to divide the raster (default 8)}
 
 \item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
 
@@ -65,7 +65,7 @@ choropleth(shape_data = NULL, shape_key_field = NULL,
 
 \item{map_y_label}{(Character) - Label for y axis (default "Lat")}
 
-\item{map_font_adjust}{(Numeric) - A number between 0.1 and 10 that scales the map fonts either up or down (0.1 = 90% smaller, 10 = 1000% bigger)}
+\item{map_font_adjust}{(Numeric) - A number between 0.2 and 2 that scales the map fonts either up or down (0.2 = 80% smaller, 2 = 200% bigger)}
 
 \item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.) (Default "1")}
 }

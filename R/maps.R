@@ -180,7 +180,7 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
 #' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
-#' @param bins (Numeric) - Number of bins, or segments, in which to divide the raster
+#' @param bins (Numeric) - Number of bins, or segments, in which to divide the raster (default 8)
 #' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
 #' @param output_file (Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))
@@ -193,7 +193,7 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' @param map_legend_title (Character) - Text variable to be used for the legend header
 #' @param map_x_label (Character) - Label for x axis (default "Lon")
 #' @param map_y_label (Character) - Label for y axis (default "Lat")
-#' @param map_font_adjust (Numeric) - A number between 0.1 and 10 that scales the map fonts either up or down (0.1 = 90% smaller, 10 = 1000% bigger)
+#' @param map_font_adjust (Numeric) - A number between 0.2 and 2 that scales the map fonts either up or down (0.2 = 80% smaller, 2 = 200% bigger)
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 #' @importFrom sf st_transform st_crs
 #' @importFrom dplyr mutate left_join
@@ -339,7 +339,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
   # ------- End map data and options processing
 
       # Build ggplot Map object
-      output <- ggplot(data = combined_df, aes_string(x=shape_x, y=shape_y,  fill="value", geometry=shape_geom)) +
+      suppressWarnings({output <- ggplot(data = combined_df, aes_string(x=shape_x, y=shape_y,  fill="value", geometry=shape_geom)) +
         geom_sf(color="gray42") +
          map_color_scale +
          coord_sf() +
@@ -354,7 +354,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
         theme(legend.title = element_text(size=rel(map_font_adjust))) +
         # theme(text = element_text(size=rel(map_font_adjust))) +
          theme(plot.title = element_text(hjust = 0.5, size=24)) +
-         map_size_guide_option
+         map_size_guide_option })
 
       # Save File
       if(!is.null(output_file))

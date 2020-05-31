@@ -235,7 +235,7 @@ verify_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL,
 #' @param map_legend_title (Character) - Text for the legend header
 #' @param map_x_label (Character) - Label for x axis (default Lon)
 #' @param map_y_label (Character) - Label for y axis (default Lat)
-#' @param map_font_adjust (Numeric) - A number between 0.1 and 10 that scales the map fonts either up or down (0.1 = 90% smaller, 10 = 1000% bigger)
+#' @param map_font_adjust (Numeric) - A number between 0.2 and 2 that scales the map fonts either up or down (0.2 = 80% smaller, 2 = 200% bigger)
 #' @return (Character) - Returns either "Success" or an error string if failed
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
@@ -325,6 +325,10 @@ verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand
     if(!"numeric" %in% class(map_font_adjust) || is.null(map_font_adjust))
     {
       return("Error: `map_font_adjust` must be of class numeric and not NULL")
+    }
+    if(map_font_adjust > 2 || map_font_adjust < 0.2)
+    {
+      return("Error: `map_font_adjust` must be between 0.2 and 2.0")
     }
 
     return(output)
