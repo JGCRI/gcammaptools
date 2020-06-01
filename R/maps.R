@@ -359,7 +359,7 @@ choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_fi
       # Save File
       if(!is.null(output_file))
       {
-        result <- gcammaptools::save_plot(output_file, dpi, map_width, map_height)
+        result <- suppressWarnings({gcammaptools::save_plot(output_file, dpi, map_width, map_height)})
         if(result != "Success")
         {
           return_error(result, "Output file")
