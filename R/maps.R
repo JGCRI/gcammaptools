@@ -170,27 +170,27 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
+#' @param data_col (Character) - Column name that contains the data object's output variable
+#' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
 #' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
+#' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
+#' @param output_file (Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
+#' @param map_title (Character) - Title to be displayed at the top of the output map
+#' @param simplify (Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)
+#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
+#' @param bins (Numeric) - Number of bins, or segments, in which to divide the raster (default 8)
+#' @param map_legend_title (Character) - Text variable to be used for the legend header
+#' @param map_palette_type (Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")
+#' @param map_palette (Character) - Variable to hold the type of colorscale to be used from the RColorBrewer palette (default "RdYlBu")
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE or FALSE
 #' @param shape_label_field (Character) - Optional field for plotting map labels from the shape attributes (such as country name)
 #' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.) (Default "1")
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
-#' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
-#' @param simplify (Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)
-#' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
-#' @param data_col (Character) - Column name that contains the data object's output variable
-#' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
-#' @param bins (Numeric) - Number of bins, or segments, in which to divide the raster (default 8)
+#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))
 #' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
-#' @param output_file (Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
 #' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))
 #' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
-#' @param map_title (Character) - Title to be displayed at the top of the output map
-#' @param map_palette (Character) - Variable to hold the type of colorscale to be used from the RColorBrewer palette (default "RdYlBu")
-#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE or FALSE
-#' @param map_palette_type (Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")
-#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))
-#' @param map_legend_title (Character) - Text variable to be used for the legend header
 #' @param map_x_label (Character) - Label for x axis (default "Lon")
 #' @param map_y_label (Character) - Label for y axis (default "Lat")
 #' @param map_font_adjust (Numeric) - A number between 0.2 and 2 that scales the map fonts either up or down (0.2 = 80% smaller, 2 = 200% bigger)
@@ -203,12 +203,12 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-choropleth <- function(shape_data = NULL, map_data = NULL, map_title = NULL, data_col = NULL, data_key_field = NULL,
-                       shape_key_field = NULL, shape_data_field = NULL, output_file = NULL, shape_geom_field = "geometry",
-                       simplify = FALSE,  bin_method = "pretty", bins = 8, map_legend_title = "",shape_label_field = NULL, shape_label_size = 1,
-                       map_palette = NULL, map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
-                       shape_xy_fields = c("LON", "LAT"), dpi = 150,  expand_xy = c(0, 0), map_xy_min_max = c(-180, 180, -90, 90),
-                       map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
+choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data_key_field = NULL, shape_key_field = NULL, output_file = NULL,
+                       map_title = NULL, shape_data_field = NULL, shape_geom_field = "geometry", simplify = FALSE,
+                       bin_method = "pretty", bins = 8, map_legend_title = "", map_palette_type = "seq", map_palette = NULL,
+                       map_palette_reverse = FALSE,  shape_label_field = NULL, shape_label_size = 1,
+                       map_width_height_in = c(15, 10), shape_xy_fields = c("LON", "LAT"), dpi = 150, expand_xy = c(0, 0),
+                       map_xy_min_max = c(-180, 180, -90, 90), map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
 {
   output <- "There was an unknown error while processing your map"
   tryCatch(
@@ -242,7 +242,7 @@ choropleth <- function(shape_data = NULL, map_data = NULL, map_title = NULL, dat
       if(is.null(shape_data_field))
       {
         # Merge map and data
-        suppressWarnings({combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field,  shape_key_field))})
+        suppressWarnings({combined_df <- left_join(x = shape_obj, y = map_data_obj, by = setNames(data_key_field, shape_key_field))})
       }
       else
       {

@@ -4,7 +4,7 @@ author: "Jason Evanoff"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ow to use the Choropleth function in GCAMMaps package}
+  %\VignetteIndexEntry{How to use the Choropleth function in GCAMMaps package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,50 +16,73 @@ knitr::opts_chunk$set(
 )
 ```
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
-
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+```{r checknamespace, echo=FALSE}
+if(!requireNamespace('rgcam', quietly=TRUE)) {
+    stop('The rgcam package is required to build this vignette')
+}
+if(!requireNamespace('rgis', quietly=TRUE)) {
+    stop('The rgis package is required to build this vignette')
+}
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+## GCAM Mapping Tools Examples - Choropleth function
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
+### Introduction
 
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+One of the most commonly requested map types is the choropleth map, which is a thematic map in which areas are shaded in proportion to a statistical variable that represents an aggregate summary of a geographic characteristic within each area, such as population density or per-capita income. This vignette explains how to use this package to dynamically generate a simple choropleth map by inputting a combination of shape files and data objects/files. This function has been designed to be both flexible regarding the scope and complexity of its arguments and simple to use with default values available for most arguments. 
 
-## More Examples
+### Example 1: Building your first map - Show World Health Organization (WHO) Healthy life expectancy (HALE) at birth (years)
 
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+To get started building a minimal choropleth map, there are 5 required fields that must be passed to the function: `shape_data`, `map_data` (or `shape_data_field` discussed later), `shape_key_field` and `data_key_field.` The `shape_data` argument must be either an SF object or point to a .shp file in a directory that includes all necessary accompanying files (.dbf, .prj, etc). The `map_data` argument must either be a data frame variable or point to a .csv file in comma delimited format. The `data_col` argument points to the 'value' field in the `map_data` output that will be the plot output. The `shape_key_field` argument must point to the field in your shape object that will be used to join the shape and data objects together. The `data_key_field` argument must point to the field in your data object that will be used in the join operation. These fields must be compatible in a join operation. In the case of excess data, this function will left_join to preserve shape data (unjoinable map data will be lost).
 
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+For the purposes of this example, the following arguments will be used:
+* `shape_data` - "data/tm_world_borders_simpl-0.3.shp" - A simple world map with country borders
+* `map_data` - "data/data.csv" - WHO HALE data 2000-2016
+* `data_col` - "X2016" - Use 2016 data from the spreadsheet
+* `shape_key_field` - "NAME" - points to country name field in shape object
+* `data_key_field` - "Country" - points to country name in data object
+
+```{r load_data, warning=FALSE}
+### Load the example scenario data.
+data_file <- system.file("data", "data.csv", package="gcammaptools") 
+shape_file <- system.file("data", "tm_world_borders_simpl-0.3.shp", package="gcammaptools")
+output <- gcammaptools::choropleth(shape_data = shape_file, shape_key_field = "NAME", data_col = "X2016",
+                                   map_data = data_file, data_key_field = "Country")
+plot(output)
 ```
 
-Also a quote using `>`:
+<!-- ```{r load.map, fig.width=4, fig.align='center'} -->
+<!-- mapdata <- system.file("extdata/rgn32", "reg32_spart.shp", package = "gcammaptools") -->
+<!-- mapdata -->
+<!-- plot_GCAM(mapdata) -->
+<!-- ``` -->
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+<!-- ## Figures -->
+
+<!-- The figure sizes have been customised so that you can easily put two images side-by-side.  -->
+
+<!-- ```{r, fig.show='hold'} -->
+<!-- plot(1:10) -->
+<!-- plot(10:1) -->
+<!-- ``` -->
+
+<!-- You can enable figure captions by `fig_caption: yes` in YAML: -->
+
+<!--     output: -->
+<!--       rmarkdown::html_vignette: -->
+<!--         fig_caption: yes -->
+
+<!-- Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**. -->
+
+<!-- ## More Examples -->
+
+<!-- You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`. -->
+
+<!-- ```{r, echo=FALSE, results='asis'} -->
+<!-- knitr::kable(head(mtcars, 10)) -->
+<!-- ``` -->
+
+<!-- Also a quote using `>`: -->
+
+<!-- > "He who gives up [code] safety for [code] speed deserves neither." -->
+<!-- ([via](https://twitter.com/hadleywickham/status/504368538874703872)) -->

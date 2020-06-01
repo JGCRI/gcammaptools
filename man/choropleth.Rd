@@ -4,62 +4,62 @@
 \alias{choropleth}
 \title{Dynamic choropleth map creation}
 \usage{
-choropleth(shape_data = NULL, shape_key_field = NULL,
-  shape_label_field = NULL, shape_label_size = 1,
-  shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"),
-  shape_geom_field = "geometry", simplify = FALSE, map_data = NULL,
-  data_key_field = NULL, data_col = NULL, bin_method = "pretty",
-  bins = 8, dpi = 150, output_file = NULL, expand_xy = c(0, 0),
-  map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,
-  map_palette = NULL, map_palette_reverse = FALSE,
-  map_palette_type = "seq", map_width_height_in = c(15, 10),
-  map_legend_title = "", map_x_label = "Lon", map_y_label = "Lat",
-  map_font_adjust = 1)
+choropleth(shape_data = NULL, map_data = NULL, data_col = NULL,
+  data_key_field = NULL, shape_key_field = NULL, output_file = NULL,
+  map_title = NULL, shape_data_field = NULL,
+  shape_geom_field = "geometry", simplify = FALSE,
+  bin_method = "pretty", bins = 8, map_legend_title = "",
+  map_palette_type = "seq", map_palette = NULL,
+  map_palette_reverse = FALSE, shape_label_field = NULL,
+  shape_label_size = 1, map_width_height_in = c(15, 10),
+  shape_xy_fields = c("LON", "LAT"), dpi = 150, expand_xy = c(0, 0),
+  map_xy_min_max = c(-180, 180, -90, 90), map_x_label = "Lon",
+  map_y_label = "Lat", map_font_adjust = 1)
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object}
 
+\item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
+
+\item{data_col}{(Character) - Column name that contains the data object's output variable}
+
+\item{data_key_field}{(Character) - Name of key field in data_obj for merging with shape_data}
+
 \item{shape_key_field}{(Character) - Name of key field in shape object for merging with map_data object}
 
-\item{shape_label_field}{(Character) - Optional field for plotting map labels from the shape attributes (such as country name)}
+\item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
+
+\item{map_title}{(Character) - Title to be displayed at the top of the output map}
 
 \item{shape_data_field}{(Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable}
-
-\item{shape_xy_fields}{(c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))}
 
 \item{shape_geom_field}{(Character) - Specifies field within shape object that contains needed geometry (default "geometry")}
 
 \item{simplify}{(Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)}
 
-\item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
-
-\item{data_key_field}{(Character) - Name of key field in data_obj for merging with shape_data}
-
-\item{data_col}{(Character) - Column name that contains the data object's output variable}
-
 \item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")}
 
 \item{bins}{(Numeric) - Number of bins, or segments, in which to divide the raster (default 8)}
 
-\item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
+\item{map_legend_title}{(Character) - Text variable to be used for the legend header}
 
-\item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}
-
-\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))}
-
-\item{map_xy_min_max}{(c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))}
-
-\item{map_title}{(Character) - Title to be displayed at the top of the output map}
+\item{map_palette_type}{(Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")}
 
 \item{map_palette}{(Character) - Variable to hold the type of colorscale to be used from the RColorBrewer palette (default "RdYlBu")}
 
 \item{map_palette_reverse}{(Boolean) - Set palette to reverse direction TRUE or FALSE}
 
-\item{map_palette_type}{(Character) - Variable to load default palette by type of data ("qual" for qualitative data, "seq" for sequential data, "div" for divergent data) (default "seq")}
+\item{shape_label_field}{(Character) - Optional field for plotting map labels from the shape attributes (such as country name)}
 
 \item{map_width_height_in}{(c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))}
 
-\item{map_legend_title}{(Character) - Text variable to be used for the legend header}
+\item{shape_xy_fields}{(c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))}
+
+\item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
+
+\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))}
+
+\item{map_xy_min_max}{(c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))}
 
 \item{map_x_label}{(Character) - Label for x axis (default "Lon")}
 

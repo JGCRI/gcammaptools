@@ -65,10 +65,10 @@ process_shape <- function(shape_data = NULL, simplify = FALSE, shape_label_field
     {
       shape_obj <- gcammaptools::simplify_mapdata(shape_obj)
     }
-    else
-    {
-      return(result)
-    }
+    # else
+    # {
+    #   return(result)
+    # }
   },
   error = function(err)
   {
