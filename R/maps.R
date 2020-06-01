@@ -169,6 +169,7 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' Create a choropleth map object from shape and data object and return, save (optional) the output
 #'
 #' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object
+#' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
 #' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
 #' @param shape_label_field (Character) - Optional field for plotting map labels from the shape attributes (such as country name)
@@ -176,7 +177,6 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
 #' @param simplify (Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)
-#' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data
 #' @param data_col (Character) - Column name that contains the data object's output variable
 #' @param bin_method (Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")
@@ -203,13 +203,12 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' @import RColorBrewer
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-choropleth <- function(shape_data = NULL, shape_key_field = NULL, shape_label_field = NULL, shape_label_size = 1,
-                              shape_data_field = NULL, shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry", simplify = FALSE,
-                              map_data = NULL, data_key_field = NULL, data_col = NULL, bin_method = "pretty", bins = 8,
-                              dpi = 150, output_file = NULL,  expand_xy = c(0, 0),
-                              map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL, map_palette = NULL,
-                              map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
-                              map_legend_title = "", map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
+choropleth <- function(shape_data = NULL, map_data = NULL, map_title = NULL, data_col = NULL, data_key_field = NULL,
+                       shape_key_field = NULL, shape_data_field = NULL, output_file = NULL, shape_geom_field = "geometry",
+                       simplify = FALSE,  bin_method = "pretty", bins = 8, map_legend_title = "",shape_label_field = NULL, shape_label_size = 1,
+                       map_palette = NULL, map_palette_reverse = FALSE, map_palette_type = "seq", map_width_height_in = c(15, 10),
+                       shape_xy_fields = c("LON", "LAT"), dpi = 150,  expand_xy = c(0, 0), map_xy_min_max = c(-180, 180, -90, 90),
+                       map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
 {
   output <- "There was an unknown error while processing your map"
   tryCatch(
