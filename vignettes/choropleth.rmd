@@ -12,7 +12,8 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width=10, fig.height=6
 )
 ```
 
@@ -29,18 +30,26 @@ if(!requireNamespace('rgis', quietly=TRUE)) {
 
 ### Introduction
 
-One of the most commonly requested map types is the choropleth map, which is a thematic map in which areas are shaded in proportion to a statistical variable that represents an aggregate summary of a geographic characteristic within each area, such as population density or per-capita income. This vignette explains how to use this package to dynamically generate a simple choropleth map by inputting a combination of shape files and data objects/files. This function has been designed to be both flexible regarding the scope and complexity of its arguments and simple to use with default values available for most arguments. 
+One of the most commonly requested map types is the choropleth map, which is a thematic map in which areas are shaded in proportion to a statistical variable such as population density or per-capita income. This vignette explains how to use this package to dynamically generate and customize a simple choropleth map by inputting a combination of shape files and data objects/files. This function has been designed to be both flexible regarding the scope and complexity of its arguments and simple to use with default values available for most arguments. 
 
-### Example 1: Building your first map - Show World Health Organization (WHO) Healthy life expectancy (HALE) at birth (years)
+### Example 1: Building your first map - Show World Health Organization (WHO) Healthy Life Expectancy (HALE) at birth (years)
 
-To get started building a minimal choropleth map, there are 5 required fields that must be passed to the function: `shape_data`, `map_data` (or `shape_data_field` discussed later), `shape_key_field` and `data_key_field.` The `shape_data` argument must be either an SF object or point to a .shp file in a directory that includes all necessary accompanying files (.dbf, .prj, etc). The `map_data` argument must either be a data frame variable or point to a .csv file in comma delimited format. The `data_col` argument points to the 'value' field in the `map_data` output that will be the plot output. The `shape_key_field` argument must point to the field in your shape object that will be used to join the shape and data objects together. The `data_key_field` argument must point to the field in your data object that will be used in the join operation. These fields must be compatible in a join operation. In the case of excess data, this function will left_join to preserve shape data (unjoinable map data will be lost).
+To get started building a minimal choropleth map, there are 5 required fields that must be passed to the function: `shape_data`, `map_data` (or `shape_data_field` discussed later), `shape_key_field` and `data_key_field.` 
 
-For the purposes of this example, the following arguments will be used:
+* The `shape_data` argument must be either an SF object or point to a .shp file in a directory that includes all necessary accompanying files (.dbf, .prj, etc). 
+* The `map_data` argument must either be a data frame variable or point to a .csv file in comma delimited format. 
+* The `data_col` argument points to the 'value' field in the `map_data` object that will be the plot's output. 
+* The `shape_key_field` argument must point to the field in your shape object that will be used to join the shape and data objects together. 
+* The `data_key_field` argument must point to the field in your data object that will be used in the join operation. 
+
+These fields must be compatible in a join operation. In the case of excess data, this function will left_join to preserve shape data (unjoinable map data will be lost). For the purposes of this example, the following arguments will be used:
+
+
 * `shape_data` - "data/tm_world_borders_simpl-0.3.shp" - A simple world map with country borders
-* `map_data` - "data/data.csv" - WHO HALE data 2000-2016
-* `data_col` - "X2016" - Use 2016 data from the spreadsheet
-* `shape_key_field` - "NAME" - points to country name field in shape object
-* `data_key_field` - "Country" - points to country name in data object
+* `map_data` - "data/data.csv" - CSV file containing WHO HALE data 2000-2016
+* `data_col` - "X2016" - Instructs the function to use the 2016 column from the csv
+* `shape_key_field` - "NAME" - Tells the function to use the field "NAME" in the shape object for joining purposes
+* `data_key_field` - "Country" - Tells the function to use the "Country" field in the csv/data object for joining purposes
 
 ```{r load_data, warning=FALSE}
 ### Load the example scenario data.
@@ -48,6 +57,21 @@ data_file <- system.file("data", "data.csv", package="gcammaptools")
 shape_file <- system.file("data", "tm_world_borders_simpl-0.3.shp", package="gcammaptools")
 output <- gcammaptools::choropleth(shape_data = shape_file, shape_key_field = "NAME", data_col = "X2016",
                                    map_data = data_file, data_key_field = "Country")
+plot(output)
+```
+
+## Customizing the output
+Now that we have seen how easy it is to build a simple choropleth map, let's learn how to fill in and customize the details like giving the map and legend titles and customizing the axes. The arguments we will be working with in this section are `map_title`, `legend_title`, `map_x_label`, and `map_y_label`. 
+
+* `map_title` - "2016 Healthy Life Expectancy (HALE) at Birth" 
+* `map_legend_title` - "HALE (years)" 
+* `map_x_label` - "Longitude"
+* `map_y_label` - "Latitude"
+
+```{r customize_data, warning=FALSE}
+### Customize the map
+output <- gcammaptools::choropleth(shape_data = shape_file, shape_key_field = "NAME", data_col = "X2016",
+                                   map_data = data_file, data_key_field = "Country", map_title = "2016 Healthy Life Expectancy (HALE) at Birth", map_legend_title = "HALE (years)", map_x_label = "Longitude", map_y_label = "Latitude" )
 plot(output)
 ```
 

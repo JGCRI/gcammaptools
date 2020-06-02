@@ -352,7 +352,7 @@ choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data
         theme(legend.text = element_text(size=rel(map_font_adjust))) +
         theme(legend.title = element_text(size=rel(map_font_adjust))) +
         # theme(text = element_text(size=rel(map_font_adjust))) +
-         theme(plot.title = element_text(hjust = 0.5, size=24)) +
+         theme(plot.title = element_text(hjust = 0.5, size=22)) +
          map_size_guide_option })
 
       # Save File
