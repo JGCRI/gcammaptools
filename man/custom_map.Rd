@@ -4,14 +4,27 @@
 \alias{custom_map}
 \title{Create a basic map object from input shape and-or raster.}
 \usage{
-custom_map(shape_data = NULL, raster_data = NULL, raster_col = NULL,
-  shape_label_field = NULL, shape_label_size = "1", simplify = FALSE,
-  raster_band = 1, convert_zero = FALSE, dpi = 150,
-  output_file = NULL, expand_xy = c(0, 0), map_xy_min_max = c(-180,
-  180, -90, 90), map_title = NULL, map_palette = "RdYlBu",
-  map_palette_reverse = FALSE, map_width_height_in = c(15, 10),
-  map_legend_title = NULL, map_x_label = "Longitude",
-  map_y_label = "Latitude")
+custom_map(
+  shape_data = NULL,
+  raster_data = NULL,
+  raster_col = NULL,
+  shape_label_field = NULL,
+  shape_label_size = "1",
+  simplify = FALSE,
+  raster_band = 1,
+  convert_zero = FALSE,
+  dpi = 150,
+  output_file = NULL,
+  expand_xy = c(0, 0),
+  map_xy_min_max = c(-180, 180, -90, 90),
+  map_title = NULL,
+  map_palette = "RdYlBu",
+  map_palette_reverse = FALSE,
+  map_width_height_in = c(15, 10),
+  map_legend_title = NULL,
+  map_x_label = "Longitude",
+  map_y_label = "Latitude"
+)
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object}

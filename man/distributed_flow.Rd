@@ -4,16 +4,32 @@
 \alias{distributed_flow}
 \title{Distributed flow map}
 \usage{
-distributed_flow(shape_data = NULL, shape_key_field = NULL,
-  shape_label_field = NULL, shape_label_size = "1",
-  shape_xy_fields = c("LON", "LAT"), shape_geom_field = "geometry",
-  simplify = FALSE, map_data = NULL, data_key_field = NULL,
-  data_col = NULL, bin_method = "pretty", bins = NULL, dpi = 150,
-  output_file = NULL, expand_xy = c(0, 0), map_xy_min_max = c(-180,
-  180, -90, 90), map_title = NULL, map_palette = NULL,
-  map_palette_reverse = FALSE, map_palette_type = "seq",
-  map_width_height_in = c(15, 10), map_legend_title = NULL,
-  map_x_label = "Lon", map_y_label = "Lat")
+distributed_flow(
+  shape_data = NULL,
+  shape_key_field = NULL,
+  shape_label_field = NULL,
+  shape_label_size = "1",
+  shape_xy_fields = c("LON", "LAT"),
+  shape_geom_field = "geometry",
+  simplify = FALSE,
+  map_data = NULL,
+  data_key_field = NULL,
+  data_col = NULL,
+  bin_method = "pretty",
+  bins = NULL,
+  dpi = 150,
+  output_file = NULL,
+  expand_xy = c(0, 0),
+  map_xy_min_max = c(-180, 180, -90, 90),
+  map_title = NULL,
+  map_palette = NULL,
+  map_palette_reverse = FALSE,
+  map_palette_type = "seq",
+  map_width_height_in = c(15, 10),
+  map_legend_title = NULL,
+  map_x_label = "Lon",
+  map_y_label = "Lat"
+)
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with included necessary files) or an SF shape object}

@@ -4,8 +4,7 @@
 \alias{get_prj4s}
 \title{Retrieve proj4 projection string.}
 \usage{
-get_prj4s(obj = NULL, prj_type = NULL, prj_code = NULL,
-  prj4s_key = NULL)
+get_prj4s(obj = NULL, prj_type = NULL, prj_code = NULL, prj4s_key = NULL)
 }
 \arguments{
 \item{obj}{Use object instead that has a predefined proj4 string.}

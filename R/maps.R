@@ -114,8 +114,8 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
       }
 
       # Build map x and y scales using continuous scales
-      map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
-      map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
+      map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expansion(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+      map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expansion(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
       map_shape_options <- NULL
       map_size_guide_option <- NULL
@@ -197,7 +197,7 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 #' @importFrom sf st_transform st_crs
 #' @importFrom dplyr mutate left_join
-#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label theme_minimal expand_scale scale_fill_brewer aes_string element_text rel theme_update
+#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label geom_sf_text theme_minimal expansion scale_fill_brewer aes_string element_text rel theme_update geom_text
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
@@ -206,7 +206,7 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data_key_field = NULL, shape_key_field = NULL, output_file = NULL,
                        map_title = NULL, shape_data_field = NULL, shape_geom_field = "geometry", simplify = FALSE,
                        bin_method = "pretty", bins = 8, map_legend_title = "", map_palette_type = "seq", map_palette = NULL,
-                       map_palette_reverse = FALSE,  shape_label_field = NULL, shape_label_size = 1,
+                       map_palette_reverse = FALSE,  shape_label_field = NULL, shape_label_size = 3,
                        map_width_height_in = c(15, 10), shape_xy_fields = c("LON", "LAT"), dpi = 150, expand_xy = c(0, 0),
                        map_xy_min_max = c(-180, 180, -90, 90), map_x_label = "Lon", map_y_label = "Lat", map_font_adjust = 1.0)
 {
@@ -309,8 +309,8 @@ choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data
       # Set additional map options and create scales
       na_value <- "Grey"
       map_guide <- "colourbar"
-      map_x_scale <- scale_x_discrete(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
-      map_y_scale <-  scale_y_discrete(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
+      map_x_scale <- scale_x_discrete(limits=c(x_min, x_max), expand = expansion(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+      map_y_scale <-  scale_y_discrete(limits=c(y_min, y_max), expand = expansion(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_brewer(palette = palette_colors, type = palette_type, direction = palette_direction, na.value = na_value)
       map_shape_options <- NULL
       map_size_guide_option <- NULL
@@ -321,7 +321,7 @@ choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data
       # Build geometry labels if enabled by user
       if(!is.null(shape_label_field))
       {
-        map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = as.character(shape_label_size)))
+        map_shape_options <- geom_sf_text(data = shape_obj, size = shape_label_size, aes_string(label = shape_label_field, fill=NULL))
         if(!is.null(shape_label_size))
         {
           map_size_guide_option <- guides(size = FALSE)

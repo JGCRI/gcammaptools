@@ -79,9 +79,13 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
         }
     }
 
-    if(!"numeric" %in% class(shape_label_size))
+    # Verify shape_label_size
+    if(!is.null(shape_label_size))
     {
-        return("Error: `shape_label_size` argument must be numeric ")
+      if(!"numeric" %in% class(shape_label_size))
+      {
+          return("Error: `shape_label_size` argument must be numeric ")
+      }
     }
 
     if(!simplify %in% c(TRUE, FALSE))

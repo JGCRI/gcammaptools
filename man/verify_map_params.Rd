@@ -4,12 +4,22 @@
 \alias{verify_map_params}
 \title{Verify map parameters}
 \usage{
-verify_map_params(bin_method = "pretty", bins = 8, dpi = 150,
-  expand_xy = c(0, 0), map_xy_min_max = c(-180, 180, -90, 90),
-  map_title = "", map_palette = NULL, map_palette_reverse = FALSE,
-  map_palette_type = "seq", map_width_height_in = c(15, 10),
-  map_legend_title = "", map_x_label = "Lon", map_y_label = "Lat",
-  map_font_adjust = 1)
+verify_map_params(
+  bin_method = "pretty",
+  bins = 8,
+  dpi = 150,
+  expand_xy = c(0, 0),
+  map_xy_min_max = c(-180, 180, -90, 90),
+  map_title = "",
+  map_palette = NULL,
+  map_palette_reverse = FALSE,
+  map_palette_type = "seq",
+  map_width_height_in = c(15, 10),
+  map_legend_title = "",
+  map_x_label = "Lon",
+  map_y_label = "Lat",
+  map_font_adjust = 1
+)
 }
 \arguments{
 \item{bin_method}{(Character) - Method or function to use to split continuous data into discrete chunks (one of "quantile", "equal", "pretty", "kmeans") (default "pretty")}

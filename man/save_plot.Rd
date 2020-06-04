@@ -4,8 +4,7 @@
 \alias{save_plot}
 \title{Saves a plot to disk}
 \usage{
-save_plot(output_file = NULL, dpi = 150, map_width = 15,
-  map_height = 10)
+save_plot(output_file = NULL, dpi = 150, map_width = 15, map_height = 10)
 }
 \arguments{
 \item{output_file}{(Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") Available file types ("eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")}

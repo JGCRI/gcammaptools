@@ -4,8 +4,14 @@
 \alias{process_data}
 \title{Process data}
 \usage{
-process_data(map_data = NULL, data_key_field = NULL, data_col = NULL,
-  shape_obj = NULL, shape_data_field = NULL, shape_key_field = NULL)
+process_data(
+  map_data = NULL,
+  data_key_field = NULL,
+  data_col = NULL,
+  shape_obj = NULL,
+  shape_data_field = NULL,
+  shape_key_field = NULL
+)
 }
 \arguments{
 \item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}

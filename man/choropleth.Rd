@@ -4,17 +4,34 @@
 \alias{choropleth}
 \title{Dynamic choropleth map creation}
 \usage{
-choropleth(shape_data = NULL, map_data = NULL, data_col = NULL,
-  data_key_field = NULL, shape_key_field = NULL, output_file = NULL,
-  map_title = NULL, shape_data_field = NULL,
-  shape_geom_field = "geometry", simplify = FALSE,
-  bin_method = "pretty", bins = 8, map_legend_title = "",
-  map_palette_type = "seq", map_palette = NULL,
-  map_palette_reverse = FALSE, shape_label_field = NULL,
-  shape_label_size = 1, map_width_height_in = c(15, 10),
-  shape_xy_fields = c("LON", "LAT"), dpi = 150, expand_xy = c(0, 0),
-  map_xy_min_max = c(-180, 180, -90, 90), map_x_label = "Lon",
-  map_y_label = "Lat", map_font_adjust = 1)
+choropleth(
+  shape_data = NULL,
+  map_data = NULL,
+  data_col = NULL,
+  data_key_field = NULL,
+  shape_key_field = NULL,
+  output_file = NULL,
+  map_title = NULL,
+  shape_data_field = NULL,
+  shape_geom_field = "geometry",
+  simplify = FALSE,
+  bin_method = "pretty",
+  bins = 8,
+  map_legend_title = "",
+  map_palette_type = "seq",
+  map_palette = NULL,
+  map_palette_reverse = FALSE,
+  shape_label_field = NULL,
+  shape_label_size = 3,
+  map_width_height_in = c(15, 10),
+  shape_xy_fields = c("LON", "LAT"),
+  dpi = 150,
+  expand_xy = c(0, 0),
+  map_xy_min_max = c(-180, 180, -90, 90),
+  map_x_label = "Lon",
+  map_y_label = "Lat",
+  map_font_adjust = 1
+)
 }
 \arguments{
 \item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object}
