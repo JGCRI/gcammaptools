@@ -189,7 +189,7 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
 #' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))
 #' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
-#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))
+#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion or buffer amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))
 #' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
 #' @param map_x_label (Character) - Label for x axis (default "Lon")
 #' @param map_y_label (Character) - Label for y axis (default "Lat")
@@ -197,7 +197,7 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
 #' @importFrom sf st_transform st_crs
 #' @importFrom dplyr mutate left_join
-#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label geom_sf_text theme_minimal expansion scale_fill_brewer aes_string element_text rel theme_update geom_text
+#' @importFrom ggplot2 scale_x_discrete scale_y_discrete scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label geom_sf_text theme_minimal expand_scale scale_fill_brewer aes_string element_text rel theme_update geom_text
 #' @importFrom ggspatial layer_spatial df_spatial
 #' @importFrom classInt classIntervals
 #' @import RColorBrewer
@@ -232,7 +232,7 @@ choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data
       # Read and process map data object via local processing function
       map_data_obj <- process_data(map_data, data_key_field, data_col, shape_obj, shape_data_field, shape_key_field)
 
-      if(class(map_data_obj) == "character")
+      if("character" %in% class(map_data_obj))
       {
         # Process_data must have caught an error
         return_error(map_data_obj, "Process Data")
@@ -246,7 +246,7 @@ choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data
       }
       else
       {
-        suppressWarnings({combined_df <- as.data.frame(map_data_obj)})
+        suppressWarnings({combined_df <- base::as.data.frame(map_data_obj)})
         data_col <- shape_data_field
       }
 
@@ -309,8 +309,8 @@ choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data
       # Set additional map options and create scales
       na_value <- "Grey"
       map_guide <- "colourbar"
-      map_x_scale <- scale_x_discrete(limits=c(x_min, x_max), expand = expansion(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
-      map_y_scale <-  scale_y_discrete(limits=c(y_min, y_max), expand = expansion(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
+      map_x_scale <- scale_x_discrete(limits=c(x_min, x_max), expand = expand_scale(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+      map_y_scale <-  scale_y_discrete(limits=c(y_min, y_max), expand = expand_scale(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
       map_color_scale <-  scale_fill_brewer(palette = palette_colors, type = palette_type, direction = palette_direction, na.value = na_value)
       map_shape_options <- NULL
       map_size_guide_option <- NULL
@@ -341,7 +341,7 @@ choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data
       suppressWarnings({output <- ggplot(data = combined_df, aes_string(x=shape_x, y=shape_y,  fill="value", geometry=shape_geom)) +
         geom_sf(color="gray42") +
          map_color_scale +
-         coord_sf() +
+          coord_sf(xlim = c(x_min, x_max), ylim = c(y_min, y_max), expand = FALSE) +
          labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
          map_x_scale +
          map_y_scale +

@@ -28,27 +28,27 @@ if(!requireNamespace('rgis', quietly=TRUE)) {
 
 ## Introduction
 
-One of the most commonly produced map types in research is the choropleth map, which is a thematic map in which areas are shaded in proportion to a statistical variable such as population density or per-capita income. This vignette explains how to use this package to dynamically generate and customize a simple choropleth map by inputting a  shape file and data file, and how to customize the input arguments. This function has been designed to be both flexible regarding the scope and complexity of its arguments and simple to use with default values available for most arguments. This tutorial will outline all of these arguments in a step-wise format in the order of the most commonly changed.
+One of the most commonly produced map types in research is the choropleth map, which is a thematic map that shades geographic areas in proportion to a statistical variable such as population density or per-capita income. This vignette explains how to use this package to dynamically generate and customize a simple choropleth map by inputting ashape file and data file, and how to customize the input arguments. This function has been designed to be both flexible regarding the scope and complexity of its arguments and simple to use with default values available for most arguments. This tutorial will outline all of these arguments in a step-by-step format.
 
 ## Building your first map - Show World Health Organization (WHO) Healthy Life Expectancy (HALE) at Birth
 
-To get started building a choropleth map, there are 5 required fields that do not have defaults that must be passed to the function in order for it to generate a map: `shape_data`, `map_data` (or `shape_data_field` discussed later), `data_col`, `shape_key_field`, and `data_key_field.` 
+To get started building a choropleth map, there are 5 required fields that do not have defaults that must be passed to the function in order for it to generate a map: **`shape_data`**, **`map_data`** (or **`shape_data_field`** discussed later), **`data_col`**, **`shape_key_field`**, and **`data_key_field.`** 
 
-* The `shape_data` argument must be either an SF object or point to a .shp file in a directory that includes all necessary accompanying files (.dbf, .prj, etc). 
-* The `map_data` argument must either be a data frame variable or point to a .csv file in comma delimited format. 
-* The `data_col` argument points to the 'value' field in the `map_data` object that will be the plot's output variable. 
-* The `shape_key_field` argument must point to the field in your shape object that will be used to join the shape and data objects together. 
-* The `data_key_field` argument must point to the field in your data object that will be used in the join operation. 
+* The **`shape_data` argument must be either an SF object or point to a .shp file in a directory that includes all necessary accompanying files (.dbf, .prj, etc). 
+* The **`map_data` argument must either be a data frame variable or point to a .csv file in comma delimited format. 
+* The **`data_col` argument points to the 'value' field in the **`map_data` object that will be the plot's output variable. 
+* The **`shape_key_field` argument must point to the field in your shape object that will be used to join the shape and data objects together. 
+* The **`data_key_field` argument must point to the field in your data object that will be used in the join operation. 
 
-The `shape_key_field` and `data_key_field` fields must be compatible in a join operation. In the case of excess data, this function will left_join to preserve shape data (unjoinable map data will be lost). 
+The **`shape_key_field` and **`data_key_field` fields must be compatible in a join operation. In the case of excess data, this function will left_join to preserve shape data (unjoinable map data will be lost). 
 
 For the purposes of this example, the following arguments will be used:
 
-* `shape_data` - "data/tm_world_borders_simpl-0.3.shp" - A simple world map with country borders
-* `map_data` - "data/data.csv" - CSV file containing WHO HALE data from 2000-2016
-* `data_col` - "X2016" - Instructs the function to use the 2016 column from the csv
-* `shape_key_field` - "NAME" - Tells the function to use the "NAME" field in the shape object for joining purposes
-* `data_key_field` - "Country" - Tells the function to use the "Country" field in the csv/data object for joining purposes
+* **`shape_data` - "data/tm_world_borders_simpl-0.3.shp" - A simple world map with country borders
+* **`map_data` - "data/data.csv" - CSV file containing WHO HALE data from 2000-2016
+* **`data_col` - "X2016" - Instructs the function to use the 2016 column from the csv
+* **`shape_key_field` - "NAME" - Tells the function to use the "NAME" field in the shape object for joining purposes
+* **`data_key_field` - "Country" - Tells the function to use the "Country" field in the csv/data object for joining purposes
 
 ```{r load_data, warning=FALSE}
 ### Load the example scenario data.
@@ -67,10 +67,10 @@ Now that we have seen how easy it is to build a simple choropleth map, let's lea
 
 **The arguments added in this call:**
 
-* `map_title` - "2016 Healthy Life Expectancy (HALE) at Birth" - Sets the title of the map at the top
-* `map_legend_title` - "HALE (years)" - Sets the title for the legend
-* `map_x_label` - "Longitude" - Sets the label for the X axis
-* `map_y_label` - "Latitude" - Sets the label for the Y axis
+* **`map_title` - "2016 Healthy Life Expectancy (HALE) at Birth" - Sets the title of the map at the top
+* **`map_legend_title` - "HALE (years)" - Sets the title for the legend
+* **`map_x_label` - "Longitude" - Sets the label for the X axis
+* **`map_y_label` - "Latitude" - Sets the label for the Y axis
 
 ```{r customize_data, warning=FALSE}
 ### Customize the map
@@ -88,14 +88,14 @@ plot(output)
 
 ### Saving the Output
 
-Now that we have created a simple map, let's take a look at how to save the output and what options are available. The relevant arguments here are `output_file` and `dpi`. The `output_file` argument should point to a fully qualified path such as  "c:/temp/output.png" or other file path that R is able to process. The `output_file` argument should also include the file name appended at the end as well as the desired file type (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg"). The `dpi` argument sets the dots per inch resolution and should be a number between 30 and 300 depending on your output and printing requirements.
+Now that we have created a simple map, let's take a look at how to save the output and what options are available. The relevant arguments here are **`output_file` and **`dpi`. The **`output_file` argument should point to a fully qualified path such as  "c:/temp/output.png" or other file path that R is able to process. The **`output_file` argument should also include the file name appended at the end as well as the desired file type (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg"). The **`dpi` argument sets the dots per inch resolution and should be a number between 30 and 300 depending on your output and printing requirements.
 
-Depending on the system you are running this vignette on, you may need to customize the following `output_file` path to get the code to run correctly. 
+Depending on the system you are running this vignette on, you may need to customize the following **`output_file` path to get the code to run correctly. 
 
 The arguments added in this call:
 
-* `output_file` - "E:/temp/example_map.png" - Tells the function to save as a PNG file called example_map.png
-* `dpi` - 150 - Sets the resolution to 150 dots per inch
+* **`output_file` - "E:/temp/example_map.png" - Tells the function to save as a PNG file called example_map.png
+* **`dpi` - 150 - Sets the resolution to 150 dots per inch
 
 ```{r save_output, warning=FALSE}
 ### Save the Map
@@ -118,14 +118,14 @@ output <- gcammaptools::choropleth(shape_data = shape_file,
 
 A choropleth map usually contains a range of values that need to be divided into categories, or "bins". The maps created above are using the function defaults. The number of bins as well as the method of categorization are both customizable within this function. 
 
-The arguments that control this functionality are `bins` (default 8) and `bin_method` (default "pretty"). The `bins` argument will vary based on your individual data, but should reflect the desired number of categories in which to appropriately subdivide the dataset. The `bin_method` argument must be one of "quantile", "equal", "pretty", or "kmeans". A description of these methods is available in the classIntervals description, or simply type help("classIntervals") in your R console. 
+The arguments that control this functionality are **`bins` (default 8) and **`bin_method` (default "pretty"). The **`bins` argument will vary based on your individual data, but should reflect the desired number of categories in which to appropriately subdivide the dataset. The **`bin_method` argument must be one of "quantile", "equal", "pretty", or "kmeans". A description of these methods is available in the classIntervals description, or simply type help("classIntervals") in your R console. 
 
-Note that it is possible for the system to override the number of bins depending on which `bin_method` is selected, the number of `bins` entered, and the particulars of your dataset. If this happens and is a problem, reexamine your dataset and its relation to the `bin_method` and number of `bins` defined. 
+Note that it is possible for the system to override the number of bins depending on which **`bin_method` is selected, the number of **`bins` entered, and the particulars of your dataset. If this happens and is a problem, reexamine your dataset and its relation to the **`bin_method` and number of **`bins` defined. 
 
 The arguments added in this call:
 
-* `bins` - 4 - Tells the function to try to use 4 bins
-* `bin_method` - "equal" - Sets the method for constructing bins to 'equal'
+* **`bins` - 4 - Tells the function to try to use 4 bins
+* **`bin_method` - "equal" - Sets the method for constructing bins to 'equal'
 
 ```{r customize_bins, warning=FALSE}
 ### Customize bins and bin method
@@ -138,7 +138,7 @@ output <- gcammaptools::choropleth(shape_data = shape_file,
                                    map_legend_title = "HALE (years)",
                                    map_x_label = "Longitude", 
                                    map_y_label = "Latitude", 
-                                   output_file = "E:/temp/example_map.png",
+                                   output_file = file_out,
                                    dpi = 150, 
                                    bins = 4, 
                                    bin_method = "equal" )
@@ -150,13 +150,13 @@ Note that there are now 4 bins as specified, and each category is now 7.8 years 
 
 ### Color Palettes
 
-In addition to layout and formatting, the color scheme for the map can also be customized. This can be done in several ways. The `map_palette_reverse` argument can be set to TRUE, which inverts/reverses the current color scheme. The `map_palette_type` argument can be set to one of three presets: "seq" for sequential data, "div" for divergent data, and "qual" for qualitative data sets. By using this option, you will use the preselected JGCRI color defaults for that map type. Finally, the palette can be directly changed with the `map_palette` argument. The `map_palette` argument can be set to any palette type from the RColorBrewer package. To view the list of available palettes go to https://colorbrewer2.org/ or type display.brewer.all() in your R console (remember to load library). Note that using the `map_palette` option overrides the `map_palette_type` variable.
+In addition to layout and formatting, the color scheme for the map can also be customized. This can be done in several ways. The **`map_palette_reverse` argument can be set to TRUE, which inverts/reverses the current color scheme. The **`map_palette_type` argument can be set to one of three presets: "seq" for sequential data, "div" for divergent data, and "qual" for qualitative data sets. By using this option, you will use the preselected JGCRI color defaults for that map type. Finally, the palette can be directly changed with the **`map_palette` argument. The **`map_palette` argument can be set to any palette type from the RColorBrewer package. To view the list of available palettes go to https://colorbrewer2.org/ or type display.brewer.all() in your R console (remember to load library). Note that using the **`map_palette` option overrides the **`map_palette_type` variable.
 
 The arguments added in this call:
 
-* `map_palette_reverse` - FALSE - Tells the function to not invert the color palette (unchanged, here for ref.)
-* `map_palette_type` - "seq" - Sets the palette to the sequential data default palette (will be overriden by `map_palette`)
-* `map_palette` - "Spectral" - Overrides the palette and sets it to the Spectral palette from RColorBrewer
+* **`map_palette_reverse` - FALSE - Tells the function to not invert the color palette (unchanged, here for ref.)
+* **`map_palette_type` - "seq" - Sets the palette to the sequential data default palette (will be overriden by **`map_palette`)
+* **`map_palette` - "Spectral" - Overrides the palette and sets it to the Spectral palette from RColorBrewer
 
 ```{r customize_palette, warning=FALSE}
 ### Customize palette
@@ -169,7 +169,7 @@ output <- gcammaptools::choropleth(shape_data = shape_file,
                                    map_legend_title = "HALE (years)",
                                    map_x_label = "Longitude", 
                                    map_y_label = "Latitude", 
-                                   output_file = "E:/temp/example_map.png",
+                                   output_file = file_out,
                                    dpi = 150, 
                                    bins = 8,
                                    bin_method = "pretty", 
@@ -183,17 +183,17 @@ Note the output which reflects the change to the chosen color palette "Spectral"
 
 ### Customizing the Shape Fields
 
-There are a number of shape specific options that can also be customized, if needed. The most important is the `shape_geom_field`, which controls which field within the shape object is used to plot the shape geometry. The standard field name is "geometry", which is the default. **However if your shape object is non-standard, then you must inspect it and determine which field to use.** The other argument that controls how the shape object gets plotted is `shape_xy_fields`, which has a default of c("LON", "LAT"). This field designates how to generate the x and y axes using data from the shape object. Like the `shape_geom_field`, if your shape is different or non-standard, you must inspect and determine the correct value.
+There are a number of shape specific options that can also be customized, if needed. The most important is the **`shape_geom_field`, which controls which field within the shape object is used to plot the shape geometry. The standard field name is "geometry", which is the default. **However if your shape object is non-standard, then you must inspect it and determine which field to use.** The other argument that controls how the shape object gets plotted is **`shape_xy_fields`, which has a default of c("LON", "LAT"). This field designates how to generate the x and y axes using data from the shape object. Like the **`shape_geom_field`, if your shape is different or non-standard, you must inspect and determine the correct value.
 
-Other shape related fields that control output are `simplify`, `shape_label_field`, and `shape_label_size`. The `simplify` argument can be set to TRUE, which runs an algorithm to reduce the complexity and amount of lines that are drawn, improving map aesthetics and/or rendering time in certain situations. The `shape_label_field` and `shape_label_size` work together to provide optional geographic labels such as country name. The `shape_label_field` designates which field contains the labels and `shape_label_size` controls how big those labels are.
+Other shape related fields that control output are **`simplify`, **`shape_label_field`, and **`shape_label_size`. The **`simplify` argument can be set to TRUE, which runs an algorithm to reduce the complexity and amount of lines that are drawn, improving map aesthetics and/or rendering time in certain situations. The **`shape_label_field` and **`shape_label_size` work together to provide optional geographic labels such as country name. The **`shape_label_field` designates which field contains the labels and **`shape_label_size` controls how big those labels are.
 
 The arguments added in this call:
 
-* `shape_geom_field` - "geometry" - Designates the geographic data field in the shape object (unchanged, default)
-* `shape_xy_fields` - "c("LON", "LAT") - Designates the xy geographic axis data (unchanged, default)
-* `simplify` - TRUE - Tells the system to run an algorithm reducing shape complexity and number of polygons
-* `shape_label_field` - "NAME" - Turns labels on and sets the field from which to get label data
-* `shape_label_size` - 1 - Tells the system to use size 1 (1mm) for shape label size
+* **`shape_geom_field` - "geometry" - Designates the geographic data field in the shape object (unchanged, default)
+* **`shape_xy_fields` - "c("LON", "LAT") - Designates the xy geographic axis data (unchanged, default)
+* **`simplify` - TRUE - Tells the system to run an algorithm reducing shape complexity and number of polygons
+* **`shape_label_field` - "NAME" - Turns labels on and sets the field from which to get label data
+* **`shape_label_size` - 1 - Tells the system to use size 1 (1mm) for shape label size
 
 ```{r customize_shape, warning=FALSE}
 ### Customize shape options
@@ -206,7 +206,7 @@ output <- gcammaptools::choropleth(shape_data = shape_file,
                                    map_legend_title = "HALE (years)",
                                    map_x_label = "Longitude", 
                                    map_y_label = "Latitude",
-                                   output_file = "E:/temp/example_map.png",
+                                   output_file = file_out,
                                    dpi = 150, 
                                    bins = 8,
                                    bin_method = "pretty", 
@@ -220,18 +220,18 @@ output <- gcammaptools::choropleth(shape_data = shape_file,
                                    shape_label_size = 1)
 plot(output)
 ```
-Note the shape labels and slightly reduced complexiy of the map (this map is not the best choice for labels, but serves for the purposes of this tutorial)
+Note the shape labels and slightly reduced complexiy of the map (this map is not the best choice for labels, but serves for the purposes of this tutorial).
 
 ### Customizing additional map output fields 
 
-A few additional fields remain which affect the layout and aesthetics of the output map. The `map_font_adjust` field allows you to customize the size of all of the map text (except the title). A value of 1.0 is the default and represents unadjusted size. The range of values are 0.5 (50%) - 2.0 (200%). The `map_width_height` parameter adjust the actual size of the map, while the `expand_xy` parameter will add size to only the x and y scales. Finally, the `map_xy_min_max` parameter adjusts the minimum and maximum  values of the x and y scales.
+A few additional fields remain which affect the layout and aesthetics of the output map. The **`map_font_adjust` field allows you to customize the size of all of the map text (except the title). A value of 1.0 is the default and represents unadjusted size. The range of values are 0.5 (50%) - 2.0 (200%). The **`map_width_height` parameter adjust the actual size of the map, while the **`expand_xy` parameter will add size to only the x and y scales. Finally, the **`map_xy_min_max` parameter adjusts the minimum and maximum  values of the x and y scales and zooms in or out.
 
 The arguments added in this call:
 
-* `map_font_adjust` - "geometry" - Designates the geographic data field in the shape object (unchanged, default)
-* `map_width_height` - "c("LON", "LAT") - Designates the xy geographic axis data (unchanged, default)
-* `expand_xy` - TRUE - Tells the system to run an algorithm reducing shape complexity and number of polygons
-* `map_xy_min_max` - "NAME" - Turns labels on and sets the field from which to get label data
+* **`map_font_adjust` - "geometry" - Designates the geographic data field in the shape object (unchanged, default)
+* **`map_width_height` - (unchanged - tutorial overrides value) - Physical output size in inches (unchanged, default)
+* **`expand_xy` - TRUE - Tells the system to run an algorithm reducing shape complexity and number of polygons
+* **`map_xy_min_max` - "NAME" - Turns labels on and sets the field from which to get label data
 
 ```{r customize_map_misc, warning=FALSE}
 ### Customize misc map options
@@ -244,7 +244,7 @@ output <- gcammaptools::choropleth(shape_data = shape_file,
                                    map_legend_title = "HALE (years)",
                                    map_x_label = "Longitude", 
                                    map_y_label = "Latitude",
-                                   output_file = "E:/temp/example_map.png",
+                                   output_file = file_out,
                                    dpi = 150, 
                                    bins = 8,
                                    bin_method = "pretty", 
@@ -256,14 +256,46 @@ output <- gcammaptools::choropleth(shape_data = shape_file,
                                    simplify = TRUE,
                                    shape_label_field = NULL, 
                                    shape_label_size = NULL,
-                                   map_font_adjust = 0.8,
-                                   map_width_height = c(4,2),
-                                   expand_xy = c(10,10),
-                                   map_xy_min_max = c(-120, 120, -60, 60) )
+                                   map_font_adjust = 0.5,
+                                  
+                                   expand_xy = c(0.5,0.5),
+                                   map_xy_min_max = c(-90, 90, -45, 45) )
 plot(output)
 ```
-map_font_adjust = 1.0)  map_width_height_in = c(15, 10),expand_xy = c(0, 0),
-                       map_xy_min_max = c(-180, 180, -90, 90)
+Note the reduced font size in the axes and legend as well as the extent of the map has been limited to 90/45 degrees.
+
+### Using Shape Data Fields
+
+The **`shape_data_field` argument can be used to plot data that is contained in your shape object (instead of passing in a separate **`map_data` argument.) Both the **`shape_data_field` and **`map_data` cannot be passed in to the same function call, the system can only use one. The plot output and bins would then be calculated based off of the data field in the shape. Not all shape objects have data fields however. Note that when using this method you do not need to use the **`map_data`, **`data_col`, **`data_key_field`, and **`shape_key_field` arguments.
+
+The arguments added in this call:
+
+* **`shape_data_field` - "POP2005" - Uses a data field from the shape object that represents 2005 population as the plot output in place of data passed in through the map_data argument.
+
+```{r shape_data, warning=FALSE}
+### Customize misc map options
+output <- gcammaptools::choropleth(shape_data = shape_file, 
+                                   shape_data_field = "POP2005", 
+                                   map_title = "World Population 2005",
+                                   map_legend_title = "Population (millions)",
+                                   map_x_label = "Longitude", 
+                                   map_y_label = "Latitude",
+                                   output_file = file_out,
+                                   dpi = 150, 
+                                   bins = 7,
+                                   bin_method = "quantile", 
+                                   map_palette_reverse = FALSE,
+                                   map_palette_type = "seq", 
+                                   shape_geom_field = "geometry",
+                                   shape_xy_fields = c("LON", "LAT"),
+                                   simplify = TRUE,
+                                   shape_label_field = NULL, 
+                                   shape_label_size = NULL,
+                                    )
+plot(output)
+```
+
+Note that the map now reflects 2005 world population from data embedded in the shape file.
 
 <!-- ```{r load.map, fig.width=4, fig.align='center'} -->
 <!-- mapdata <- system.file("extdata/rgn32", "reg32_spart.shp", package = "gcammaptools") -->

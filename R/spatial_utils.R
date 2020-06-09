@@ -279,6 +279,7 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #' @param min_area Minimum area of polygons to keep.
 #' @param degree_tolerance Tolerance parameter for simplifying polygons.
 #' @return The simplified sf object.
+#' @importFrom magrittr %>%
 #' @export
 simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 

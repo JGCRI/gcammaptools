@@ -74,7 +74,7 @@ choropleth(
 
 \item{dpi}{(Numeric) - Settable DPI for different print and screen formats (default 150)}
 
-\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))}
+\item{expand_xy}{(c(Numeric, Numeric)) - Sets expansion or buffer amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))}
 
 \item{map_xy_min_max}{(c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))}
 

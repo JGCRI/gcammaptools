@@ -174,10 +174,18 @@ verify_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL,
     result <- "Success"
 
     # Check column arguments are not duplicative
-    if(!is.null(shape_data_field) && !is.null(data_col))
+    if(!is.null(shape_data_field))
     {
-      return_error("Error: Both of the `shape_data_field` and `data_col` arguments cannot have a value (you may use only one)", "Duplicate arguments")
-      return("Error - see console for output")
+      if(!is.null(data_col))
+      {
+        return_error("Error: Both of the `shape_data_field` and `data_col` arguments cannot have a value (you may use only one)", "Duplicate arguments")
+        return("Error - see console for output")
+      }
+      if(!is.null(data_key_field))
+      {
+        return_error("Error: Both of the `shape_data_field` and `data_key_field` arguments cannot have a value (you may use only one)", "Duplicate arguments")
+        return("Error - see console for output")
+      }
     }
 
     # Check data arguments are not duplicative
@@ -187,7 +195,7 @@ verify_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL,
     }
 
     # Map Data - if given a path to a csv, use that, else expect a data.frame object passed in
-    if(!class(map_data) %in% c("data.frame", "character"))
+    if(!class(map_data) %in% c("data.frame", "character") && is.null(shape_data_field))
     {
       return("Error: `map_data` argument must be of type data.frame or a character path to a csv file")
     }
@@ -326,7 +334,7 @@ verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand
     }
 
     # Verify map_font_adjust
-    if(!"numeric" %in% class(map_font_adjust) || is.null(map_font_adjust))
+    if(!"numeric" %in% class(map_font_adjust) && !is.null(map_font_adjust))
     {
       return("Error: `map_font_adjust` must be of class numeric and not NULL")
     }
