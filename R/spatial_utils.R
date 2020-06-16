@@ -11,7 +11,7 @@
 #' @param shape_key_field (Character) - Name of key field in shape object for merging with map_data object
 #' @param shape_data_field (Character) - Optional field for utilizing a field within the shape data as the map data field. Negates the map_data variable
 #' @param shape_label_field (Character) - Optional field for plotting data available from the shape attributes or fields (such as country name)
-#' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
+#' @param shape_label_size_field (Numeric) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)
 #' @param shape_xy_fields (c(Character, Character)) - Vector that specifies the x and y field names in the shape object (default c("LAT", "LON"))
 #' @param shape_geom_field (Character) - Specifies field within shape object that contains needed geometry (default "geometry")
 #' @param simplify (Boolean) - Option to reduce the number and complexity of the polygons in the shape file (default FALSE)
@@ -19,15 +19,16 @@
 #' @importFrom sf st_crs
 #' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
+#' @export
 process_shape <- function(shape_data = NULL, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL, shape_key_field = NULL,
-                          shape_label_size = "1", shape_xy_fields  = c("LON", "LAT"), shape_geom_field  = "geometry")
+                          shape_label_size = 1, shape_xy_fields  = c("LON", "LAT"), shape_geom_field  = "geometry")
 {
   tryCatch(
   {
     # Initial processing of shape object so that a completed shape object can be sent to the error check function
     if(is.null(shape_data))
     {
-      return("Error: `shape_datais` NULL")
+      return("Error: `shape_data` is NULL")
     }
     else if("character" %in% class(shape_data))
     {

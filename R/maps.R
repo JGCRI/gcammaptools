@@ -377,6 +377,155 @@ choropleth <- function(shape_data = NULL, map_data = NULL, data_col = NULL, data
 }
 
 
+#' Create a gridded map object from input shape and raster.
+#'
+#' This function is designed to take both a shape and raster object or path and create a standardized output map. Option to save the output to file
+#'
+#' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object
+#' @param raster_data (Raster or Character) - Either the full path string to a raster file or an object of type RasterLayer
+#' @param raster_col (Character) - Raster field name that contains the desired output variable
+#' @param shape_label_field (Character) - Optional field for plotting map labels from the shape attributes (such as country name)
+#' @param shape_label_size_field (Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.) (Default "1")
+#' @param simplify (Boolean) - Option to reduce the number or complexity of the polygons in the shape file (default FALSE)
+#' @param raster_band (Numeric) - Variable for dealing with multi band or time series rasters that specifices which raster band to use (Default 1)
+#' @param convert_zero (Boolean) - Convert values within the raster data from zero to NA (default FALSE)
+#' @param dpi (Numeric) - Settable DPI for different print and screen formats (default 150)
+#' @param output_file (Character) - Output file path and file name and type to save the resulting plot (e.g. "c:/temp/output.png") (Types accepted: "eps", "ps", "tex", "pdf", "jpeg", "tiff", "png", "bmp", "svg")
+#' @param expand_xy (c(Numeric, Numeric)) - Sets expansion amount for the X and Y scales of the map - Vector (expand x, expand y) (default c(0,0))
+#' @param map_xy_min_max (c(Numeric, ...)) - Vector that describes the desired extent of the map in the form of (xmin, xmax, ymin, ymax) (default: c(-180, 180, -90, 90))
+#' @param map_title (Character) - Title to be displayed at the top of the output map
+#' @param map_palette (Character) - Variable to hold the type of colorscale to be used from the RColorBrewer palette (default "RdYlBu")
+#' @param map_palette_reverse (Boolean) - Set palette to reverse direction TRUE or FALSE
+#' @param map_width_height_in (c(Numeric, Numeric)) - Vector that describes the desired file size of the output image in the form of (width, height) in inches (defalt c(15, 10))
+#' @param map_legend_title (Character) - Text variable to be used for the legend header
+#' @param map_x_label (Character) - Label for x axis (default "Lon")
+#' @param map_y_label (Character) - Label for y axis (default "Lat")
+#' @return (ggplot2 or Character) - Returns a ggplot object of the resulting map or an error string if failed
+#' @importFrom sf st_transform
+#' @importFrom raster raster as.data.frame compareCRS minValue maxValue nlayers
+#' @importFrom dplyr mutate
+#' @importFrom ggplot2 scale_x_continuous scale_y_continuous scale_fill_distiller ggplot geom_raster geom_sf coord_sf labs theme geom_sf_label guides
+#' @importFrom ggspatial layer_spatial df_spatial
+#' @import RColorBrewer
+#' @author Jason Evanoff, jason.evanoff@pnnl.gov
+#' @export
+gridded_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL, convert_zero = FALSE,
+                       map_xy_min_max = c(-180, 180, -90, 90), map_title = NULL,  map_palette = "RdYlBu",
+                       map_width_height_in = c(15, 10), map_legend_title = NULL,shape_geom_field = "geometry",
+                       shape_xy_fields = c("LON", "LAT"), data_xy_fields = C("LON", "LAT"))
+{
+  error <- ""
+  output <- "Default error"
+  tryCatch(
+    {
+
+
+      # Perform shape and raster comparisons or other operations
+      # Compare projections and equalize if necessary
+      if(!compareCRS(shape_obj, raster_obj))
+      {
+        # Transform shape to match raster CRS
+        shape_obj <- st_transform(shape_obj, crs(raster_df))
+      }
+
+      # Raster operations
+      raster_df <- df_spatial(raster_obj)  #raster_df <- as.data.frame(raster_obj, xy=TRUE) compare performance
+      raster_df <- mutate(raster_df, value = raster_df[[paste0("band", 1)]])
+
+      # Create mapping and output variables
+      # Raster stats and information
+      raster_min <- minValue(raster_obj)
+      raster_max <- maxValue(raster_obj)
+      raster_layers <- nlayers(raster_obj)
+      raster_active_band <- raster_band
+
+      # Map output variables
+      x_min <- map_xy_min_max[1]
+      x_max <- map_xy_min_max[2]
+      y_min <- map_xy_min_max[3]
+      y_max <- map_xy_min_max[4]
+      map_width <- map_width_height_in[1]
+      map_height <- map_width_height_in[2]
+      expand_x <- expand_xy[1]
+      expand_y <- expand_xy[2]
+
+      # Map colors and scales options
+      palette_direction <- 1
+
+      if(map_palette_reverse)
+      {
+        palette_direction <- -1
+      }
+
+      # Build map x and y scales using continuous scales
+      map_x_scale <-  scale_x_continuous(limits=c(x_min, x_max), expand = expansion(add = expand_x), breaks=seq(x_min,x_max, abs(x_max - x_min)/12))
+      map_y_scale <-  scale_y_continuous(limits=c(y_min, y_max), expand = expansion(add = expand_y), breaks=seq(y_min,y_max, abs(y_max - y_min)/6))
+      map_color_scale <-  scale_fill_distiller(palette = map_palette, type = palette_type, direction = palette_direction, na.value = na_value, guide = map_guide)
+      map_shape_options <- NULL
+      map_size_guide_option <- NULL
+
+      # Build geometry labels if enabled by user
+      if(!is.null(shape_label_field))
+      {
+        map_shape_options <- geom_sf_label(data = shape_obj, aes_string(label = shape_label_field, fill=NULL, size = shape_label_size_field))
+        if(!is.null(shape_label_size_field))
+        {
+          map_size_guide_option <- guides(size = FALSE)
+        }
+      }
+
+      # coordinates <- pattern$coordinate_map
+      # incProgress(1/2, detail = paste("Loading pattern, downscaling"))
+      # # Construct coordinates based on -180 to 180 for longitude
+      # for(i in 1:length(coordinates$lon))
+      # {
+      #   if(coordinates$lon[i] > 180)
+      #     coordinates$lon[i] <- coordinates$lon[i] - 360
+      # }
+
+      # ggplotMap <- ggplot2::ggplot() +
+      #   mapWorld +
+      #   ggplot2::geom_raster(data = combined_data, ggplot2::aes_string(x="Lon", y = "Lat", fill=mapVar),interpolate = TRUE ) +
+      #   ggplot2::coord_fixed() +
+      #   ggplot2::scale_fill_distiller(palette = mapPalette,type = "div", direction = mapDirection, na.value = "Gray") + #, limits = c(-1,1)*max(abs(combined_data[[mapVar]]))) +
+      #   ggplot2::labs(x="\u00B0Longitude", y="\u00B0Latitude", title = paste0(input$mapCore, " - ", input$mapYear), fill = mapFill) +
+      #   ggplot2::scale_y_continuous(limits=c(lat_min, lat_max), expand = c(0, 0), breaks=seq(-90,90,30))+
+      #   ggplot2::scale_x_continuous(limits=c(lon_min, lon_max), expand = c(0, 0), breaks=seq(-180,180,30))
+
+      # Build ggplot Map object
+      output <- ggplot() +  geom_raster(data=raster_df, aes(x=x, y=y, fill=value), alpha = 1.0) +
+        geom_sf(data = shape_obj, na.rm = TRUE, fill=NA) +
+        map_color_scale +
+        coord_sf() +
+        labs(x=map_x_label, y=map_y_label, title = map_title, fill = map_legend_title) +
+        map_x_scale +
+        map_y_scale +
+        map_shape_options +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        map_size_guide_option
+
+      # Save File
+      if(!is.null(output_file))
+      {
+        result <- gcammaptools::save_plot(output_file, dpi, map_width, map_height)
+        if(result != "Success")
+        {
+          return_error(result)
+        }
+      }
+    },
+    error = function(err)
+    {
+      # error handler picks up error information
+      error <- err
+      return_error(error)
+      return("Error - see console for output")
+    })
+
+  return(output)
+}
+
+
 #' Distributed flow map
 #'
 #' Create a distributed flow map object from shape and data object and return, save (optional) the output

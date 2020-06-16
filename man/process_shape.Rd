@@ -10,7 +10,7 @@ process_shape(
   shape_label_field = NULL,
   shape_data_field = NULL,
   shape_key_field = NULL,
-  shape_label_size = "1",
+  shape_label_size = 1,
   shape_xy_fields = c("LON", "LAT"),
   shape_geom_field = "geometry"
 )
@@ -30,7 +30,7 @@ process_shape(
 
 \item{shape_geom_field}{(Character) - Specifies field within shape object that contains needed geometry (default "geometry")}
 
-\item{shape_label_size_field}{(Character) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
+\item{shape_label_size_field}{(Numeric) - Optional field used for computing shape label size dynamically (ie by area or amount etc.)}
 }
 \value{
 (SF or Character) - Returns the resulting simplified SF object or an error string if failed
