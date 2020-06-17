@@ -20,8 +20,9 @@
 #' @importFrom raster crs
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-process_shape <- function(shape_data = NULL, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL, shape_key_field = NULL,
-                          shape_label_size = 1, shape_xy_fields  = c("LON", "LAT"), shape_geom_field  = "geometry")
+process_shape <- function(shape_data = NULL, simplify = FALSE, shape_label_field = NULL, shape_data_field = NULL,
+                          shape_key_field = NULL, shape_label_size = 1, shape_xy_fields  = c("LON", "LAT"),
+                          shape_geom_field  = "geometry")
 {
   tryCatch(
   {
@@ -98,7 +99,8 @@ process_shape <- function(shape_data = NULL, simplify = FALSE, shape_label_field
 #' @return (Raster or Character) - Returns the resulting raster object or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-process_raster <- function(raster_data, raster_col, raster_band = 1, bin_method = "pretty", bins = 8, convert_zero = FALSE)
+process_raster <- function(raster_data, raster_col, raster_band = 1, bin_method = "pretty", bins = 8,
+                           convert_zero = FALSE)
 {
   tryCatch(
     {
@@ -152,7 +154,8 @@ process_raster <- function(raster_data, raster_col, raster_band = 1, bin_method 
 #' @return (Data Frame or Character) - Returns the resulting simplified SF object or an error string if failed
 #' @author Jason Evanoff, jason.evanoff@pnnl.gov
 #' @export
-process_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL,  shape_obj = NULL, shape_data_field = NULL, shape_key_field = NULL)
+process_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL,  shape_obj = NULL,
+                         shape_data_field = NULL, shape_key_field = NULL)
 {
   tryCatch(
     {
@@ -211,10 +214,33 @@ process_data <- function(map_data = NULL, data_key_field = NULL, data_col = NULL
 #' or GeoJSON file. User defines which field is supposed to represent the ID for
 #' the data.
 #'
-#' @param file_pth Full path to shapefile with extention (.shp). Shapefiles must
-#' contain at least .shp, .shx, and .dbf file to function properly.
-load_shp <- function(file_pth) {
-  return(sf::st_read(file_pth, quiet = TRUE))
+#' @param file_pth (Character) Full path to shapefile (.shp). Shapefiles must contain at least .shp, .shx, and .dbf file to function properly.
+#' @return (sf or Character) - Returns the loaded SF object or an error string if failed
+#' @export
+load_shp <- function(file_pth = NULL)
+{
+  if(is.null(file_pth))
+  {
+    return("Error: file_pth cannot be null")
+  }
+  result <- tryCatch(
+  {
+    file <- system.file(file_pth)
+    result <- (sf::st_read(file_pth, quiet = TRUE))
+  },
+  error = function(err)
+  {
+    # error handler picks up error information
+    error <- err
+    return(error)
+  })
+
+  if(!"sf" %in% class(result))
+  {
+    return("Error: error loading shape, check your file path")
+  }
+
+  return(result)
 }
 
 #' Single import function for compatible data types.
@@ -266,8 +292,6 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 }
 
 
-
-
 #' Reduce number of polygons and size of polygons for map Shapefiles
 #'
 #' Takes a sf object representation of a map and simplifys it by removing
@@ -276,15 +300,22 @@ import_mapdata <- function(obj, fld = NULL, prj4s = wgs84) {
 #' ** NOTE: This function adds two polygons to the edges of the map to prevent
 #'          the removal of polygons near the edges redefining the map bounds.
 #'
-#' @param mapdata sf object containing polygons or multipolygons to simplify.
-#' @param min_area Minimum area of polygons to keep.
-#' @param degree_tolerance Tolerance parameter for simplifying polygons.
-#' @return The simplified sf object.
+#' @param mapdata (sf) object containing polygons or multipolygons to simplify.
+#' @param min_area (Numeric) Minimum area of polygons to keep.
+#' @param degree_tolerance (Numeric) Tolerance parameter for simplifying polygons.
+#' @return (sf or Character) The simplified sf object or error string if caught.
 #' @importFrom magrittr %>%
 #' @export
-simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
+simplify_mapdata <- function(mapdata = NULL, min_area = 2.5, degree_tolerance = 0.1)
+{
+  # silence package notes for NSE.
+  . <- NULL
 
-  . <- NULL                             # silence package notes for NSE.
+  result <- verify_simplify_mapdata(mapdata, min_area, degree_tolerance)
+  if(result != "Success")
+  {
+    return(result)
+  }
 
   if ("MULTIPOLYGON" %in% sf::st_geometry_type(mapdata))
     mapdata <- sf::st_cast(mapdata, "POLYGON", warn = FALSE)

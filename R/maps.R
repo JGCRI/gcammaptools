@@ -168,7 +168,7 @@ custom_map <- function(shape_data = NULL, raster_data = NULL,  raster_col = NULL
 #'
 #' Create a choropleth map object from shape and data object and return, save (optional) the output
 #'
-#' @param shape_data (SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object
+#' @param shape_data (SF or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object
 #' @param map_data (Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV
 #' @param data_col (Character) - Column name that contains the data object's output variable
 #' @param data_key_field (Character) - Name of key field in data_obj for merging with shape_data

@@ -4,11 +4,13 @@
 \alias{load_shp}
 \title{Import ESRI Shapefile or GeoJSON as sf object.}
 \usage{
-load_shp(file_pth)
+load_shp(file_pth = NULL)
 }
 \arguments{
-\item{file_pth}{Full path to shapefile with extention (.shp). Shapefiles must
-contain at least .shp, .shx, and .dbf file to function properly.}
+\item{file_pth}{(Character) Full path to shapefile (.shp). Shapefiles must contain at least .shp, .shx, and .dbf file to function properly.}
+}
+\value{
+(sf or Character) - Returns the loaded SF object or an error string if failed
 }
 \description{
 Creates a Simple Feature (sf) object from full path string to ESRI Shapefile

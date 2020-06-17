@@ -34,7 +34,7 @@ choropleth(
 )
 }
 \arguments{
-\item{shape_data}{(SF, SP, or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object}
+\item{shape_data}{(SF or Character) - Either the full path string to a shape file (with all necessary files) or an SF shape object}
 
 \item{map_data}{(Data Frame or Character) - A data frame that contains the output data to map, or alternatively a full path to a CSV}
 

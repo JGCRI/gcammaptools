@@ -7,7 +7,11 @@
 verify_csv(map_data)
 }
 \arguments{
-\item{map_data}{(Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object}
+\item{mapdata}{sf object containing polygons or multipolygons to simplify.}
+
+\item{min_area}{Minimum area of polygons to keep.}
+
+\item{degree_tolerance}{Tolerance parameter for simplifying polygons.}
 }
 \value{
 (Character) - Returns a success token or an error string if failed

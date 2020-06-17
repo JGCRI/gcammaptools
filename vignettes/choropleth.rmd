@@ -4,7 +4,7 @@ author: "Jason Evanoff"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{GCAM Mapping Tools Tutorial: Choropleth Map}
+  %\VignetteIndexEntry{GCAMMaps Tutorial: Choropleth Map}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -120,7 +120,7 @@ A choropleth map usually contains a range of values that need to be divided into
 
 The arguments that control this functionality are **`bins`** (default 8) and **`bin_method`** (default "pretty"). The **`bins`** argument will vary based on your individual data, but should reflect the desired number of categories in which to appropriately subdivide the dataset. The **`bin_method`** argument must be one of "quantile", "equal", "pretty", or "kmeans". A description of these methods is available in the classIntervals description, or simply type ***help("classIntervals")*** in your R console. 
 
-**Note that it is possible for the system to override the number of bins depending on which **`bin_method`** is selected, the number of **`bins`** entered, and the particulars of your dataset. If this happens, and is a problem, reexamine your dataset and its relation to the **`bin_method`** and number of **`bins`** defined. 
+**Note that it is possible** for the system to override the number of bins depending on which **`bin_method`** is selected, the number of **`bins`** entered, and the particulars of your dataset. If this happens, and is a problem, reexamine your dataset and its relation to the **`bin_method`** and number of **`bins`** defined. 
 
 **The arguments added in this call:**
 

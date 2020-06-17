@@ -347,18 +347,61 @@ verify_map_params <- function(bin_method = "pretty", bins = 8, dpi = 150, expand
     return(output)
 }
 
+#' Verify simplify
+#'
+#' This function does simple verification for the simplify_mapdata function
+#'
+#' @param mapdata (sf) object containing polygons or multipolygons to simplify.
+#' @param min_area (Numeric) Minimum area of polygons to keep.
+#' @param degree_tolerance (Numeric) Tolerance parameter for simplifying polygons.
+#' @return (Character) - Returns a success token or an error string if failed
+#' @export
+verify_simplify_mapdata <- function(map_data = NULL, min_area = 2.5, degree_tolerance = 0.1)
+{
+  result <- "Success"
+
+  # Verify map_data
+  if(is.null(map_data))
+  {
+    return("Error: `map_data` argument must not be NULL")
+  }
+  if(suppressWarnings({!"sf" %in% class(map_data)}))
+  {
+    return("Error: `map_data` argument must be of type sf")
+  }
+
+  # Verify min_area
+  if(is.null(min_area) || class(min_area) != "numeric")
+  {
+    return("Error: `min_area` argument must be a positive number and not NULL")
+  }
+  if(min_area <= 0)
+  {
+    return("Error: `min_area` argument must be a non-zero positive number")
+  }
+
+  # verify degree_tolerance
+  if(is.null(degree_tolerance) || class(degree_tolerance) != "numeric")
+  {
+    return("Error: `degree_tolerance` argument must be a non NULL numeric value")
+  }
+
+   return(result)
+
+}
+
+
 
 #' Verify csv data
 #'
 #' This function runs a check on csv data inputs and looks for errors
 #'
-#' @param map_data (Data Frame or Character) - Either the full path string to data file (csv) or a data.frame object
+#' @param mapdata sf object containing polygons or multipolygons to simplify.
+#' @param min_area Minimum area of polygons to keep.
+#' @param degree_tolerance Tolerance parameter for simplifying polygons.
 #' @return (Character) - Returns a success token or an error string if failed
 verify_csv <- function(map_data)
 {
-
-    # Check csv for things like character Unicode
-    # Check field they provided there etc
 
 
     result <- "Success"

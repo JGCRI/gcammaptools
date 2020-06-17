@@ -4,17 +4,17 @@
 \alias{simplify_mapdata}
 \title{Reduce number of polygons and size of polygons for map Shapefiles}
 \usage{
-simplify_mapdata(mapdata, min_area = 2.5, degree_tolerance = 0.1)
+simplify_mapdata(mapdata = NULL, min_area = 2.5, degree_tolerance = 0.1)
 }
 \arguments{
-\item{mapdata}{sf object containing polygons or multipolygons to simplify.}
+\item{mapdata}{(sf) object containing polygons or multipolygons to simplify.}
 
-\item{min_area}{Minimum area of polygons to keep.}
+\item{min_area}{(Numeric) Minimum area of polygons to keep.}
 
-\item{degree_tolerance}{Tolerance parameter for simplifying polygons.}
+\item{degree_tolerance}{(Numeric) Tolerance parameter for simplifying polygons.}
 }
 \value{
-The simplified sf object.
+(sf or Character) The simplified sf object or error string if caught.
 }
 \description{
 Takes a sf object representation of a map and simplifys it by removing
