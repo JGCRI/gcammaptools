@@ -27,57 +27,72 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
     # Shape loading - if given a path, use that, else expect an object passed in
     if(is.null(shape_data))
     {
-        return("Error: Shape data is NULL")
+      return("Error: Shape data is NULL")
     }
     else if(suppressWarnings({"sf" %in% class(shape_data)}))
     {
-        # Verify shape projection and assign default if NA or NULL
-        if(is.na(crs(shape_data)) || is.null(crs(shape_data)))
-        {
-            sf::st_crs(shape_data) <- crs(default_projection)
-            print("Applying default projection to shape (shape projection was NA or NULL)")
-        }
+      # Verify shape projection and assign default if NA or NULL
+      if(is.na(crs(shape_data)) || is.null(crs(shape_data)))
+      {
+        sf::st_crs(shape_data) <- crs(default_projection)
+        print("Applying default projection to shape (shape projection was NA or NULL)")
+      }
     }
     else if("character" %in% class(shape_data))
     {
-        if (!file.exists(shape_data))
-        {
-            return(paste0("Error: Cannot open shape file - `", shape_data, "`` - or shape file path does not exist "))
-        }
+      if (!file.exists(shape_data))
+      {
+        return(paste0("Error: Cannot open shape file - `", shape_data, "`` - or shape file path does not exist "))
+      }
     }
     else
     {
-        return("Error: Unrecognized `shape_data` argument.")
+      return("Error: Unrecognized `shape_data` argument.")
     }
 
     # Verify shape_data_field
     if(!is.null(shape_data_field))
     {
-        # look for shape data field
-        if(!shape_data_field %in% names(shape_data))
-        {
-            return(paste0("Error: `shape_data_field` `", shape_data_field, "`` does not exist in shape object."))
-        }
+      # Verify class
+      if(!"character" %in% class(shape_data_field))
+      {
+        return("Error: `shape_data_field` argument must be a character string ")
+      }
+      # look for shape data field
+      if(!shape_data_field %in% names(shape_data))
+      {
+          return(paste0("Error: `shape_data_field` `", shape_data_field, "`` does not exist in shape object."))
+      }
     }
 
     # Verify shape_label_field
     if(!is.null(shape_label_field))
     {
-        # look for shape data field
-        if(!shape_label_field %in% names(shape_data))
-        {
-            return(paste0("Error: `shape_label_field` - `", shape_label_field, "` - does not exist in shape object."))
-        }
+      # Verify class
+      if(!"character" %in% class(shape_label_field))
+      {
+        return("Error: `shape_label_field` argument must be a character string ")
+      }
+      # look for shape data field
+      if(!shape_label_field %in% names(shape_data))
+      {
+          return(paste0("Error: `shape_label_field` - `", shape_label_field, "` - does not exist in shape object."))
+      }
     }
 
     # Verify shape_key_field
     if(!is.null(shape_key_field))
     {
-        # look for shape data field
-        if(!shape_key_field %in% names(shape_data))
-        {
-            return(paste0("Error: `shape_key_field` - `", shape_key_field, "` - does not exist in shape object."))
-        }
+      # Verify class
+      if(!"character" %in% class(shape_key_field))
+      {
+        return("Error: `shape_key_field` argument must be a character string ")
+      }
+      # look for shape key field
+      if(!shape_key_field %in% names(shape_data))
+      {
+        return(paste0("Error: `shape_key_field` - `", shape_key_field, "` - does not exist in shape object."))
+      }
     }
 
     # Verify shape_label_size
@@ -85,18 +100,22 @@ verify_shape <- function(shape_data, simplify = FALSE, shape_label_field = NULL,
     {
       if(!"numeric" %in% class(shape_label_size))
       {
-          return("Error: `shape_label_size` argument must be numeric ")
+        return("Error: `shape_label_size` argument must be numeric ")
+      }
+      if(shape_label_size <=0 || shape_label_size > 10)
+      {
+        return("Error: `shape_label_size` argument must be be > 0 amd < 10 ")
       }
     }
 
     if(!simplify %in% c(TRUE, FALSE))
     {
-        return("Error: Invalid value for `simplify` argument: Must be one of TRUE, FALSE")
+      return("Error: Invalid value for `simplify` argument: Must be one of TRUE, FALSE")
     }
 
     if(!shape_geom_field %in% names(shape_data))
     {
-        return(paste0("Error: `shape_geom_field` - `", shape_geom_field, "` - does not exist in shape object."))
+      return(paste0("Error: `shape_geom_field` - `", shape_geom_field, "` - does not exist in shape object."))
     }
 
     return(result)
