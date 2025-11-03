@@ -1,4 +1,4 @@
-### Run this script in an interactive session and call \code{devtools::use_data}
+### Run this script in an interactive session and call \code{usethis::use_data}
 ### on the resulting outputs.  It assumes you are at the package top level
 ### directory.
 
@@ -6,10 +6,9 @@ library('gcammaptools')
 library('magrittr')
 library('dplyr')
 
-# This function generates six map files, represented as sf objects (see
+# This function generates five map files, represented as sf objects (see
 # https://cran.r-project.org/web/packages/sf/). The default maps supported by
 # gcammaptools are:
-#   - rgn14:     The outdated GCAM 14-region boundaries
 #   - rgn32:     The current 32 GCAM regions
 #   - basin235:  The 235 water basins, which are soon replacing AEZs
 #   - chn:       The current 32 GCAM regions with China broken down into 30
@@ -19,19 +18,15 @@ library('dplyr')
 #   - countries: A standard world map containing country administrative borders
 # Additionally, simplified versions of rgn14, rgn32, and basin235 are created.
 gen.data <- function() {
+    sf::sf_use_s2(FALSE)
 
     ## Both maps of the GCAM regions are built with the column 'region_name',
     # which is not necessary for plotting but is used so that gcam32_colors can
     # map to it.
-    map.rgn14 <- system.file("extdata", "rgn14/GCAM_region.geojson", package = "gcammaptools") %>%
-        import_mapdata() %>%
-        dplyr::left_join(lut.rgn14, by = "region_id") %>%
-        dplyr::rename(region_name = region) %>% sf::st_as_sf()
     map.rgn32 <- system.file("extdata", "rgn32/reg32_spart.shp", package = "gcammaptools") %>%
         import_mapdata() %>%
         dplyr::left_join(lut.rgn32, by = "region_id") %>%
         dplyr::rename(region_name = region) %>% sf::st_as_sf()
-    map.rgn14.simple <- simplify_mapdata(map.rgn14)
     map.rgn32.simple <- simplify_mapdata(map.rgn32)
 
     ## The basin235 map is also provided in detailed and simplified forms.
@@ -72,7 +67,7 @@ gen.data <- function() {
     # http://www.georeference.org/doc/segmentization.htm
     path.usa <- system.file("extdata", "rgnusa/us_states_50m.shp", package = "gcammaptools")
     map.usa <- import_mapdata(path.usa)[ , c('name', 'geometry')] %>%
-        dplyr::mutate(name = levels(droplevels(name))) %>%
+        dplyr::mutate(name = levels(droplevels(as.factor(name)))) %>%
         dplyr::left_join(lut.usa, by = c("name" = "region")) %>%
         dplyr::rename(region_name = name) %>%
         rbind(dplyr::filter(map.rgn32, region_id != 1)) %>%
@@ -86,17 +81,13 @@ gen.data <- function() {
     path.countries <- system.file("extdata", "rgnworld/ne_110m_admin_0_countries.shp", package = "gcammaptools")
     map.countries <- import_mapdata(path.countries)[,c('admin', 'geometry')]
 
-    devtools::use_data(map.rgn14, map.rgn14.simple, map.rgn32, map.rgn32.simple,
+    usethis::use_data( map.rgn32, map.rgn32.simple,
                        map.basin235, map.basin235.simple, map.chn, map.usa,
                        map.countries, overwrite=TRUE)
 }
 
 gen.internal <- function() {
     ## Read the various region lookup tables, drop region lists, and province
-    # lists 14-region has just a lookup
-    lut.rgn14 <- read.csv('inst/extdata/rgn14/lookup.txt', strip.white=TRUE,
-                          stringsAsFactors=FALSE)
-
     ## 32-region has a lookup and a drop
     lut.rgn32 <- read.csv('inst/extdata/rgn32/lookup.txt', strip.white=TRUE,
                           stringsAsFactors=FALSE)
@@ -119,7 +110,7 @@ gen.internal <- function() {
     lut.usa <- read.csv('inst/extdata/rgnusa/lookup.txt', strip.white=TRUE,
                         stringsAsFactors=FALSE)
 
-    devtools::use_data(lut.rgn14, lut.rgn32, drop.rgn32, lut.basin235,
+    usethis::use_data( lut.rgn32, drop.rgn32, lut.basin235,
                        lut.chn, drop.chn, prov.chn, lut.usa,
                        internal=TRUE, overwrite=TRUE)
 }
