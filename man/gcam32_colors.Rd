@@ -4,7 +4,9 @@
 \name{gcam32_colors}
 \alias{gcam32_colors}
 \title{Color palette for 32-region GCAM}
-\format{An object of class \code{character} of length 32.}
+\format{
+An object of class \code{character} of length 32.
+}
 \usage{
 gcam32_colors
 }

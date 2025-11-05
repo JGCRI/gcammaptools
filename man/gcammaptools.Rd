@@ -2,8 +2,8 @@
 % Please edit documentation in R/gcammaptools.R
 \docType{package}
 \name{gcammaptools}
-\alias{gcammaptools}
 \alias{gcammaptools-package}
+\alias{gcammaptools}
 \title{gcammaptools:  A package for plotting GCAM data on maps}
 \description{
 The gcammaptools package provides functions for plotting GCAM data on world
@@ -30,7 +30,6 @@ To map GCAM data, you will need a simple feature collection or geojson with
 your region boundaries.  The package provides the following commonly-used
 base maps:
 \itemize{
-  \item \code{\link{map.rgn14}}: 14 region map used prior to GCAM 4.0.
   \item \code{\link{map.rgn32}}: 32 region map used in GCAM 4.0 and later,
 excluding Taiwan.
   \item \code{\link{map.basin235}}: 235 water basins.
@@ -47,3 +46,13 @@ Once you have your map data and your GCAM data, can generate the maps by
 passing both to the \code{\link{plot_GCAM}} function.
 }
 
+\author{
+\strong{Maintainer}: Catherine Ledna \email{catherine.ledna@pnnl.gov}
+
+Other contributors:
+\itemize{
+  \item Robert Link \email{robert.link@pnnl.gov} [contributor]
+  \item Caleb Braun \email{caleb.braun@pnnl.gov} [contributor]
+}
+
+}

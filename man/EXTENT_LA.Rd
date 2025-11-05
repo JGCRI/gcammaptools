@@ -4,7 +4,9 @@
 \name{EXTENT_LA}
 \alias{EXTENT_LA}
 \title{Extent vector for Latin America}
-\format{An object of class \code{numeric} of length 4.}
+\format{
+An object of class \code{numeric} of length 4.
+}
 \usage{
 EXTENT_LA
 }

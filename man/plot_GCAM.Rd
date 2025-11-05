@@ -4,11 +4,23 @@
 \alias{plot_GCAM}
 \title{Primary GCAM mapping function. Can handle categorical or continuous data.}
 \usage{
-plot_GCAM(mapdata, col = NULL, proj = robin, proj_type = NULL,
-  extent = EXTENT_WORLD, title = "", legend = F, gcam_df = NULL,
-  gcam_key = "id", mapdata_key = "region_id", zoom = 0,
-  graticules = "bottom", agr_type = "constant",
-  background_color = MAP_BACKGROUND, padding = all(extent == EXTENT_WORLD))
+plot_GCAM(
+  mapdata,
+  col = NULL,
+  proj = robin,
+  proj_type = NULL,
+  extent = EXTENT_WORLD,
+  title = "",
+  legend = F,
+  gcam_df = NULL,
+  gcam_key = "id",
+  mapdata_key = "region_id",
+  zoom = 0,
+  graticules = "bottom",
+  agr_type = "constant",
+  background_color = MAP_BACKGROUND,
+  padding = all(extent == EXTENT_WORLD)
+)
 }
 \arguments{
 \item{mapdata}{The data frame containing both geometric data (simple features
@@ -94,6 +106,7 @@ this package defines the following proj4 strings: \itemize{ \item
 \item \code{\link{robin}} - Robinson \item \code{\link{na_aea}} - Albers
 equal area (North America) \item \code{\link{ch_aea}} - Albers equal area
 (China) \item \code{\link{af_ortho}} - Orthographic projection over Africa }
+
 
 The \code{extent} argument gives the bounding box of the area to be plotted.
 Its format is \code{c(lon.min, lon.max, lat.min, lat.max)}.  For convenience

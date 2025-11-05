@@ -4,7 +4,9 @@
 \name{af_ortho}
 \alias{af_ortho}
 \title{Proj4 string for orthographic projection over Africa}
-\format{An object of class \code{character} of length 1.}
+\format{
+An object of class \code{character} of length 1.
+}
 \usage{
 af_ortho
 }

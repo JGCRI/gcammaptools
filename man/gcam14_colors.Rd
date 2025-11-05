@@ -4,7 +4,9 @@
 \name{gcam14_colors}
 \alias{gcam14_colors}
 \title{Color palette for 14-region GCAM}
-\format{An object of class \code{character} of length 14.}
+\format{
+An object of class \code{character} of length 14.
+}
 \usage{
 gcam14_colors
 }

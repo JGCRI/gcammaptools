@@ -4,7 +4,9 @@
 \name{wgs84}
 \alias{wgs84}
 \title{Proj4 string for default WGS84 (EPSG:4326) coordinate reference system}
-\format{An object of class \code{character} of length 1.}
+\format{
+An object of class \code{character} of length 1.
+}
 \usage{
 wgs84
 }

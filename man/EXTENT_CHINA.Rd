@@ -4,7 +4,9 @@
 \name{EXTENT_CHINA}
 \alias{EXTENT_CHINA}
 \title{Extent vector for China}
-\format{An object of class \code{numeric} of length 4.}
+\format{
+An object of class \code{numeric} of length 4.
+}
 \usage{
 EXTENT_CHINA
 }

@@ -4,8 +4,12 @@
 \alias{theme_GCAM}
 \title{Default GCAM theme function}
 \usage{
-theme_GCAM(base_size = 11, base_family = "", legend = FALSE,
-  overlay_graticules = FALSE)
+theme_GCAM(
+  base_size = 11,
+  base_family = "",
+  legend = FALSE,
+  overlay_graticules = FALSE
+)
 }
 \arguments{
 \item{base_size}{Base font size}

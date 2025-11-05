@@ -4,7 +4,9 @@
 \name{EXTENT_WORLD}
 \alias{EXTENT_WORLD}
 \title{Extent vector for the entire world}
-\format{An object of class \code{numeric} of length 4.}
+\format{
+An object of class \code{numeric} of length 4.
+}
 \usage{
 EXTENT_WORLD
 }

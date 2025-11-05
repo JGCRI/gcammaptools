@@ -21,7 +21,6 @@
 #' your region boundaries.  The package provides the following commonly-used
 #' base maps:
 #' \itemize{
-#'   \item \code{\link{map.rgn14}}: 14 region map used prior to GCAM 4.0.
 #'   \item \code{\link{map.rgn32}}: 32 region map used in GCAM 4.0 and later,
 #' excluding Taiwan.
 #'   \item \code{\link{map.basin235}}: 235 water basins.
@@ -42,23 +41,6 @@
 #' @import ggplot2
 #' @importFrom magrittr %>%
 NULL
-
-#' Base map for 14-region GCAM
-#'
-#' This is the region map used in versions of GCAM prior to GCAM 4.0.  It is
-#' largely obsolete, but there are still some data from those days floating
-#' around in the wild
-#'
-#' @format Simple feature collection
-"map.rgn14"
-
-#' Simplified base map for 14-region GCAM
-#'
-#' The same map as \code{map.rgn14} but with only Polygons that have an area
-#' greater than 2.5 square degrees and simplified Polygon borders.
-#'
-#' @format Simple feature collection
-"map.rgn14.simple"
 
 #' Base map for 32-region GCAM
 #'

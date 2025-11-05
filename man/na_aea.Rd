@@ -4,7 +4,9 @@
 \name{na_aea}
 \alias{na_aea}
 \title{Proj4 string for the Albers equal area projection over North America.}
-\format{An object of class \code{character} of length 1.}
+\format{
+An object of class \code{character} of length 1.
+}
 \usage{
 na_aea
 }

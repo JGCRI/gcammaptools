@@ -4,7 +4,9 @@
 \name{map.basin235}
 \alias{map.basin235}
 \title{Base map for 235 global water basins}
-\format{Simple feature collection}
+\format{
+Simple feature collection
+}
 \usage{
 map.basin235
 }

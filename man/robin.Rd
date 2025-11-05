@@ -4,7 +4,9 @@
 \name{robin}
 \alias{robin}
 \title{Proj4 string for the Robinson World projection}
-\format{An object of class \code{character} of length 1.}
+\format{
+An object of class \code{character} of length 1.
+}
 \usage{
 robin
 }

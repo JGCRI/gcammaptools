@@ -4,8 +4,7 @@
 \alias{filter_spatial}
 \title{Get features topologically associated with extent bounds.}
 \usage{
-filter_spatial(mapdata, bbox, agr_type = "constant",
-  topo = sf::st_intersects)
+filter_spatial(mapdata, bbox, agr_type = "constant", topo = sf::st_intersects)
 }
 \arguments{
 \item{mapdata}{The sf object containing the spatial data.}

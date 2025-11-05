@@ -4,7 +4,9 @@
 \name{chn}
 \alias{chn}
 \title{Designator for the chn map set}
-\format{An object of class \code{name} of length 1.}
+\format{
+An object of class \code{name} of length 1.
+}
 \usage{
 chn
 }

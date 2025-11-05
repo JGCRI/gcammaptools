@@ -4,7 +4,9 @@
 \name{usa}
 \alias{usa}
 \title{Designator for the usa map set}
-\format{An object of class \code{name} of length 1.}
+\format{
+An object of class \code{name} of length 1.
+}
 \usage{
 usa
 }

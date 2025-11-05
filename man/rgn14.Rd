@@ -4,7 +4,9 @@
 \name{rgn14}
 \alias{rgn14}
 \title{Designator for the rgn14 map set}
-\format{An object of class \code{name} of length 1.}
+\format{
+An object of class \code{name} of length 1.
+}
 \usage{
 rgn14
 }

@@ -4,7 +4,9 @@
 \name{map.countries}
 \alias{map.countries}
 \title{Base map for gridded data over national borders}
-\format{Simple feature collection}
+\format{
+Simple feature collection
+}
 \usage{
 map.countries
 }

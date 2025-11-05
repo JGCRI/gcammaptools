@@ -4,7 +4,9 @@
 \name{basin235}
 \alias{basin235}
 \title{Designator for the basin235 map set}
-\format{An object of class \code{name} of length 1.}
+\format{
+An object of class \code{name} of length 1.
+}
 \usage{
 basin235
 }

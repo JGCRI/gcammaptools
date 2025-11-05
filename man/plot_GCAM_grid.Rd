@@ -4,8 +4,17 @@
 \alias{plot_GCAM_grid}
 \title{Plot a gridded dataset over a base map}
 \usage{
-plot_GCAM_grid(plotdata, col, map = map.rgn32, proj = robin,
-  proj_type = NULL, extent = EXTENT_WORLD, zoom = 0, alpha = 0.8, ...)
+plot_GCAM_grid(
+  plotdata,
+  col,
+  map = map.rgn32,
+  proj = robin,
+  proj_type = NULL,
+  extent = EXTENT_WORLD,
+  zoom = 0,
+  alpha = 0.8,
+  ...
+)
 }
 \arguments{
 \item{plotdata}{Data frame with the coordinates and values to be plotted.

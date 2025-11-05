@@ -4,7 +4,9 @@
 \name{eck3}
 \alias{eck3}
 \title{Proj4 string for the Eckert III World projection}
-\format{An object of class \code{character} of length 1.}
+\format{
+An object of class \code{character} of length 1.
+}
 \usage{
 eck3
 }

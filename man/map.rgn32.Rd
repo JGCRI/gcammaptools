@@ -4,7 +4,9 @@
 \name{map.rgn32}
 \alias{map.rgn32}
 \title{Base map for 32-region GCAM}
-\format{Simple feature collection}
+\format{
+Simple feature collection
+}
 \usage{
 map.rgn32
 }

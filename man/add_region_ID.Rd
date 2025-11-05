@@ -4,8 +4,13 @@
 \alias{add_region_ID}
 \title{Match GCAM ID to region using data from a lookup table.}
 \usage{
-add_region_ID(datatable, lookupfile = rgn32, provincefile = NULL,
-  drops = NULL, disaggregate = NULL)
+add_region_ID(
+  datatable,
+  lookupfile = rgn32,
+  provincefile = NULL,
+  drops = NULL,
+  disaggregate = NULL
+)
 }
 \arguments{
 \item{datatable}{A table of results produced by \code{\link[rgcam]{getQuery}}}

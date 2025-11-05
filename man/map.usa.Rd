@@ -4,7 +4,9 @@
 \name{map.usa}
 \alias{map.usa}
 \title{Base map for 32-region GCAM with USA states}
-\format{Simple feature collection}
+\format{
+Simple feature collection
+}
 \usage{
 map.usa
 }
