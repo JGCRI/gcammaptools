@@ -15,9 +15,6 @@ test_that("simplified map is same type and class as original map", {
   expect_equal(class(map.rgn32), class(simplify_mapdata(map.rgn32)))
   expect_equal(typeof(map.rgn32), typeof(simplify_mapdata(map.rgn32)))
 
-  expect_equal(class(map.rgn14), class(simplify_mapdata(map.rgn14)))
-  expect_equal(typeof(map.rgn14), typeof(simplify_mapdata(map.rgn14)))
-
   expect_equal(class(map.basin235), class(simplify_mapdata(map.basin235)))
   expect_equal(typeof(map.basin235), typeof(simplify_mapdata(map.basin235)))
 

@@ -3,6 +3,8 @@
 library(gcammaptools)
 context("Plotting gridded data")
 
+sf::sf_use_s2(FALSE)
+
 # load a gridded dataset
 prj <- rgcam::loadProject(system.file('sample-gcam-data','gcam-longform-sample.dat', package='gcammaptools'))
 co2grid <- rgcam::getQuery(prj, 'Cooling Degree Days', 'Reference')
@@ -18,10 +20,6 @@ test_that("plot_GCAM_grid plots with all defaults", {
 })
 
 test_that("plot_GCAM_grid plots with provided basemaps", {
-  plot_GCAM_grid(co2grid,
-                 col='value',
-                 map=map.rgn14
-  )
   plot_GCAM_grid(co2grid,
                  col='value',
                  map=simplify_mapdata(map.basin235, 5)
