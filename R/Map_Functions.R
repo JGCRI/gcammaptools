@@ -368,7 +368,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
       regions <- ggplot2::geom_sf(data = map, fill = FILL_COLOR,
                                   color = BORDER_LIGHT)
   else
-      regions <- ggplot2::geom_sf(data = map, aes_string(fill = col), alpha = 1,
+      regions <- ggplot2::geom_sf(data = map, aes(fill = .data[[col]]), alpha = 1,
                                   color = BORDER_DARK)
 
   # generate plot object
@@ -457,7 +457,7 @@ plot_GCAM_grid <- function(plotdata, col, map = map.rgn32, proj = robin,
 
     # add the gridded data to the base map
     grid <- geom_raster(data = plotdata,
-                        mapping = aes_string(x='lon', y='lat', fill = col),
+                        mapping = aes(x=.data[['lon']], y=.data[['lat']], fill = .data[[col]]),
                         alpha = alpha)
 
     # remove x and y axis labels and give scale a title
