@@ -368,7 +368,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
       regions <- ggplot2::geom_sf(data = map, fill = FILL_COLOR,
                                   color = BORDER_LIGHT)
   else
-      regions <- ggplot2::geom_sf(data = map, aes(fill = .data[[col]]), alpha = 1,
+      regions <- ggplot2::geom_sf(data = map, ggplot2::aes(fill = .data[[col]]), alpha = 1,
                                   color = BORDER_DARK)
 
   # generate plot object
@@ -503,12 +503,11 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE,
     return(tm)
 }
 
-
-#' Designator for the rgn14 map set
+#' Designator for the rgn32v81 map set
 #'
-#' This symbol will select the rgn14 map set
+#' This symbol will select the rgn32v81 map set
 #' @export
-rgn14 <- quote(rgn14)
+rgn32v81 <- quote(rgn32v81)
 
 #' Designator for the rgn32 map set
 #'

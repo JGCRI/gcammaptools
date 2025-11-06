@@ -13,7 +13,7 @@
 #' The \code{provincefile} and \code{drops} arguments are a little clunky.  They
 #' are optional, but if you are using one of the built-in map sets, then you
 #' \emph{must not} specify them if they don't exist for the map set you are
-#' using.  Currently, \code{rgn14} and \code{basin235} have neither drops nor
+#' using.  Currently, \code{basin235} has neither drops nor
 #' province abbreviations.  The \code{rgn32} set has drops, but not province
 #' abbreviations.  Only the \code{chn} set has both.
 #' @param datatable A table of results produced by \code{\link[rgcam]{getQuery}}
@@ -143,7 +143,7 @@ drop_regions <- function(datatable, drops) {
 #'
 #' We have several standard map sets.  Each of them has several auxiliary tables
 #' associated with it.  This function retrieves the auxiliary table associated
-#' with the requested.  Right now this function understands \code{rgn14},
+#' with the requested.  Right now this function understands
 #' \code{rgn32}, \code{basin235}, and \code{chn}.
 #'
 #' @param mapset The name of the mapset.  Can be either a symbol or a string.

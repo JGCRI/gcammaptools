@@ -69,6 +69,7 @@ get_prj4s <- function(obj = NULL, prj_type = NULL, prj_code = NULL, prj4s_key = 
 #' @param proj_type Either esri, epsg, or sr-org as string.  These correspond to
 #' available reference types hosted by http://spatialreference.org/
 #' @param proj The coordinate reference system number or object provided by the user
+#' @export
 assign_prj4s <- function(proj_type, proj) {
 
     # change proj_type to lower case
@@ -117,6 +118,7 @@ pgon_from_extent <- function(ext) {
 #'   all directions.
 #' @param proj4s Either the proj4 string or EPSG number of the native projection
 #'   of the bounds
+#' @export
 spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") {
 
   # create a rectangular polygon from bounding box, segmentize it to 1 degree
@@ -164,6 +166,7 @@ spat_bb <- function(b_ext, buff_dist = 0, proj4s = "+proj=longlat +ellps=WGS84 +
 #' Removes empty, corrupt, or invalid geometries from an sfc object.
 #'
 #' @param sfcobj Object of class \code{sf} or \code{sfc}
+#' @export
 remove_invalid <- function(sfcobj) {
     invalids <- sf::st_is_valid(sfcobj, reason = T)
     intrscts <- grepl("Self-intersection", invalids)

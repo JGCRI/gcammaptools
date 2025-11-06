@@ -127,7 +127,15 @@ EXTENT_LA <- c(-118,-33,-56,37)
 LINE_COLOR <- "#444444"
 FILL_COLOR <- "#222222"
 BORDER_LIGHT <- alpha("#aaaaaa", 0.5)
+
+#' Border color
+#'
+#' @export
 BORDER_DARK <- alpha("#000000", 0.5)
+
+#' Map background
+#'
+#' @export
 MAP_BACKGROUND <- "#ddefff"
 
 # Background
@@ -141,29 +149,6 @@ YLAB <- ""
 
 # Legend
 LEGEND_POSITION = "bottom"
-
-#' Color palette for 14-region GCAM
-#'
-#' This palette should be used for plots by region (whether maps, line plots, or
-#' other types) to ensure consistency across plots and publications.  XXX:
-#' Perhaps this sort of thing should go in a separate GCAM style package, since
-#' it isn't really specific to mapping?
-#' @export
-gcam14_colors<- c("Africa" = "navajowhite3",
-                  "Australia_NZ" = "lightpink",
-                  "India" = "lightslateblue",
-                  "USA" = "sandybrown",
-                  "Japan" = "rosybrown1",
-                  "Korea" = "brown",
-                  "Eastern Europe" = "orange" ,
-                  "Western Europe" = "greenyellow",
-                  "Canada" = "saddlebrown",
-                  "China" = "lightblue",
-                  "Southeast Asia" = "gold",
-                  "Latin America" = "seagreen2",
-                  "Middle East" = "indianred",
-                  "Former Soviet Union" = "plum2")
-
 
 rgb255 <- function(r, g, b) {grDevices::rgb(r,g,b, maxColorValue=255)}
 #' Color palette for 32-region GCAM
@@ -192,6 +177,7 @@ gcam32_colors <- c(
     'EU-12' = rgb255(25,25,112),
     'EU-15' = rgb255(131,111,255),
     'Europe_Eastern' = rgb255(173,216,230),
+    'Ukraine' = rgb255(173,216,230),
     'Europe_Non_EU' = rgb255(0,104,139),
     'European Free Trade Association' = rgb255(58,95,205),
 

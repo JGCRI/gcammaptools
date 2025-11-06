@@ -3,7 +3,7 @@
 \docType{data}
 \name{map.rgn32}
 \alias{map.rgn32}
-\title{Base map for 32-region GCAM}
+\title{Base map for older 32-region GCAM}
 \format{
 Simple feature collection
 }
@@ -11,7 +11,7 @@ Simple feature collection
 map.rgn32
 }
 \description{
-This is the region map used in GCAM 4.0 and subsequent.  This version of the
+This is the region map used in GCAM 4.0 through 8.0.  This version of the
 map does not include the Taiwan region.
 }
 \keyword{datasets}

@@ -3,7 +3,7 @@
 \docType{data}
 \name{map.rgn32.simple}
 \alias{map.rgn32.simple}
-\title{Simplified base map for 32-region GCAM}
+\title{Simplified base map for older 32-region GCAM}
 \format{
 Simple feature collection
 }

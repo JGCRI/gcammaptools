@@ -21,7 +21,8 @@
 #' your region boundaries.  The package provides the following commonly-used
 #' base maps:
 #' \itemize{
-#'   \item \code{\link{map.rgn32}}: 32 region map used in GCAM 4.0 and later,
+#'   \item \code{\link{map.rgn32v81}}: 32 region map used in GCAM 8.1 and later.
+#'   \item \code{\link{map.rgn32}}: 32 region map used in GCAM 4.0 to 8.0,
 #' excluding Taiwan.
 #'   \item \code{\link{map.basin235}}: 235 water basins.
 #'   \item \code{\link{map.chn}}: 32 global regions plus China subregions
@@ -42,15 +43,30 @@
 #' @importFrom magrittr %>%
 NULL
 
-#' Base map for 32-region GCAM
+#' Base map for current 32-region GCAM
 #'
-#' This is the region map used in GCAM 4.0 and subsequent.  This version of the
+#' This is the region map used in GCAM 8.1 and subsequent.
+#'
+#' @format Simple feature collection
+"map.rgn32v81"
+
+#' Simplified base map for current 32-region GCAM
+#'
+#' The same map as \code{map.rgn32v81} but with only Polygons that have an area
+#' greater than 2.5 square degrees and simplified Polygon borders.
+#'
+#' @format Simple feature collection
+"map.rgn32v81.simple"
+
+#' Base map for older 32-region GCAM
+#'
+#' This is the region map used in GCAM 4.0 through 8.0.  This version of the
 #' map does not include the Taiwan region.
 #'
 #' @format Simple feature collection
 "map.rgn32"
 
-#' Simplified base map for 32-region GCAM
+#' Simplified base map for older 32-region GCAM
 #'
 #' The same map as \code{map.rgn32} but with only Polygons that have an area
 #' greater than 2.5 square degrees and simplified Polygon borders.

@@ -30,7 +30,8 @@ To map GCAM data, you will need a simple feature collection or geojson with
 your region boundaries.  The package provides the following commonly-used
 base maps:
 \itemize{
-  \item \code{\link{map.rgn32}}: 32 region map used in GCAM 4.0 and later,
+  \item \code{\link{map.rgn32v81}}: 32 region map used in GCAM 8.1 and later.
+  \item \code{\link{map.rgn32}}: 32 region map used in GCAM 4.0 to 8.0,
 excluding Taiwan.
   \item \code{\link{map.basin235}}: 235 water basins.
   \item \code{\link{map.chn}}: 32 global regions plus China subregions

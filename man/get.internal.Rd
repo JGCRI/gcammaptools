@@ -15,6 +15,6 @@ get.internal(mapset, type)
 \description{
 We have several standard map sets.  Each of them has several auxiliary tables
 associated with it.  This function retrieves the auxiliary table associated
-with the requested.  Right now this function understands \code{rgn14},
+with the requested.  Right now this function understands
 \code{rgn32}, \code{basin235}, and \code{chn}.
 }

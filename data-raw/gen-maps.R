@@ -9,16 +9,26 @@ library('dplyr')
 # This function generates five map files, represented as sf objects (see
 # https://cran.r-project.org/web/packages/sf/). The default maps supported by
 # gcammaptools are:
-#   - rgn32:     The current 32 GCAM regions
-#   - basin235:  The 235 water basins, which are soon replacing AEZs
+#   - rgn32v81:  The current 32 GCAM regions (starting with v8.1)
+#   - rgn32:     The 32 GCAM regions from v4.0 to v8.0
+#   - basin235:  The 235 water basins
 #   - chn:       The current 32 GCAM regions with China broken down into 30
 #                provinces
 #   - usa:       The current 32 GCAM regions with USA broken down into 51
 #                regions (50 states and Washington DC)
 #   - countries: A standard world map containing country administrative borders
-# Additionally, simplified versions of rgn14, rgn32, and basin235 are created.
+# Additionally, simplified versions of rgn32 and basin235 are created.
 gen.data <- function() {
     sf::sf_use_s2(FALSE)
+
+    ## Both maps of the GCAM regions are built with the column 'region_name',
+    # which is not necessary for plotting but is used so that gcam32_colors can
+    # map to it.
+    map.rgn32v81 <- file.path("./inst/extdata/rgn32v81/rgn32v81_spart.shp") %>%
+        import_mapdata() %>%
+        dplyr::left_join(lut.rgn32v81, by = "region_id") %>%
+        dplyr::rename(region_name = region) %>% sf::st_as_sf()
+    map.rgn32v81.simple <- simplify_mapdata(map.rgn32v81)
 
     ## Both maps of the GCAM regions are built with the column 'region_name',
     # which is not necessary for plotting but is used so that gcam32_colors can
@@ -33,7 +43,7 @@ gen.data <- function() {
     path.basin235 <- "rgnbasin/Global235_CLM_05_dissolve.geojson"
     map.basin235 <- system.file("extdata", path.basin235, package = "gcammaptools") %>%
         import_mapdata() %>%
-        rbind(dplyr::rename(map.rgn14[1, ], basin_name = region_name)) # Add Antarctica
+        rbind(dplyr::rename(map.rgn32[1, ], basin_name = region_name)) # Add Antarctica
     map.basin235.simple <- simplify_mapdata(map.basin235)
 
     ## The original geoJSON for China is 9.7MB, so it is not included. The
@@ -81,13 +91,17 @@ gen.data <- function() {
     path.countries <- system.file("extdata", "rgnworld/ne_110m_admin_0_countries.shp", package = "gcammaptools")
     map.countries <- import_mapdata(path.countries)[,c('admin', 'geometry')]
 
-    usethis::use_data( map.rgn32, map.rgn32.simple,
+    usethis::use_data( map.rgn32v81, map.rgn32v81.simple, map.rgn32, map.rgn32.simple,
                        map.basin235, map.basin235.simple, map.chn, map.usa,
                        map.countries, overwrite=TRUE)
 }
 
 gen.internal <- function() {
     ## Read the various region lookup tables, drop region lists, and province
+    ## v8.1 32-region has a lookup
+    lut.rgn32v81 <- read.csv('inst/extdata/rgn32v81/lookup.txt', strip.white=TRUE,
+                             stringsAsFactors=FALSE)
+
     ## 32-region has a lookup and a drop
     lut.rgn32 <- read.csv('inst/extdata/rgn32/lookup.txt', strip.white=TRUE,
                           stringsAsFactors=FALSE)
@@ -110,7 +124,7 @@ gen.internal <- function() {
     lut.usa <- read.csv('inst/extdata/rgnusa/lookup.txt', strip.white=TRUE,
                         stringsAsFactors=FALSE)
 
-    usethis::use_data( lut.rgn32, drop.rgn32, lut.basin235,
+    usethis::use_data( lut.rgn32v81, lut.rgn32, drop.rgn32, lut.basin235,
                        lut.chn, drop.chn, prov.chn, lut.usa,
                        internal=TRUE, overwrite=TRUE)
 }
