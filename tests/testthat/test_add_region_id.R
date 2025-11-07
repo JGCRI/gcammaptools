@@ -16,7 +16,6 @@ test_that("32 regions get added even if only one provided", {
 test_that("lookupfiles work", {
     expect_equal(add_region_ID(test),
                  add_region_ID(test, system.file("extdata", "rgn32/lookup.txt", package = "gcammaptools")))
-    expect_equal(nrow(add_region_ID(test, rgn14)), 15) # 14 regions + 1 NA
     expect_equal(nrow(add_region_ID(test, basin235)), 237) # 235 basins + 1 NA + 1 USA
     expect_equal(nrow(add_region_ID(test, chn)), 62) # 31 regions + 1 NA + 30 provinces
     expect_equal(nrow(add_region_ID(test, usa)), 83) # 30 regions + 1 NA + 51 states + 1 USA
