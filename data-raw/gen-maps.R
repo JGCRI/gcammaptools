@@ -30,6 +30,15 @@ gen.data <- function() {
         dplyr::rename(region_name = region) %>% sf::st_as_sf()
     map.rgn32v81.simple <- simplify_mapdata(map.rgn32v81)
 
+    ## Create maps that combine GCAM 32 regions with 235 water basins
+    map.rgnlndv81 <- file.path("./inst/extdata/rgnlndv81/rgnlndv81_spart.shp") %>%
+        import_mapdata() %>%
+        dplyr::left_join(lut.rgn32v81, by = c("gcamreg_id" = "region_id")) %>%
+        dplyr::rename(gcamreg_name = region) %>%
+        dplyr::left_join(lut.basin235, by = c("basin_id" = "region_id")) %>%
+        dplyr::select(-region)  %>% sf::st_as_sf()
+    map.rgnlndv81.simple <- simplify_mapdata(map.rgnlndv81)
+
     ## Both maps of the GCAM regions are built with the column 'region_name',
     # which is not necessary for plotting but is used so that gcam32_colors can
     # map to it.
@@ -91,7 +100,9 @@ gen.data <- function() {
     path.countries <- system.file("extdata", "rgnworld/ne_110m_admin_0_countries.shp", package = "gcammaptools")
     map.countries <- import_mapdata(path.countries)[,c('admin', 'geometry')]
 
-    usethis::use_data( map.rgn32v81, map.rgn32v81.simple, map.rgn32, map.rgn32.simple,
+    usethis::use_data( map.rgn32v81, map.rgn32v81.simple,
+                       map.rgnlndv81, map.rgnlndv81.simple,
+                       map.rgn32, map.rgn32.simple,
                        map.basin235, map.basin235.simple, map.chn, map.usa,
                        map.countries, overwrite=TRUE)
 }
@@ -126,7 +137,7 @@ gen.internal <- function() {
 
     usethis::use_data( lut.rgn32v81, lut.rgn32, drop.rgn32, lut.basin235,
                        lut.chn, drop.chn, prov.chn, lut.usa,
-                       internal=TRUE, overwrite=TRUE)
+                       internal=FALSE, overwrite=TRUE)
 }
 
 
