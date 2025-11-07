@@ -23,6 +23,7 @@ Africa_Eastern,CongoR,Congo,Africa_Eastern,21,2,183
 Africa_Northern,MeditE,"Mediterranean Sea, East Coast",Africa_Northern,22,3,75
 Africa_Northern,MeditS,Mediterranean South Coast,Africa_Northern,23,3,80
 Africa_Northern,AfrCstNW,"Africa, North West Coast",Africa_Northern,24,3,86
+Africa_Northern,NigerR,Niger,Africa_Northern,396,3,149
 Africa_Northern,NileR,Nile,Africa_Northern,25,3,87
 Africa_Northern,AfrIntN,"Africa, North Interior",Africa_Northern,26,3,144
 Africa_Northern,LChad,Lake Chad,Africa_Northern,27,3,151

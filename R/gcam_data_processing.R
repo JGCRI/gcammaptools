@@ -79,6 +79,13 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
                           grp[ , disaggregate] <- grp[1, disaggregate]
                           grp
                       })
+    } else if ( lookupfile == rgnlndv81 ) {
+      # If using the GCAM land regions, then some work is needed to identify region IDs
+        datatable %>%
+            tidyr::separate(LandLeaf, into=c("LandType", "gcambasin"), sep="_") %>%
+            dplyr::full_join(lookuptable, by=c("region", "gcambasin")) %>%
+            dplyr::select(-gcamreg_id, -basin_id) ->
+            finaltable
     } else {
         finaltable <- dplyr::full_join(datatable, lookuptable, by = "region")
         if (any(duplicated(finaltable$region))) {
