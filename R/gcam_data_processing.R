@@ -84,7 +84,8 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
         datatable %>%
             tidyr::separate(LandLeaf, into=c("LandType", "gcambasin"), sep="_") %>%
             dplyr::full_join(lookuptable, by=c("region", "gcambasin")) %>%
-            dplyr::select(-gcamreg_id, -basin_id) ->
+            dplyr::select(-gcamreg_id, -basin_id) %>%
+            na.omit() ->
             finaltable
     } else {
         finaltable <- dplyr::full_join(datatable, lookuptable, by = "region")
