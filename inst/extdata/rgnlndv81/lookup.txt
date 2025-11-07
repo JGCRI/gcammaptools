@@ -1,0 +1,396 @@
+gcamreg,gcambasin,basin,region,region_id,gcamreg_id,basin_id
+USA,PacArctic,Pacific and Arctic Coast,USA,1,1,7
+USA,MexCstNW,"Mexico, Northwest Coast",USA,2,1,96
+USA,California,California River Basin,USA,3,1,217
+USA,UsaColoRN,Upper Colorado River Basin,USA,4,1,220
+USA,UsaColoRS,Lower Colorado River Basin,USA,5,1,221
+USA,GreatBasin,Great Basin,USA,6,1,222
+USA,MissouriR,Missouri River Basin,USA,7,1,223
+USA,ArkWhtRedR,Arkansas White Red Basin,USA,8,1,224
+USA,TexasCst,Texas Gulf Coast Basin,USA,9,1,225
+USA,UsaCstSE,South Atlantic-Gulf Basin,USA,10,1,226
+USA,UsaPacNW,Pacific Northwest Basin,USA,11,1,229
+USA,RioGrande,Rio Grande River Basin,USA,12,1,231
+Africa_Eastern,NileR,Nile,Africa_Eastern,13,2,87
+Africa_Eastern,AfrCstNE,"Africa, Red Sea - Gulf of Aden Coast",Africa_Eastern,14,2,100
+Africa_Eastern,AfrIntN,"Africa, North Interior",Africa_Eastern,15,2,144
+Africa_Eastern,LChad,Lake Chad,Africa_Eastern,16,2,151
+Africa_Eastern,ShebJubR,Shebelli - Juba,Africa_Eastern,17,2,170
+Africa_Eastern,AfrCstE,"Africa, East Central Coast",Africa_Eastern,18,2,171
+Africa_Eastern,Madagascar,Madasgacar,Africa_Eastern,19,2,177
+Africa_Eastern,RiftValley,Rift Valley,Africa_Eastern,20,2,179
+Africa_Eastern,CongoR,Congo,Africa_Eastern,21,2,183
+Africa_Northern,MeditE,"Mediterranean Sea, East Coast",Africa_Northern,22,3,75
+Africa_Northern,MeditS,Mediterranean South Coast,Africa_Northern,23,3,80
+Africa_Northern,AfrCstNW,"Africa, North West Coast",Africa_Northern,24,3,86
+Africa_Northern,NileR,Nile,Africa_Northern,25,3,87
+Africa_Northern,AfrIntN,"Africa, North Interior",Africa_Northern,26,3,144
+Africa_Northern,LChad,Lake Chad,Africa_Northern,27,3,151
+Africa_Southern,NileR,Nile,Africa_Southern,28,4,87
+Africa_Southern,AfrCstE,"Africa, East Central Coast",Africa_Southern,29,4,171
+Africa_Southern,RiftValley,Rift Valley,Africa_Southern,30,4,179
+Africa_Southern,AngolaCst,"Angola, Coast",Africa_Southern,31,4,182
+Africa_Southern,CongoR,Congo,Africa_Southern,32,4,183
+Africa_Southern,ZambeziR,Zambezi,Africa_Southern,33,4,188
+Africa_Southern,AfrCstSE,"Africa, Indian Ocean Coast",Africa_Southern,34,4,190
+Africa_Southern,OrangeR,Orange,Africa_Southern,35,4,194
+Africa_Southern,AfrCstSW,"Namibia, Coast",Africa_Southern,36,4,196
+Africa_Southern,AfrIntS,"Africa, South Interior",Africa_Southern,37,4,197
+Africa_Southern,LimpopoR,Limpopo,Africa_Southern,38,4,199
+Africa_Western,AfrCstNW,"Africa, North West Coast",Africa_Western,39,5,86
+Africa_Western,NileR,Nile,Africa_Western,40,5,87
+Africa_Western,AfrCstW,"Africa, West Coast",Africa_Western,41,5,142
+Africa_Western,AfrIntN,"Africa, North Interior",Africa_Western,42,5,144
+Africa_Western,NigerR,Niger,Africa_Western,43,5,149
+Africa_Western,LChad,Lake Chad,Africa_Western,44,5,151
+Africa_Western,SenegalR,Senegal,Africa_Western,45,5,152
+Africa_Western,VoltaR,Volta,Africa_Western,46,5,160
+Africa_Western,GuineaGulf,Gulf of Guinea,Africa_Western,47,5,162
+Africa_Western,CongoR,Congo,Africa_Western,48,5,183
+Australia_NZ,AusCstN,"Australia, North Coast",Australia_NZ,49,6,184
+Australia_NZ,AusCstE,"Australia, East Coast",Australia_NZ,50,6,189
+Australia_NZ,AusCstW,"Australia, West Coast",Australia_NZ,51,6,191
+Australia_NZ,AusInt,"Australia, Interior",Australia_NZ,52,6,193
+Australia_NZ,AusCstS,"Australia, South Coast",Australia_NZ,53,6,202
+Australia_NZ,MurrayDrlg,Murray - Darling,Australia_NZ,54,6,208
+Australia_NZ,Tasmania,Tasmania,Australia_NZ,55,6,211
+Brazil,SAmerCstNE,"Northeast South America, South Atlantic Coast",Brazil,56,7,161
+Brazil,AmazonR,Amazon,Brazil,57,7,168
+Brazil,BrzCstN,"North Brazil, South Atlantic Coast",Brazil,58,7,172
+Brazil,TocantinsR,Tocantins,Brazil,59,7,174
+Brazil,BrzCstE,"East Brazil, South Atlantic Coast",Brazil,60,7,186
+Brazil,ParnaibaR,Parnaiba,Brazil,61,7,187
+Brazil,SaoFrancR,Sao Francisco,Brazil,62,7,192
+Brazil,BrzCstS,"Uruguay - Brazil, South Atlantic Coast",Brazil,63,7,195
+Brazil,RioLaPlata,La Plata,Brazil,64,7,206
+Canada,NWTerr,Northwest Territories,Canada,65,8,2
+Canada,PacArctic,Pacific and Arctic Coast,Canada,66,8,7
+Canada,Mackenzie,Mackenzie,Canada,67,8,10
+Canada,HudsonBay,Hudson Bay Coast,Canada,68,8,15
+Canada,CanAtl,Atlantic Ocean Seaboard,Canada,69,8,19
+Canada,NelsonR,Saskatchewan - Nelson,Canada,70,8,23
+Canada,FraserR,Fraser,Canada,71,8,27
+Canada,ChurchillR,Churchill,Canada,72,8,34
+Canada,StLwrncR,St Lawrence,Canada,73,8,40
+Canada,MissouriR,Missouri River Basin,Canada,74,8,223
+Canada,GreatLakes,Great Lakes Basin,Canada,75,8,227
+Central America and Caribbean,Caribbean,Caribbean,Central America and Caribbean,76,9,101
+Central America and Caribbean,YucatanP,Yucat?n Peninsula,Central America and Caribbean,77,9,111
+Central America and Caribbean,GrijUsuR,Grijalva - Usumacinta,Central America and Caribbean,78,9,133
+Central America and Caribbean,CntAmer,Southern Central America,Central America and Caribbean,79,9,135
+Central America and Caribbean,SAmerCstN,Caribbean Coast,Central America and Caribbean,80,9,143
+Central America and Caribbean,ColEcuaCst,"Colombia - Ecuador, Pacific Coast",Central America and Caribbean,81,9,157
+Central Asia,VolgaR,Volga,Central Asia,82,10,18
+Central Asia,UralR,Ural,Central Asia,83,10,38
+Central Asia,Gobi,Gobi Interior,Central Asia,84,10,42
+Central Asia,AmurR,Amur,Central Asia,85,10,43
+Central Asia,CaspianNE,Caspian Sea Coast,Central Asia,86,10,45
+Central Asia,YeniseiR,Yenisey,Central Asia,87,10,48
+Central Asia,CaspianE,"Caspian Sea, East Coast",Central Asia,88,10,52
+Central Asia,ObR,Ob,Central Asia,89,10,56
+Central Asia,AmuDaryaR,Amu Darya,Central Asia,90,10,58
+Central Asia,LBalkash,Lake Balkash,Central Asia,91,10,68
+Central Asia,BlackSeaS,"Black Sea, South Coast",Central Asia,92,10,70
+Central Asia,CaspianSW,"Caspian Sea, South West Coast",Central Asia,93,10,72
+Central Asia,SyrDaryaR,Syr Darya,Central Asia,94,10,76
+Central Asia,Tarim,Tarim Interior,Central Asia,95,10,85
+China,Gobi,Gobi Interior,China,96,11,42
+China,AmurR,Amur,China,97,11,43
+China,ObR,Ob,China,98,11,56
+China,BoHai,"Bo Hai - Korean Bay, North Coast",China,99,11,66
+China,LBalkash,Lake Balkash,China,100,11,68
+China,ZiyaHe,"Ziya He, Interior",China,101,11,77
+China,ChinaCst,China Coast,China,102,11,78
+China,HuangHeR,Huang He,China,103,11,79
+China,Tarim,Tarim Interior,China,104,11,85
+China,IndusR,Indus,China,105,11,89
+China,Yangtze,Yangtze,China,106,11,106
+China,XunJiang,Xun Jiang,China,107,11,108
+China,Hong,Hong (Red River),China,108,11,109
+China,GangesR,Ganges - Bramaputra,China,109,11,110
+China,SChinaSea,South China Sea Coast,China,110,11,112
+China,Hainan,Hainan,China,111,11,124
+China,Mekong,Mekong,China,112,11,125
+China,Salween,Salween,China,113,11,127
+China,IrrawaddyR,Irrawaddy,China,114,11,137
+EU-12,DanubeR,Danube,EU-12,115,12,54
+EU-12,AdrBlkSea,Adriatic Sea - Greece - Black Sea Coast,EU-12,116,12,55
+EU-12,MeditE,"Mediterranean Sea, East Coast",EU-12,117,12,75
+EU-15,ArcticIsl,Arctic Ocean Islands,EU-15,118,13,1
+EU-15,ScndnvN,"Scandinavia, North Coast",EU-15,119,13,8
+EU-15,Sweden,Sweden,EU-15,120,13,12
+EU-15,Finland,Finland,EU-15,121,13,13
+EU-15,FranceCstW,"France, West Coast",EU-15,122,13,41
+EU-15,ItalyCstE,"Italy, East Coast",EU-15,123,13,50
+EU-15,DanubeR,Danube,EU-15,124,13,54
+EU-15,AdrBlkSea,Adriatic Sea - Greece - Black Sea Coast,EU-15,125,13,55
+EU-15,PoR,Po,EU-15,126,13,57
+EU-15,ItalyCstW,"Italy, West Coast",EU-15,127,13,59
+EU-15,IberiaCst,"Spain - Portugal, Atlantic Coast",EU-15,128,13,60
+EU-15,FranceCstS,"France, South Coast",EU-15,129,13,61
+EU-15,RhoneR,Rh(ne,EU-15,130,13,62
+EU-15,MeditIsl,Mediterranean Sea Islands,EU-15,131,13,63
+EU-15,Gironde,Gironde,EU-15,132,13,64
+EU-15,SpainCstSE,"Spain, South and East Coast",EU-15,133,13,67
+EU-15,TiberR,Tiber,EU-15,134,13,69
+EU-15,TagusR,Tagus,EU-15,135,13,71
+EU-15,EbroR,Ebro,EU-15,136,13,73
+EU-15,DouroR,Douro,EU-15,137,13,74
+EU-15,MeditE,"Mediterranean Sea, East Coast",EU-15,138,13,75
+EU-15,GuadianaR,Guadiana,EU-15,139,13,81
+EU-15,GuadalqR,Guadalquivir,EU-15,140,13,83
+Ukraine,DnieperR,Dnieper,Ukraine,141,14,39
+Ukraine,BlackSeaN,"Black Sea, North Coast",Ukraine,142,14,47
+Ukraine,DanubeR,Danube,Ukraine,143,14,54
+Europe_Non_EU,AdrBlkSea,Adriatic Sea - Greece - Black Sea Coast,Europe_Non_EU,144,15,55
+Europe_Non_EU,BlackSeaS,"Black Sea, South Coast",Europe_Non_EU,145,15,70
+Europe_Non_EU,CaspianSW,"Caspian Sea, South West Coast",Europe_Non_EU,146,15,72
+Europe_Non_EU,MeditE,"Mediterranean Sea, East Coast",Europe_Non_EU,147,15,75
+Europe_Non_EU,TigrEuphR,Tigris - Euphrates,Europe_Non_EU,148,15,84
+Europe_Non_EU,EJrdnSyr,Eastern Jordan - Syria,Europe_Non_EU,149,15,99
+European Free Trade Association,ArcticIsl,Arctic Ocean Islands,European Free Trade Association,150,16,1
+European Free Trade Association,ScndnvN,"Scandinavia, North Coast",European Free Trade Association,151,16,8
+European Free Trade Association,Iceland,Iceland,European Free Trade Association,152,16,11
+European Free Trade Association,Sweden,Sweden,European Free Trade Association,153,16,12
+European Free Trade Association,RhoneR,Rh(ne,European Free Trade Association,154,16,62
+India,IndusR,Indus,India,155,17,89
+India,SabarmatiR,Sabarmati,India,156,17,107
+India,GangesR,Ganges - Bramaputra,India,157,17,110
+India,MahiR,Mahi,India,158,17,113
+India,TaptiR,Tapti,India,159,17,117
+India,BrahmaniR,Brahamani,India,160,17,120
+India,MahanadiR,Mahandi,India,161,17,122
+India,GodavariR,Godavari,India,162,17,123
+India,IndCstNE,India North East Coast,India,163,17,128
+India,IndCstW,India West Coast,India,164,17,129
+India,KrishnaR,Krishna,India,165,17,140
+India,IndCstE,India East Coast,India,166,17,145
+India,PennarR,Pennar,India,167,17,147
+India,CauveryR,Cauvery,India,168,17,153
+India,IndCstS,India South Coast,India,169,17,155
+India,NarmadaR,Narmada,India,170,17,235
+Japan,Japan,Japan,Japan,171,19,51
+Japan,Taiwan,Taiwan,Japan,172,19,103
+Mexico,MexBaja,Baja California,Mexico,173,20,91
+Mexico,MexCstNW,"Mexico, Northwest Coast",Mexico,174,20,96
+Mexico,MexGulf,North Gulf,Mexico,175,20,105
+Mexico,YucatanP,Yucat?n Peninsula,Mexico,176,20,111
+Mexico,MexInt,"Mexico, Interior",Mexico,177,20,114
+Mexico,MexCstW,Pacific Central Coast,Mexico,178,20,115
+Mexico,Papaloapan,Papaloapan,Mexico,179,20,130
+Mexico,RioLerma,Rfo Lerma,Mexico,180,20,131
+Mexico,RioVerde,Rfo Verde,Mexico,181,20,132
+Mexico,GrijUsuR,Grijalva - Usumacinta,Mexico,182,20,133
+Mexico,RioBalsas,Rfo Balsas,Mexico,183,20,134
+Mexico,Tehuantpc,Isthmus of Tehuantepec,Mexico,184,20,136
+Mexico,California,California River Basin,Mexico,185,20,217
+Mexico,UsaColoRS,Lower Colorado River Basin,Mexico,186,20,221
+Mexico,RioGrande,Rio Grande River Basin,Mexico,187,20,231
+Middle East,CaspianE,"Caspian Sea, East Coast",Middle East,188,21,52
+Middle East,CaspianSW,"Caspian Sea, South West Coast",Middle East,189,21,72
+Middle East,MeditE,"Mediterranean Sea, East Coast",Middle East,190,21,75
+Middle East,Iran,Central Iran,Middle East,191,21,82
+Middle East,TigrEuphR,Tigris - Euphrates,Middle East,192,21,84
+Middle East,PersianGulf,Persian Gulf Coast,Middle East,193,21,88
+Middle East,FarahrudR,Farahrud,Middle East,194,21,90
+Middle East,RedSeaE,"Red Sea, East Coast",Middle East,195,21,93
+Middle East,ArabianP,Arabian Peninsula,Middle East,196,21,94
+Middle East,DeadSea,Dead Sea,Middle East,197,21,95
+Middle East,Helmand,Helmand,Middle East,198,21,97
+Middle East,SinaiP,Sinai Peninsula,Middle East,199,21,98
+Middle East,EJrdnSyr,Eastern Jordan - Syria,Middle East,200,21,99
+Middle East,AfrCstNE,"Africa, Red Sea - Gulf of Aden Coast",Middle East,201,21,100
+Middle East,HamuMashR,Hamun-i-Mashkel,Middle East,202,21,102
+Middle East,ArabianSea,Arabian Sea Coast,Middle East,203,21,104
+Pakistan,IndusR,Indus,Pakistan,204,22,89
+Pakistan,Helmand,Helmand,Pakistan,205,22,97
+Pakistan,HamuMashR,Hamun-i-Mashkel,Pakistan,206,22,102
+Pakistan,ArabianSea,Arabian Sea Coast,Pakistan,207,22,104
+Pakistan,SabarmatiR,Sabarmati,Pakistan,208,22,107
+Russia,ArcticIsl,Arctic Ocean Islands,Russia,209,23,1
+Russia,SiberiaN,"Siberia, North Coast",Russia,210,23,3
+Russia,SiberiaW,"Siberia, West Coast",Russia,211,23,4
+Russia,KaraSea,Kara Sea Coast,Russia,212,23,5
+Russia,LenaR,Lena,Russia,213,23,6
+Russia,ScndnvN,"Scandinavia, North Coast",Russia,214,23,8
+Russia,BarentsSea,"Russia, Barents Sea Coast",Russia,215,23,9
+Russia,Finland,Finland,Russia,216,23,13
+Russia,DvinaRN,Northern Dvina,Russia,217,23,14
+Russia,VolgaR,Volga,Russia,218,23,18
+Russia,RusCstSE,"Russia, South East Coast",Russia,219,23,37
+Russia,UralR,Ural,Russia,220,23,38
+Russia,Gobi,Gobi Interior,Russia,221,23,42
+Russia,AmurR,Amur,Russia,222,23,43
+Russia,CaspianNE,Caspian Sea Coast,Russia,223,23,45
+Russia,BlackSeaN,"Black Sea, North Coast",Russia,224,23,47
+Russia,YeniseiR,Yenisey,Russia,225,23,48
+Russia,DonR,Don,Russia,226,23,53
+Russia,ObR,Ob,Russia,227,23,56
+Russia,BlackSeaS,"Black Sea, South Coast",Russia,228,23,70
+Russia,CaspianSW,"Caspian Sea, South West Coast",Russia,229,23,72
+Russia,SyrDaryaR,Syr Darya,Russia,230,23,76
+South Africa,OrangeR,Orange,South Africa,231,24,194
+South Africa,AfrCstS,"South Africa, South Coast",South Africa,232,24,198
+South Africa,LimpopoR,Limpopo,South Africa,233,24,199
+South Africa,AfrCstSSW,"South Africa, West Coast",South Africa,234,24,204
+South America_Northern,SAmerCstN,Caribbean Coast,South America_Northern,235,25,143
+South America_Northern,OrinocoR,Orinoco,South America_Northern,236,25,156
+South America_Northern,AmazonR,Amazon,South America_Northern,237,25,168
+South America_Southern,ColEcuaCst,"Colombia - Ecuador, Pacific Coast",South America_Southern,238,26,157
+South America_Southern,AmazonR,Amazon,South America_Southern,239,26,168
+South America_Southern,ChileCstS,"South Chile, Pacific Coast",South America_Southern,240,26,169
+South America_Southern,PeruCst,"Peru, Pacific Coast",South America_Southern,241,26,180
+South America_Southern,LaPuna,La Puna Region,South America_Southern,242,26,200
+South America_Southern,RioLaPlata,La Plata,South America_Southern,243,26,206
+South America_Southern,ChileCstN,"North Chile, Pacific Coast",South America_Southern,244,26,207
+South America_Southern,ArgCstS,"South Argentina, South Atlantic Coast",South America_Southern,245,26,215
+South Asia,CaspianE,"Caspian Sea, East Coast",South Asia,246,27,52
+South Asia,AmuDaryaR,Amu Darya,South Asia,247,27,58
+South Asia,IndusR,Indus,South Asia,248,27,89
+South Asia,FarahrudR,Farahrud,South Asia,249,27,90
+South Asia,Helmand,Helmand,South Asia,250,27,97
+South Asia,HamuMashR,Hamun-i-Mashkel,South Asia,251,27,102
+South Asia,GangesR,Ganges - Bramaputra,South Asia,252,27,110
+South Korea,Korea,North and South Korea,South Korea,253,28,65
+Southeast Asia,XunJiang,Xun Jiang,Southeast Asia,254,29,108
+Southeast Asia,Hong,Hong (Red River),Southeast Asia,255,29,109
+Southeast Asia,GangesR,Ganges - Bramaputra,Southeast Asia,256,29,110
+Southeast Asia,SChinaSea,South China Sea Coast,Southeast Asia,257,29,112
+Southeast Asia,Mekong,Mekong,Southeast Asia,258,29,125
+Southeast Asia,VietnamCst,"Viet Nam, Coast",Southeast Asia,259,29,126
+Southeast Asia,Salween,Salween,Southeast Asia,260,29,127
+Southeast Asia,IrrawaddyR,Irrawaddy,Southeast Asia,261,29,137
+Southeast Asia,SittaungR,Sittang,Southeast Asia,262,29,138
+Southeast Asia,MalaysiaP,Peninsula Malaysia,Southeast Asia,263,29,139
+Southeast Asia,ChaoPhrR,Chao Phraya,Southeast Asia,264,29,146
+Southeast Asia,ThaiGulf,Gulf of Thailand Coast,Southeast Asia,265,29,148
+Taiwan,Taiwan,Taiwan,Taiwan,266,30,103
+Argentina,ChileCstS,"South Chile, Pacific Coast",Argentina,267,31,169
+Argentina,MarChiq,Mar Chiquita,Argentina,268,31,203
+Argentina,Salinas,Salinas Grandes,Argentina,269,31,205
+Argentina,RioLaPlata,La Plata,Argentina,270,31,206
+Argentina,ChileCstN,"North Chile, Pacific Coast",Argentina,271,31,207
+Argentina,Pampas,Pampas Region,Argentina,272,31,209
+Argentina,ArgCstN,"North Argentina, South Atlantic Coast",Argentina,273,31,210
+Argentina,ArgColoR,"South America, Colorado",Argentina,274,31,212
+Argentina,NegroR,Negro,Argentina,275,31,213
+Argentina,Patagonia,Central Patagonia Highlands,Argentina,276,31,214
+Argentina,ArgCstS,"South Argentina, South Atlantic Coast",Argentina,277,31,215
+Colombia,SAmerCstN,Caribbean Coast,Colombia,278,32,143
+Colombia,OrinocoR,Orinoco,Colombia,279,32,156
+Colombia,ColEcuaCst,"Colombia - Ecuador, Pacific Coast",Colombia,280,32,157
+Colombia,MagdalenaR,Magdalena,Colombia,281,32,166
+Colombia,AmazonR,Amazon,Colombia,282,32,168
+USA,NelsonR,Saskatchewan - Nelson,USA,283,1,23
+USA,FraserR,Fraser,USA,284,1,27
+USA,Caribbean,Caribbean,USA,285,1,101
+USA,MissppRN,Upper Mississippi Basin,USA,286,1,218
+USA,MissppRS,Lower Mississippi River Basin,USA,287,1,219
+USA,GreatLakes,Great Lakes Basin,USA,288,1,227
+USA,OhioR,Ohio River Basin,USA,289,1,228
+USA,TennR,Tennessee River Basin,USA,290,1,230
+USA,UsaCstNE,New England Basin,USA,291,1,232
+USA,UsaCstE,Mid-Atlantic Basin,USA,292,1,233
+USA,Hawaii,Hawaii,USA,293,1,234
+Africa_Northern,AfrCstNE,"Africa, Red Sea - Gulf of Aden Coast",Africa_Northern,294,3,100
+Africa_Southern,GuineaGulf,Gulf of Guinea,Africa_Southern,295,4,162
+Africa_Southern,AfrCstS,"South Africa, South Coast",Africa_Southern,296,4,198
+Africa_Western,ZambeziR,Zambezi,Africa_Western,297,5,188
+Australia_NZ,NewZealand,New Zealand,Australia_NZ,298,6,201
+Brazil,OrinocoR,Orinoco,Brazil,299,7,156
+Canada,UsaPacNW,Pacific Northwest Basin,Canada,300,8,229
+Canada,UsaCstNE,New England Basin,Canada,301,8,232
+Central Asia,BlackSeaN,"Black Sea, North Coast",Central Asia,302,10,47
+China,RusCstSE,"Russia, South East Coast",China,303,11,37
+China,AmuDaryaR,Amu Darya,China,304,11,58
+China,Tibet,Plateau of Tibet Interior,China,305,11,92
+EU-12,BalticSea,Baltic Sea Coast,EU-12,306,12,20
+EU-12,NarvaR,Narva,EU-12,307,12,22
+EU-12,DaugavaR,Daugava,EU-12,308,12,25
+EU-12,OderR,Oder,EU-12,309,12,29
+EU-12,WislaR,Wisla,EU-12,310,12,30
+EU-12,ElbeR,Elbe,EU-12,311,12,31
+EU-12,PolandCst,Poland Coast,EU-12,312,12,33
+EU-12,NemanR,Neman,EU-12,313,12,35
+EU-12,DniesterR,Dniester,EU-12,314,12,49
+EU-15,Scotland,Scotland,EU-15,315,13,16
+EU-15,NevaR,Neva,EU-15,316,13,17
+EU-15,DnkGrmCst,Denmark - Germany Coast,EU-15,317,13,21
+EU-15,Ireland,Ireland,EU-15,318,13,24
+EU-15,EngWales,England and Wales,EU-15,319,13,26
+EU-15,EmsWeserR,Ems - Weser,EU-15,320,13,28
+EU-15,OderR,Oder,EU-15,321,13,29
+EU-15,ElbeR,Elbe,EU-15,322,13,31
+EU-15,RhineR,Rhine,EU-15,323,13,32
+EU-15,ScheldtR,Scheldt,EU-15,324,13,36
+EU-15,LoireR,Loire,EU-15,325,13,44
+EU-15,SeineR,Seine,EU-15,326,13,46
+EU-15,ArgCstS,"South Argentina, South Atlantic Coast",EU-15,327,13,215
+Ukraine,WislaR,Wisla,Ukraine,328,14,30
+Ukraine,DniesterR,Dniester,Ukraine,329,14,49
+Ukraine,DonR,Don,Ukraine,330,14,53
+Europe_Non_EU,NevaR,Neva,Europe_Non_EU,331,15,17
+Europe_Non_EU,DaugavaR,Daugava,Europe_Non_EU,332,15,25
+Europe_Non_EU,WislaR,Wisla,Europe_Non_EU,333,15,30
+Europe_Non_EU,NemanR,Neman,Europe_Non_EU,334,15,35
+Europe_Non_EU,DnieperR,Dnieper,Europe_Non_EU,335,15,39
+Europe_Non_EU,BlackSeaN,"Black Sea, North Coast",Europe_Non_EU,336,15,47
+Europe_Non_EU,DniesterR,Dniester,Europe_Non_EU,337,15,49
+Europe_Non_EU,DanubeR,Danube,Europe_Non_EU,338,15,54
+European Free Trade Association,RhineR,Rhine,European Free Trade Association,339,16,32
+European Free Trade Association,DanubeR,Danube,European Free Trade Association,340,16,54
+European Free Trade Association,PoR,Po,European Free Trade Association,341,16,57
+India,BengalBay,"Bay of Bengal, North East Coast",India,342,17,116
+India,BengalW,Yasai,India,343,17,118
+India,IrrawaddyR,Irrawaddy,India,344,17,137
+India,AdnNicIsl,Andaman - Nicobar Islands,India,345,17,141
+Indonesia,IdnE,Palau and East Indonesia,Indonesia,346,18,158
+Indonesia,BorneoCstN,North Borneo Coast,Indonesia,347,18,159
+Indonesia,Sumatra,Sumatra,Indonesia,348,18,163
+Indonesia,Sulawesi,Sulawesi,Indonesia,349,18,164
+Indonesia,Kalimantan,Kalimantan,Indonesia,350,18,165
+Indonesia,IrianJaya,Irian Jaya Coast,Indonesia,351,18,167
+Indonesia,JavaTimor,Java - Timor,Indonesia,352,18,175
+Indonesia,SepikR,Sepik,Indonesia,353,18,178
+Mexico,CntAmer,Southern Central America,Mexico,354,20,135
+Pakistan,Tarim,Tarim Interior,Pakistan,355,22,85
+Russia,NevaR,Neva,Russia,356,23,17
+Russia,BalticSea,Baltic Sea Coast,Russia,357,23,20
+Russia,NarvaR,Narva,Russia,358,23,22
+Russia,DaugavaR,Daugava,Russia,359,23,25
+Russia,PolandCst,Poland Coast,Russia,360,23,33
+Russia,NemanR,Neman,Russia,361,23,35
+Russia,DnieperR,Dnieper,Russia,362,23,39
+South America_Northern,SAmerCstNE,"Northeast South America, South Atlantic Coast",South America_Northern,363,25,161
+South America_Northern,MagdalenaR,Magdalena,South America_Northern,364,25,166
+South America_Southern,BrzCstS,"Uruguay - Brazil, South Atlantic Coast",South America_Southern,365,26,195
+South America_Southern,ArgColoR,"South America, Colorado",South America_Southern,366,26,212
+South America_Southern,NegroR,Negro,South America_Southern,367,26,213
+South Asia,BengalBay,"Bay of Bengal, North East Coast",South Asia,368,27,116
+South Asia,SriLanka,Sri Lanka,South Asia,369,27,154
+Southeast Asia,RusCstSE,"Russia, South East Coast",Southeast Asia,370,29,37
+Southeast Asia,Korea,North and South Korea,Southeast Asia,371,29,65
+Southeast Asia,BoHai,"Bo Hai - Korean Bay, North Coast",Southeast Asia,372,29,66
+Southeast Asia,BengalBay,"Bay of Bengal, North East Coast",Southeast Asia,373,29,116
+Southeast Asia,Phlppns,Philippines,Southeast Asia,374,29,119
+Southeast Asia,BorneoCstN,North Borneo Coast,Southeast Asia,375,29,159
+Southeast Asia,IrianJaya,Irian Jaya Coast,Southeast Asia,376,29,167
+Southeast Asia,PapuaCst,Papua New Guinea Coast,Southeast Asia,377,29,173
+Southeast Asia,JavaTimor,Java - Timor,Southeast Asia,378,29,175
+Southeast Asia,SolomonIsl,Solomon Islands,Southeast Asia,379,29,176
+Southeast Asia,SepikR,Sepik,Southeast Asia,380,29,178
+Southeast Asia,FlyR,Fly,Southeast Asia,381,29,181
+Southeast Asia,NewCaledn,South Pacific Islands,Southeast Asia,382,29,185
+Argentina,LaPuna,La Puna Region,Argentina,383,31,200
+China,SyrDaryaR,Syr Darya,China,384,11,76
+EU-12,DnkGrmCst,Denmark - Germany Coast,EU-12,385,12,21
+EU-15,AfrCstNW,"Africa, North West Coast",EU-15,386,13,86
+Indonesia,FlyR,Fly,Indonesia,387,18,181
+Pakistan,AmuDaryaR,Amu Darya,Pakistan,388,22,58
+South America_Southern,Salinas,Salinas Grandes,South America_Southern,389,26,205
+Southeast Asia,IdnE,Palau and East Indonesia,Southeast Asia,390,29,158
+Southeast Asia,Kalimantan,Kalimantan,Southeast Asia,391,29,165
+Taiwan,ChinaCst,China Coast,Taiwan,392,30,78
+Africa_Northern,SinaiP,Sinai Peninsula,Africa_Northern,393,3,98
+Africa_Northern,DeadSea,Dead Sea,Africa_Northern,394,3,95
+South Africa,AfrCstSW,"Namibia, Coast",South Africa,395,24,196

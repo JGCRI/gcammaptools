@@ -22,6 +22,7 @@
 #' base maps:
 #' \itemize{
 #'   \item \code{\link{map.rgn32v81}}: 32 region map used in GCAM 8.1 and later.
+#'   \item \code{\link{map.rgnlndv81}}: 32 region x 235 basin map used in GCAM 8.1 and later.
 #'   \item \code{\link{map.rgn32}}: 32 region map used in GCAM 4.0 to 8.0,
 #' excluding Taiwan.
 #'   \item \code{\link{map.basin235}}: 235 water basins.
@@ -49,6 +50,14 @@ NULL
 #'
 #' @format Simple feature collection
 "map.rgn32v81"
+
+#' Base map for current GCAM, including regions and basins
+#'
+#' This is the region map used in GCAM 8.1 and subsequent.
+#'
+#' @format Simple feature collection
+"map.rgnlndv81"
+
 
 #' Simplified base map for current 32-region GCAM
 #'

@@ -33,10 +33,8 @@ gen.data <- function() {
     ## Create maps that combine GCAM 32 regions with 235 water basins
     map.rgnlndv81 <- file.path("./inst/extdata/rgnlndv81/rgnlndv81_spart.shp") %>%
         import_mapdata() %>%
-        dplyr::left_join(lut.rgn32v81, by = c("gcamreg_id" = "region_id")) %>%
-        dplyr::rename(gcamreg_name = region) %>%
-        dplyr::left_join(lut.basin235, by = c("basin_id" = "region_id")) %>%
-        dplyr::select(-region)  %>% sf::st_as_sf()
+        dplyr::left_join(lut.rgnlndv81, by = c("gcamreg_id", "basin_id")) %>%
+        dplyr::rename(region_name = region)  %>% sf::st_as_sf()
     map.rgnlndv81.simple <- simplify_mapdata(map.rgnlndv81)
 
     ## Both maps of the GCAM regions are built with the column 'region_name',
@@ -113,6 +111,10 @@ gen.internal <- function() {
     lut.rgn32v81 <- read.csv('inst/extdata/rgn32v81/lookup.txt', strip.white=TRUE,
                              stringsAsFactors=FALSE)
 
+    ## v8.1 region x basin has a lookup
+    lut.rgnlndv81 <- read.csv('inst/extdata/rgnlndv81/lookup.txt', strip.white=TRUE,
+                             stringsAsFactors=FALSE)
+
     ## 32-region has a lookup and a drop
     lut.rgn32 <- read.csv('inst/extdata/rgn32/lookup.txt', strip.white=TRUE,
                           stringsAsFactors=FALSE)
@@ -135,7 +137,7 @@ gen.internal <- function() {
     lut.usa <- read.csv('inst/extdata/rgnusa/lookup.txt', strip.white=TRUE,
                         stringsAsFactors=FALSE)
 
-    usethis::use_data( lut.rgn32v81, lut.rgn32, drop.rgn32, lut.basin235,
+    usethis::use_data( lut.rgn32v81, lut.rgnlndv81, lut.rgn32, drop.rgn32, lut.basin235,
                        lut.chn, drop.chn, prov.chn, lut.usa,
                        internal=FALSE, overwrite=TRUE)
 }

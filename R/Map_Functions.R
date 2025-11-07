@@ -509,6 +509,12 @@ theme_GCAM <- function(base_size = 11, base_family = "", legend = FALSE,
 #' @export
 rgn32v81 <- quote(rgn32v81)
 
+#' Designator for the rgnlndv81 map set
+#'
+#' This symbol will select the rgnlndv81 map set
+#' @export
+rgnlndv81 <- quote(rgnlndv81)
+
 #' Designator for the rgn32 map set
 #'
 #' This symbol will select the rgn32 map set
