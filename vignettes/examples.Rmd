@@ -68,9 +68,9 @@ plot_GCAM(mapdata)
 
 ### Example 1: Eckert III World Projection, Colored by Region
 
-This example just plots the map data frame with the GCAM region name.  Applying a scale with `gcam32_colors`, the default GCAM colors, you get each region colored according to a discrete color palette.  For older data that uses 14-region GCAM, you can use the palette `gcam14_colors`.
+This example just plots the map data frame with the GCAM region name.  Applying a scale with `gcam32_colors`, the default GCAM colors, you get each region colored according to a discrete color palette. This plot shows the 32 regions from GCAM v8.1 and beyond. You can plot older GCAM results by changing to `map.rgn32.simple`.
 ```{r mp1, fig.width=6, fig.height=3, fig.align='center'}
-plot_GCAM(map.rgn32.simple, col = 'region_name', proj = eck3) +
+plot_GCAM(map.rgn32v81.simple, col = 'region_name', proj = eck3) +
     ggplot2::scale_fill_manual(values = gcam32_colors, na.value=gray(0.75))
 ```
 
