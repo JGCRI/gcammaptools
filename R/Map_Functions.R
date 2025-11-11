@@ -315,7 +315,8 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       gcam_df = NULL, gcam_key = "id", mapdata_key = "region_id",
                       zoom = 0, graticules = "bottom", agr_type = 'constant',
                       background_color = MAP_BACKGROUND,
-                      padding = all(extent == EXTENT_WORLD)) {
+                      padding = all(extent == EXTENT_WORLD),
+                      animate = FALSE) {
 
   # get proj4 string that corresponds to user selection
   p4s <- assign_prj4s(proj_type, proj)
@@ -363,6 +364,10 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
       panel_background <- ggplot2::geom_sf(data = panel, fill = PANEL_FILL)
   }
 
+  if (animate) {
+      map$frames <- as.numeric(factor(map$year))
+  }
+
   # set different aesthetics depending on whether there is region-specific data
   if (is.null(col))
       regions <- ggplot2::geom_sf(data = map, fill = FILL_COLOR,
@@ -379,6 +384,11 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
     ggplot2::coord_sf(expand = padding, datum = dtm) +
     ggplot2::ggtitle(title) +
     theme_GCAM(legend = legend, overlay_graticules = graticules == "top")
+
+  if (animate) {
+       mp <- mp + gganimate::transition_states(year)
+       mp <- mp + ggplot2::labs(title = 'Year: {closest_state}')
+  }
 
   return(mp)
 }
