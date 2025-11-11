@@ -191,6 +191,6 @@ row.data <- read.csv(system.file('extdata', 'gcam81_example.csv', package='gcamm
                     stringsAsFactors = F) 
 row.data <- dplyr::filter(row.data, region != "USA")
 world <- dplyr::bind_rows(us.data, row.data) 
-world <- add_region_ID(world, lookupfile = usa)
-plot_GCAM(map.usa, col='value', gcam_df=world, extent=EXTENT_WORLD)
+world <- add_region_ID(world, lookupfile = usav81)
+plot_GCAM(map.usav81, col='value', gcam_df=world, extent=EXTENT_WORLD)
 ```

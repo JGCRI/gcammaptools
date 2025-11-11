@@ -37,6 +37,7 @@ excluding Taiwan.
   \item \code{\link{map.basin235}}: 235 water basins.
   \item \code{\link{map.chn}}: 32 global regions plus China subregions
   \item \code{\link{map.usa}}: 32 global regions plus US states.
+  \item \code{\link{map.usav81}}: 32 global regions from GCAM 8.1 and later plus US states.
 }
 Users can provide their own base maps.  You will need a geometry file in
 geojson format, where each region has a \code{region_id}.  Land masses

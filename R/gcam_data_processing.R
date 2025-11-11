@@ -97,7 +97,7 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
     # Set column name and type for id column
     names(finaltable)[ncol(finaltable)] <- "id"
 
-    if( lookupfile != usa ) {
+    if( lookupfile != usa & lookupfile != usav81 ) {
         finaltable$id <- as.numeric(finaltable$id)
     }
 

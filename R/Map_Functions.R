@@ -538,3 +538,10 @@ chn <- quote(chn)
 #' This symbol will select the usa map set
 #' @export
 usa <- quote(usa)
+
+#' Designator for the usav81 map set
+#'
+#' This symbol will select the usav81 map set
+#' @export
+usav81 <- quote(usav81)
+

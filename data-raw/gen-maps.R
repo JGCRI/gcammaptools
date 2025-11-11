@@ -75,7 +75,7 @@ gen.data <- function() {
     # The USA map is placed on top of the 32-region map to produce a final GCAM
     # USA compatable map.
     #
-    # One problem with the defualt map data is that the US-Canada border lacks
+    # One problem with the default map data is that the US-Canada border lacks
     # resolution. Because of this, many reprojections caused a gap between the
     # the two countries. The problem is addressed below by segmentizing the
     # polygon that represents mainland Canada such that it contains no segment
@@ -93,6 +93,15 @@ gen.data <- function() {
     min.seg <- 1       # Minimum segment length in degrees allowed for polygon
     sf::st_geometry(map.usa)[[canada.main]] <- sf::st_segmentize(sf::st_geometry(map.usa)[[canada.main]],min.seg)
 
+    # Create a GCAM-USA map that works with the most recent GCAM
+    # by combining the states with the v8.1 32-region map
+    map.usav81 <- import_mapdata(path.usa)[ , c('name', 'geometry')] %>%
+        dplyr::mutate(name = levels(droplevels(as.factor(name)))) %>%
+        dplyr::left_join(lut.usa, by = c("name" = "region")) %>%
+        dplyr::rename(region_name = name) %>%
+        rbind(dplyr::filter(map.rgn32v81, region_id != 1)) %>%
+        sf::st_as_sf()
+
     ## The world map of countries is included for completeness' sake, and cannot
     # be used with GCAM data as it currently is.
     path.countries <- system.file("extdata", "rgnworld/ne_110m_admin_0_countries.shp", package = "gcammaptools")
@@ -101,7 +110,8 @@ gen.data <- function() {
     usethis::use_data( map.rgn32v81, map.rgn32v81.simple,
                        map.rgnlndv81, map.rgnlndv81.simple,
                        map.rgn32, map.rgn32.simple,
-                       map.basin235, map.basin235.simple, map.chn, map.usa,
+                       map.basin235, map.basin235.simple, map.chn,
+                       map.usa, map.usav81,
                        map.countries, overwrite=TRUE)
 }
 
@@ -137,8 +147,11 @@ gen.internal <- function() {
     lut.usa <- read.csv('inst/extdata/rgnusa/lookup.txt', strip.white=TRUE,
                         stringsAsFactors=FALSE)
 
+    lut.usav81 <- read.csv('inst/extdata/rgnusa/lookupv81.txt', strip.white=TRUE,
+                        stringsAsFactors=FALSE)
+
     usethis::use_data( lut.rgn32v81, lut.rgnlndv81, lut.rgn32, drop.rgn32, lut.basin235,
-                       lut.chn, drop.chn, prov.chn, lut.usa,
+                       lut.chn, drop.chn, prov.chn, lut.usa, lut.usav81,
                        internal=FALSE, overwrite=TRUE)
 }
 

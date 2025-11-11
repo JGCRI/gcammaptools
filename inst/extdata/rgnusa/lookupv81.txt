@@ -1,0 +1,82 @@
+region,region_id
+Africa_Eastern,2
+Africa_Northern,3
+Africa_Southern,4
+Africa_Western,5
+Argentina,31
+Australia_NZ,6
+Brazil,7
+Canada,8
+Central America and Caribbean,9
+Central Asia,10
+China,11
+Colombia,32
+EU-12,12
+EU-15,13
+Ukraine,14
+Europe_Non_EU,15
+European Free Trade Association,16
+India,17
+Indonesia,18
+Japan,19
+Mexico,20
+Middle East,21
+Pakistan,22
+Russia,23
+South Africa,24
+South America_Northern,25
+South America_Southern,26
+South Asia,27
+South Korea,28
+Southeast Asia,29
+Alabama,AL
+Alaska,AK
+Arizona,AZ
+Arkansas,AR
+California,CA
+Colorado,CO
+Connecticut,CT
+District of Columbia,DC
+Delaware,DE
+Florida,FL
+Georgia,GA
+Hawaii,HI
+Idaho,ID
+Illinois,IL
+Indiana,IN
+Iowa,IA
+Kansas,KS
+Kentucky,KY
+Louisiana,LA
+Maine,ME
+Maryland,MD
+Massachusetts,MA
+Michigan,MI
+Minnesota,MN
+Mississippi,MS
+Missouri,MO
+Montana,MT
+Nebraska,NE
+Nevada,NV
+New Hampshire,NH
+New Jersey,NJ
+New Mexico,NM
+New York,NY
+North Carolina,NC
+North Dakota,ND
+Ohio,OH
+Oklahoma,OK
+Oregon,OR
+Pennsylvania,PA
+Rhode Island,RI
+South Carolina,SC
+South Dakota,SD
+Tennessee,TN
+Texas,TX
+Utah,UT
+Vermont,VT
+Virginia,VA
+Washington,WA
+West Virginia,WV
+Wisconsin,WI
+Wyoming,WY
