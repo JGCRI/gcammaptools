@@ -290,6 +290,7 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 #'   vignette} for further explanation.
 #' @param background_color Color for the areas with no regions (the oceans)
 #' @param padding Boolean flag: Add space between map edge and plot edge?
+#' @param animate Boolean indicating whether to create an animated map, with frames representing years
 #' @examples \dontrun{
 #'
 #' ## Plot a map of GCAM regions; color it with the default theme palette.
@@ -386,7 +387,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
     theme_GCAM(legend = legend, overlay_graticules = graticules == "top")
 
   if (animate) {
-       mp <- mp + gganimate::transition_states(year)
+       mp <- mp + gganimate::transition_states(factor(year), state_length=1)
        mp <- mp + ggplot2::labs(title = 'Year: {closest_state}')
   }
 

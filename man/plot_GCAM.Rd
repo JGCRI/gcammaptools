@@ -19,7 +19,8 @@ plot_GCAM(
   graticules = "bottom",
   agr_type = "constant",
   background_color = MAP_BACKGROUND,
-  padding = all(extent == EXTENT_WORLD)
+  padding = all(extent == EXTENT_WORLD),
+  animate = FALSE
 )
 }
 \arguments{
@@ -77,6 +78,8 @@ vignette} for further explanation.}
 \item{background_color}{Color for the areas with no regions (the oceans)}
 
 \item{padding}{Boolean flag: Add space between map edge and plot edge?}
+
+\item{animate}{Boolean indicating whether to create an animated map, with frames representing years}
 }
 \description{
 This function produces a map visualization of a data set containing GCAM

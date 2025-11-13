@@ -196,10 +196,13 @@ plot_GCAM(map.usav81, col='value', gcam_df=world, extent=EXTENT_WORLD)
 ```
 
 ### Example 14: Animated maps
-Users can use `gcammaptools` with the `gganimate` package to create animated plots.
+Users can use `gcammaptools` with the `gganimate` package to create animated plots. This code generates an animated plot using `plot_GCAM` and then renders it with `gganimate::animate`. The `nframes` argument defaults to 100, which will lead `gganimate::animate` to fill in frames if you have fewer than 100 years (or truncate if you have more than 100). Animated graphs can be saved using `gganimate::anim_save`. Duration is total time for animation (in seconds).
 ```{r mp14, fig.width=6, fig.height=4, fig.align='center'}
 co2 <- rgcam::getQuery(prj, 'CO2 emissions by region', 'Reference')
 co2 <- add_region_ID(co2, lookupfile=rgn32, drops=rgn32)
 
-plot_GCAM(map.rgn32, col='value', gcam_df=co2, extent=EXTENT_WORLD, animate=TRUE)
+p <- plot_GCAM(map.rgn32, col='value', gcam_df=co2, extent=EXTENT_WORLD, legend = TRUE, animate=TRUE)
+gganimate::animate(p, nframes = length(unique(co2$year)) + 1, duration=30)
+
+#gganimate::anim_save("map.gif")
 ```
