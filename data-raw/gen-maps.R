@@ -84,7 +84,7 @@ gen.data <- function() {
     # http://www.georeference.org/doc/segmentization.htm
     path.usa <- system.file("extdata", "rgnusa/us_states_50m.shp", package = "gcammaptools")
     map.usa <- import_mapdata(path.usa)[ , c('name', 'geometry')] %>%
-        dplyr::mutate(name = levels(droplevels(as.factor(name)))) %>%
+#        dplyr::mutate(name = levels(droplevels(as.factor(name)))) %>%
         dplyr::left_join(lut.usa, by = c("name" = "region")) %>%
         dplyr::rename(region_name = name) %>%
         rbind(dplyr::filter(map.rgn32, region_id != 1)) %>%
@@ -96,7 +96,7 @@ gen.data <- function() {
     # Create a GCAM-USA map that works with the most recent GCAM
     # by combining the states with the v8.1 32-region map
     map.usav81 <- import_mapdata(path.usa)[ , c('name', 'geometry')] %>%
-        dplyr::mutate(name = levels(droplevels(as.factor(name)))) %>%
+#        dplyr::mutate(name = levels(droplevels(as.factor(name)))) %>%
         dplyr::left_join(lut.usa, by = c("name" = "region")) %>%
         dplyr::rename(region_name = name) %>%
         rbind(dplyr::filter(map.rgn32v81, region_id != 1)) %>%

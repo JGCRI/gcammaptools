@@ -89,7 +89,8 @@ add_region_ID <- function(datatable, lookupfile = rgn32, provincefile = NULL, dr
             finaltable
     } else {
         finaltable <- dplyr::full_join(datatable, lookuptable, by = "region")
-        if (any(duplicated(finaltable$region))) {
+        if (any(duplicated(finaltable$region)) & !("year" %in% names(datatable))) {
+           # Note: for datatables that will be animated, we will see the same region for multiple years.
            warning("Data contains multiple values for the same region")
         }
     }

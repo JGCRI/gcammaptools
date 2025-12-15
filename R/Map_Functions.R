@@ -290,6 +290,7 @@ simplify_mapdata <- function(mapdata, min_area = 2.5, degree_tolerance = 0.1) {
 #'   vignette} for further explanation.
 #' @param background_color Color for the areas with no regions (the oceans)
 #' @param padding Boolean flag: Add space between map edge and plot edge?
+#' @param remove_missing Boolean flag: if true, only plots regions where data is supplied
 #' @param animate Boolean indicating whether to create an animated map, with frames representing years
 #' @examples \dontrun{
 #'
@@ -317,6 +318,7 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
                       zoom = 0, graticules = "bottom", agr_type = 'constant',
                       background_color = MAP_BACKGROUND,
                       padding = all(extent == EXTENT_WORLD),
+                      remove_missing = FALSE,
                       animate = FALSE) {
 
   # get proj4 string that corresponds to user selection
@@ -347,6 +349,13 @@ plot_GCAM <- function(mapdata, col = NULL, proj = robin, proj_type = NULL,
       error = function(e) stop("Reprojection produced invalid map.")
   )
   map <- join_gcam(map, mapdata_key, gcam_df, gcam_key)
+
+  # Update bounds if specified
+  if( remove_missing ) {
+      map <- na.omit(map)
+      extent <- sf::st_bbox(map)
+      bounds <- spat_bb(b_ext = extent, buff_dist = zoom, proj4s = p4s)
+  }
 
   # datum = wgs84 means that graticules are drawn based on first layer's crs
   dtm <- if (graticules == "top" | graticules == "bottom") wgs84 else NA

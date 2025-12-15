@@ -20,6 +20,7 @@ plot_GCAM(
   agr_type = "constant",
   background_color = MAP_BACKGROUND,
   padding = all(extent == EXTENT_WORLD),
+  remove_missing = FALSE,
   animate = FALSE
 )
 }
@@ -78,6 +79,8 @@ vignette} for further explanation.}
 \item{background_color}{Color for the areas with no regions (the oceans)}
 
 \item{padding}{Boolean flag: Add space between map edge and plot edge?}
+
+\item{remove_missing}{Boolean flag: if true, only plots regions where data is supplied}
 
 \item{animate}{Boolean indicating whether to create an animated map, with frames representing years}
 }

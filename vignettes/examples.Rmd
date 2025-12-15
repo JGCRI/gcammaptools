@@ -203,6 +203,29 @@ co2 <- add_region_ID(co2, lookupfile=rgn32, drops=rgn32)
 
 p <- plot_GCAM(map.rgn32, col='value', gcam_df=co2, extent=EXTENT_WORLD, legend = TRUE, animate=TRUE)
 gganimate::animate(p, nframes = length(unique(co2$year)) + 1, duration=30)
-
 #gganimate::anim_save("map.gif")
+```
+
+### Example 15: Animated maps with facet wrapping
+Users can use `facet_wrap` with the animated map plotting feature to show side-by-side animations. As of right now, the different facets have to be shown on the same scale.
+```{r mp15, fig.width=6, fig.height=4, fig.align='center'}
+ag <- rgcam::getQuery(prj, 'Ag Production by Crop Type')
+ag <- dplyr::filter(ag, output %in% c("Corn", "Wheat"))
+ag <- add_region_ID(ag, lookupfile=rgn32, drops=rgn32)
+ag <- na.omit(ag)
+
+p <- plot_GCAM(map.rgn32, col='value', gcam_df=ag, extent=EXTENT_WORLD, remove_missing = TRUE, legend = TRUE, animate=TRUE)
+p <- p + ggplot2::facet_wrap(~output)
+gganimate::animate(p, nframes = length(unique(ag$year)) + 1, fps=1)
+#gganimate::anim_save("map.gif")
+```
+
+### Example 16: Sub-regional maps
+Users can create subregional maps. 
+```{r mp16, fig.width=6, fig.height=4, fig.align='center'}
+reg.data <- read.csv(system.file('extdata', 'usa_example.csv', package='gcammaptools'),
+                    stringsAsFactors = F) 
+reg.data <- dplyr::filter(reg.data, state %in% c("maryland", "virginia", "delaware", "new jersey", "pennsylvania"))
+
+plot_GCAM(map.usa, col='value', gcam_df=reg.data, gcam_key='region', remove_missing = TRUE )
 ```
